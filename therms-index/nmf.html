@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Non-negative Matrix Factorization (NMF)</title>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Non-negative Matrix Factorization (NMF)</h2>
+
+  <div class="card description">
+    <h3>What is NMF?</h3>
+    <p><strong>Non-negative Matrix Factorization (NMF)</strong> is a dimensionality reduction and feature extraction technique that decomposes a non-negative matrix into two non-negative factor matrices. Unlike PCA, NMF enforces non-negativity constraints, producing parts-based, additive representations that are often more interpretable.</p>
+    <p>NMF is particularly valuable in finance for decomposing portfolios, sentiment analysis, topic modeling of financial news, and identifying trading patterns where negative values don't make intuitive sense.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Matrix Factorization:</strong></p>
+    <p style="font-family: var(--font-mono); font-size: 1.2rem; margin: 1rem 0;">
+      V ≈ W × H
+    </p>
+    <p><strong>Where:</strong></p>
+    <ul>
+      <li><strong>V</strong> = Original data matrix (m × n) with non-negative entries</li>
+      <li><strong>W</strong> = Basis/feature matrix (m × k), W ≥ 0</li>
+      <li><strong>H</strong> = Coefficient/encoding matrix (k × n), H ≥ 0</li>
+      <li><strong>k</strong> = Number of components (k < min(m, n))</li>
+    </ul>
+    <p style="margin-top: 1rem;"><strong>Objective Function:</strong></p>
+    <p style="font-family: var(--font-mono);">
+      minimize ||V - WH||² subject to W ≥ 0, H ≥ 0
+    </p>
+    <p style="margin-top: 1rem;"><strong>Interpretation:</strong></p>
+    <ul>
+      <li>Each column of W is a basis vector (component/theme)</li>
+      <li>Each column of H gives the weights to reconstruct a data sample</li>
+      <li>Additive combination: each sample is a weighted sum of non-negative parts</li>
+    </ul>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive NMF Visualization</h3>
+    <p>Explore how NMF decomposes a simple 2-factor portfolio into interpretable components!</p>
+
+    <div class="control">
+      <label for="componentsSlider">Number of Components (k): <span id="componentsValue">2</span></label>
+      <input type="range" id="componentsSlider" min="1" max="3" step="1" value="2" />
+    </div>
+
+    <div class="control">
+      <label for="iterationsSlider">Iterations: <span id="iterationsValue">50</span></label>
+      <input type="range" id="iterationsSlider" min="10" max="200" step="10" value="50" />
+    </div>
+
+    <button id="runNMFBtn" class="button">Run NMF Decomposition</button>
+  </div>
+
+  <div id="nmfVisualization" style="width:100%;height:450px;"></div>
+
+  <div class="highlight">
+    <h3>📊 Decomposition Results</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Reconstruction Error</h4>
+        <p id="reconError" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">0.00</p>
+      </div>
+      <div class="card">
+        <h4>Components</h4>
+        <p id="numComponents" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">2</p>
+      </div>
+      <div class="card">
+        <h4>Sparsity</h4>
+        <p id="sparsityMetric" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">0%</p>
+      </div>
+      <div class="card">
+        <h4>Iterations</h4>
+        <p id="iterationCount" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">50</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🔍 Component Interpretation</h3>
+    <div id="componentInfo" style="font-family: var(--font-mono); background: var(--bg-tertiary); padding: 1rem; border-radius: var(--radius-md);">
+      <p id="component1Info"><strong>Component 1:</strong> Loading...</p>
+      <p id="component2Info"><strong>Component 2:</strong> Loading...</p>
+    </div>
+  </div>
+
+  <div id="convergencePlot" style="width:100%;height:300px;"></div>
+
+  <div class="scenario" style="background: #f0f9ff; border: 2px solid #3b82f6;">
+    <h3>📈 Financial Engineering Applications</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>📊 Portfolio Attribution</h4>
+        <p>Decompose portfolio returns into interpretable non-negative style factors (value, growth, momentum). Each component represents a pure investment theme.</p>
+      </div>
+      <div class="card">
+        <h4>📰 News Sentiment Analysis</h4>
+        <p>Extract topics from financial news using NMF on TF-IDF matrices. Identify market themes driving sentiment without negative word frequencies.</p>
+      </div>
+      <div class="card">
+        <h4>💹 Market Microstructure</h4>
+        <p>Decompose order flow into buyer/seller-initiated components. Analyze trading patterns as additive combinations of market participant types.</p>
+      </div>
+      <div class="card">
+        <h4>⚡ Algorithmic Trading Signals</h4>
+        <p>Separate trading signals into independent non-negative strategies. Combine alpha sources additively for transparent signal attribution.</p>
+      </div>
+      <div class="card">
+        <h4>📉 Credit Risk Modeling</h4>
+        <p>Identify latent risk factors in credit portfolios. Decompose default correlations into interpretable industry/regional components.</p>
+      </div>
+      <div class="card">
+        <h4>🎯 Asset Allocation</h4>
+        <p>Find basis assets for portfolio construction. Each component represents a pure allocation strategy that can be combined linearly.</p>
+      </div>
+      <div class="card">
+        <h4>📈 Volume Profile Analysis</h4>
+        <p>Decompose intraday volume patterns into trading session components. Separate institutional, retail, and HFT volume characteristics.</p>
+      </div>
+      <div class="card">
+        <h4>🔮 Regime-Based Factor Models</h4>
+        <p>Extract market regime factors where holdings/exposures must be non-negative. Build interpretable multi-regime investment strategies.</p>
+      </div>
+    </div>
+  </div>
+
+  <button class="collapsible">💡 NMF vs PCA: Key Differences</button>
+  <div class="content">
+    <div class="solution">
+      <table>
+        <thead>
+          <tr>
+            <th>Aspect</th>
+            <th>NMF</th>
+            <th>PCA</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Constraint</strong></td>
+            <td>W ≥ 0, H ≥ 0 (non-negative)</td>
+            <td>No sign constraint</td>
+          </tr>
+          <tr>
+            <td><strong>Interpretation</strong></td>
+            <td>Additive, parts-based</td>
+            <td>Subtractive, holistic</td>
+          </tr>
+          <tr>
+            <td><strong>Components</strong></td>
+            <td>Not orthogonal</td>
+            <td>Orthogonal (uncorrelated)</td>
+          </tr>
+          <tr>
+            <td><strong>Sparsity</strong></td>
+            <td>Often sparse (many zeros)</td>
+            <td>Dense (few zeros)</td>
+          </tr>
+          <tr>
+            <td><strong>Optimization</strong></td>
+            <td>Non-convex, iterative (no closed form)</td>
+            <td>Convex, eigendecomposition (closed form)</td>
+          </tr>
+          <tr>
+            <td><strong>Variance</strong></td>
+            <td>No ordering by variance</td>
+            <td>Ordered by variance explained</td>
+          </tr>
+          <tr>
+            <td><strong>Use Case</strong></td>
+            <td>Counts, frequencies, prices (inherently positive)</td>
+            <td>Returns, changes (can be negative)</td>
+          </tr>
+          <tr>
+            <td><strong>Interpretability</strong></td>
+            <td>High (parts add up)</td>
+            <td>Lower (components can cancel)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="scenario" style="background: #fef3c7; border: 2px solid #fcd34d; margin-top: 1.5rem;">
+        <h4>🎯 When to Use NMF</h4>
+        <ul>
+          <li>Data is inherently non-negative (prices, volumes, counts, probabilities)</li>
+          <li>Additive interpretation is important (parts-based decomposition)</li>
+          <li>Sparsity is desired (only a few components active at once)</li>
+          <li>Domain knowledge suggests non-negative factors (e.g., "buy pressure" not "negative selling")</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <button class="collapsible">🎓 Example: Financial News Topic Modeling</button>
+  <div class="content">
+    <div class="solution">
+      <div class="problem">
+        <p>You have a corpus of 1,000 financial news articles with 5,000 unique words. You want to identify the main topics being discussed to inform trading decisions.</p>
+      </div>
+
+      <div class="solution-step">
+        <h4>Step 1: Create Document-Term Matrix</h4>
+        <p><strong>Matrix V:</strong> 1,000 documents × 5,000 words</p>
+        <p>Each entry V[i,j] = TF-IDF score (non-negative) for word j in document i</p>
+      </div>
+
+      <div class="solution-step">
+        <h4>Step 2: Apply NMF with k=5 Topics</h4>
+        <p><strong>V</strong> ≈ <strong>W</strong> × <strong>H</strong></p>
+        <ul>
+          <li><strong>W</strong> (1,000 × 5): Each document's topic composition</li>
+          <li><strong>H</strong> (5 × 5,000): Each topic's word distribution</li>
+        </ul>
+      </div>
+
+      <div class="solution-step">
+        <h4>Step 3: Interpret Topics (Top Words in Each Topic)</h4>
+        <table style="margin-top: 1rem;">
+          <thead>
+            <tr>
+              <th>Topic</th>
+              <th>Top Words</th>
+              <th>Interpretation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Topic 1</strong></td>
+              <td>fed, rates, inflation, powell, monetary</td>
+              <td>Central Bank Policy</td>
+            </tr>
+            <tr>
+              <td><strong>Topic 2</strong></td>
+              <td>earnings, revenue, profit, guidance, beat</td>
+              <td>Corporate Earnings</td>
+            </tr>
+            <tr>
+              <td><strong>Topic 3</strong></td>
+              <td>tech, ai, chip, nvidia, semiconductor</td>
+              <td>Technology Sector</td>
+            </tr>
+            <tr>
+              <td><strong>Topic 4</strong></td>
+              <td>oil, energy, opec, crude, production</td>
+              <td>Energy Markets</td>
+            </tr>
+            <tr>
+              <td><strong>Topic 5</strong></td>
+              <td>china, trade, tariff, export, manufacturing</td>
+              <td>Trade & Geopolitics</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="solution-step">
+        <h4>Step 4: Track Topic Intensity Over Time</h4>
+        <p>Sum document weights for each topic by day:</p>
+        <p style="font-family: var(--font-mono);">Topic intensity[day, topic] = Σ W[doc, topic] for docs on that day</p>
+        <p>This creates a time series of topic prevalence in financial news.</p>
+      </div>
+
+      <div class="answer">
+        <strong>Trading Application:</strong> When "Central Bank Policy" topic intensity spikes, adjust rate-sensitive positions. When "Corporate Earnings" topic rises during earnings season, increase stock-specific strategies. The non-negative weights make it easy to say "this article is 60% about earnings, 30% about tech, 10% about rates."
+      </div>
+    </div>
+  </div>
+
+  <button class="collapsible">🔧 NMF Algorithm: Multiplicative Updates</button>
+  <div class="content">
+    <div class="solution">
+      <div class="solution-step">
+        <h4>Initialization</h4>
+        <p>Initialize W and H with small random non-negative values:</p>
+        <p style="font-family: var(--font-mono);">W ← random(m × k), H ← random(k × n)</p>
+        <p><small>Where all entries > 0</small></p>
+      </div>
+
+      <div class="solution-step">
+        <h4>Multiplicative Update Rules</h4>
+        <p>Repeat until convergence:</p>
+        <p style="font-family: var(--font-mono); margin: 0.5rem 0;">
+          H ← H ⊙ [W<sup>T</sup>V / (W<sup>T</sup>WH + ε)]
+        </p>
+        <p style="font-family: var(--font-mono); margin: 0.5rem 0;">
+          W ← W ⊙ [VH<sup>T</sup> / (WHH<sup>T</sup> + ε)]
+        </p>
+        <p><small>⊙ denotes element-wise multiplication, ε is a small constant to avoid division by zero</small></p>
+      </div>
+
+      <div class="solution-step">
+        <h4>Convergence Check</h4>
+        <p>Compute reconstruction error (Frobenius norm):</p>
+        <p style="font-family: var(--font-mono);">error = ||V - WH||<sub>F</sub> = √(Σ(V - WH)²)</p>
+        <p>Stop when error change < tolerance or max iterations reached</p>
+      </div>
+
+      <div class="scenario" style="background: #fef2f2; border: 2px solid #ef4444; margin-top: 1rem;">
+        <h4>⚠️ Important Notes</h4>
+        <ul>
+          <li><strong>Non-convex:</strong> Different initializations may give different solutions</li>
+          <li><strong>Local minima:</strong> Run multiple times with different random seeds</li>
+          <li><strong>No guarantee:</strong> May not find global optimum</li>
+          <li><strong>Monotonic:</strong> Error decreases (or stays same) each iteration</li>
+          <li><strong>Preserves non-negativity:</strong> Updates maintain W ≥ 0, H ≥ 0</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <button class="collapsible">📊 Example: Portfolio Decomposition</button>
+  <div class="content">
+    <div class="solution">
+      <div class="problem">
+        <p>You manage a portfolio of 20 stocks and want to understand it as a combination of pure investment styles (value, growth, momentum, quality).</p>
+      </div>
+
+      <div class="solution-step">
+        <h4>Setup: Returns Matrix</h4>
+        <p><strong>V:</strong> 252 days × 20 stocks (daily returns made non-negative by adding constant)</p>
+        <p>Transform: V' = V - min(V) + 0.01 (shift to ensure all positive)</p>
+      </div>
+
+      <div class="solution-step">
+        <h4>Apply NMF with k=4 Factors</h4>
+        <p>V' ≈ W × H</p>
+        <ul>
+          <li><strong>W</strong> (252 × 4): Daily factor returns</li>
+          <li><strong>H</strong> (4 × 20): Stock loadings on each factor</li>
+        </ul>
+      </div>
+
+      <div class="solution-step">
+        <h4>Interpret Factor Loadings</h4>
+        <p>Look at which stocks load heavily on each factor:</p>
+        <table style="margin-top: 1rem; font-size: 0.9rem;">
+          <thead>
+            <tr>
+              <th>Factor</th>
+              <th>High Loading Stocks</th>
+              <th>Interpretation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Factor 1</strong></td>
+              <td>JPM, BAC, WFC (low P/B)</td>
+              <td>Value Factor</td>
+            </tr>
+            <tr>
+              <td><strong>Factor 2</strong></td>
+              <td>NVDA, TSLA, AMZN (high P/E)</td>
+              <td>Growth Factor</td>
+            </tr>
+            <tr>
+              <td><strong>Factor 3</strong></td>
+              <td>AAPL, MSFT, JNJ (stable earnings)</td>
+              <td>Quality Factor</td>
+            </tr>
+            <tr>
+              <td><strong>Factor 4</strong></td>
+              <td>Stocks with recent outperformance</td>
+              <td>Momentum Factor</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="solution-step">
+        <h4>Portfolio Attribution</h4>
+        <p>Any day's portfolio return can be decomposed:</p>
+        <p style="font-family: var(--font-mono);">
+          Portfolio_Return ≈ w₁×Factor1 + w₂×Factor2 + w₃×Factor3 + w₄×Factor4
+        </p>
+        <p>Where w₁, w₂, w₃, w₄ are non-negative weights from W matrix</p>
+      </div>
+
+      <div class="answer">
+        <strong>Advantage:</strong> Unlike PCA, NMF gives you strictly additive factors. You can say "today's return was 40% driven by growth, 35% by value, 15% by quality, 10% by momentum" - all positive contributions that add up. This is much more intuitive than PCA where factors can have negative contributions.
+      </div>
+    </div>
+  </div>
+
+  <button class="collapsible">⚠️ Limitations and Best Practices</button>
+  <div class="content">
+    <div class="solution">
+      <div class="scenario" style="background: #fef2f2; border: 2px solid #ef4444;">
+        <h4>Limitations</h4>
+        <ul>
+          <li><strong>Non-negative data required:</strong> Must transform data if negative values exist</li>
+          <li><strong>Non-unique solution:</strong> Multiple (W, H) pairs can give similar reconstructions</li>
+          <li><strong>Slow convergence:</strong> Iterative algorithms can take many iterations</li>
+          <li><strong>Hyperparameter k:</strong> Choosing the right number of components is challenging</li>
+          <li><strong>Initialization sensitivity:</strong> Results depend on random initialization</li>
+          <li><strong>Interpretability not guaranteed:</strong> Components may not always have clear meaning</li>
+        </ul>
+      </div>
+
+      <div class="scenario" style="background: #f0fdf4; border: 2px solid #10b981; margin-top: 1rem;">
+        <h4>Best Practices</h4>
+        <ul>
+          <li><strong>Multiple runs:</strong> Try different random seeds and pick best reconstruction</li>
+          <li><strong>Scaling:</strong> Normalize features to similar scales before NMF</li>
+          <li><strong>Sparsity regularization:</strong> Add L1 penalty to encourage sparse solutions</li>
+          <li><strong>Cross-validation:</strong> Use held-out data to select optimal k</li>
+          <li><strong>Domain knowledge:</strong> Incorporate constraints or priors if available</li>
+          <li><strong>Stability check:</strong> Verify components are consistent across bootstrap samples</li>
+          <li><strong>Reconstruction error:</strong> Don't just minimize error - check interpretability</li>
+        </ul>
+      </div>
+
+      <div class="scenario" style="background: #fef3c7; border: 2px solid #fcd34d; margin-top: 1rem;">
+        <h4>Financial Data Considerations</h4>
+        <ul>
+          <li><strong>Returns transformation:</strong> Add constant to make returns non-negative, or use prices/volumes directly</li>
+          <li><strong>Outliers:</strong> Winsorize extreme values before NMF to avoid distortion</li>
+          <li><strong>Time consistency:</strong> Use rolling windows to detect changing factor structure</li>
+          <li><strong>Stationarity:</strong> Check if factors are stable over time for trading applications</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50; margin-top: 2rem;">
+    <h3>💡 Key Insights About NMF</h3>
+    <ul style="line-height: 1.8;">
+      <li><strong>Parts-Based Representation:</strong> Decomposes data into additive, interpretable components</li>
+      <li><strong>Non-negativity Constraint:</strong> All factors and loadings are ≥ 0, matching many real-world scenarios</li>
+      <li><strong>Sparsity:</strong> Often produces sparse solutions where only few components are active</li>
+      <li><strong>No Orthogonality:</strong> Components can be correlated, unlike PCA</li>
+      <li><strong>Interpretability:</strong> Often easier to interpret than PCA in domains with inherently positive data</li>
+      <li><strong>Optimization:</strong> Non-convex problem requiring iterative algorithms</li>
+      <li><strong>Flexibility:</strong> Can add custom regularization terms for specific applications</li>
+      <li><strong>Trade-off:</strong> More interpretable but less mathematically elegant than PCA</li>
+    </ul>
+  </div>
+
+  <script>
+    const componentsSlider = document.getElementById('componentsSlider');
+    const iterationsSlider = document.getElementById('iterationsSlider');
+    const runNMFBtn = document.getElementById('runNMFBtn');
+
+    let numComponents = 2;
+    let maxIterations = 50;
+
+    function generateSyntheticData() {
+      const numSamples = 100;
+      const numFeatures = 50;
+
+      const W_true = [];
+      const H_true = [];
+
+      for (let i = 0; i < numSamples; i++) {
+        const row = [];
+        for (let k = 0; k < 2; k++) {
+          row.push(Math.random());
+        }
+        W_true.push(row);
+      }
+
+      for (let k = 0; k < 2; k++) {
+        const row = [];
+        for (let j = 0; j < numFeatures; j++) {
+          row.push(Math.random());
+        }
+        H_true.push(row);
+      }
+
+      const V = [];
+      for (let i = 0; i < numSamples; i++) {
+        const row = [];
+        for (let j = 0; j < numFeatures; j++) {
+          let val = 0;
+          for (let k = 0; k < 2; k++) {
+            val += W_true[i][k] * H_true[k][j];
+          }
+          val += (Math.random() - 0.5) * 0.1;
+          row.push(Math.max(0, val));
+        }
+        V.push(row);
+      }
+
+      return V;
+    }
+
+    function initializeNMF(m, n, k) {
+      const W = [];
+      const H = [];
+
+      for (let i = 0; i < m; i++) {
+        const row = [];
+        for (let j = 0; j < k; j++) {
+          row.push(Math.random() * 0.5 + 0.01);
+        }
+        W.push(row);
+      }
+
+      for (let i = 0; i < k; i++) {
+        const row = [];
+        for (let j = 0; j < n; j++) {
+          row.push(Math.random() * 0.5 + 0.01);
+        }
+        H.push(row);
+      }
+
+      return { W, H };
+    }
+
+    function matrixMultiply(A, B) {
+      const m = A.length;
+      const n = B[0].length;
+      const p = B.length;
+
+      const C = [];
+      for (let i = 0; i < m; i++) {
+        const row = [];
+        for (let j = 0; j < n; j++) {
+          let sum = 0;
+          for (let k = 0; k < p; k++) {
+            sum += A[i][k] * B[k][j];
+          }
+          row.push(sum);
+        }
+        C.push(row);
+      }
+      return C;
+    }
+
+    function transpose(A) {
+      const m = A.length;
+      const n = A[0].length;
+      const At = [];
+      for (let j = 0; j < n; j++) {
+        const row = [];
+        for (let i = 0; i < m; i++) {
+          row.push(A[i][j]);
+        }
+        At.push(row);
+      }
+      return At;
+    }
+
+    function frobeniusNorm(V, WH) {
+      let sum = 0;
+      for (let i = 0; i < V.length; i++) {
+        for (let j = 0; j < V[0].length; j++) {
+          const diff = V[i][j] - WH[i][j];
+          sum += diff * diff;
+        }
+      }
+      return Math.sqrt(sum);
+    }
+
+    function calculateSparsity(W, H) {
+      let zeros = 0;
+      let total = 0;
+
+      for (let i = 0; i < W.length; i++) {
+        for (let j = 0; j < W[0].length; j++) {
+          if (W[i][j] < 0.01) zeros++;
+          total++;
+        }
+      }
+
+      for (let i = 0; i < H.length; i++) {
+        for (let j = 0; j < H[0].length; j++) {
+          if (H[i][j] < 0.01) zeros++;
+          total++;
+        }
+      }
+
+      return (zeros / total) * 100;
+    }
+
+    function runNMF(V, k, maxIter) {
+      const m = V.length;
+      const n = V[0].length;
+      const epsilon = 1e-10;
+
+      let { W, H } = initializeNMF(m, n, k);
+
+      const errors = [];
+
+      for (let iter = 0; iter < maxIter; iter++) {
+        const WH = matrixMultiply(W, H);
+        const error = frobeniusNorm(V, WH);
+        errors.push(error);
+
+        const Wt = transpose(W);
+        const Ht = transpose(H);
+
+        const WtV = matrixMultiply(Wt, V);
+        const WtWH = matrixMultiply(matrixMultiply(Wt, W), H);
+
+        for (let i = 0; i < k; i++) {
+          for (let j = 0; j < n; j++) {
+            H[i][j] *= WtV[i][j] / (WtWH[i][j] + epsilon);
+          }
+        }
+
+        const VHt = matrixMultiply(V, Ht);
+        const WHHt = matrixMultiply(matrixMultiply(W, H), Ht);
+
+        for (let i = 0; i < m; i++) {
+          for (let j = 0; j < k; j++) {
+            W[i][j] *= VHt[i][j] / (WHHt[i][j] + epsilon);
+          }
+        }
+      }
+
+      const finalWH = matrixMultiply(W, H);
+      const finalError = frobeniusNorm(V, finalWH);
+
+      return { W, H, errors, finalError };
+    }
+
+    function visualizeResults(V, W, H, errors) {
+      const WH = matrixMultiply(W, H);
+
+      const sampleIdx = 0;
+      const original = V[sampleIdx];
+      const reconstructed = WH[sampleIdx];
+
+      const trace1 = {
+        y: original,
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Original',
+        line: { color: '#3b82f6', width: 2 }
+      };
+
+      const trace2 = {
+        y: reconstructed,
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Reconstructed',
+        line: { color: '#ef4444', width: 2, dash: 'dash' }
+      };
+
+      const layout = {
+        title: `NMF Reconstruction (Sample 1 of ${V.length})`,
+        xaxis: { title: 'Feature Index' },
+        yaxis: { title: 'Value' },
+        showlegend: true,
+        hovermode: 'x unified'
+      };
+
+      Plotly.newPlot('nmfVisualization', [trace1, trace2], layout, { responsive: true });
+
+      const convergenceTrace = {
+        x: Array.from({ length: errors.length }, (_, i) => i + 1),
+        y: errors,
+        type: 'scatter',
+        mode: 'lines',
+        line: { color: '#10b981', width: 3 }
+      };
+
+      const convergenceLayout = {
+        title: 'NMF Convergence: Reconstruction Error',
+        xaxis: { title: 'Iteration' },
+        yaxis: { title: 'Frobenius Norm Error', type: 'log' },
+        showlegend: false
+      };
+
+      Plotly.newPlot('convergencePlot', [convergenceTrace], convergenceLayout, { responsive: true });
+    }
+
+    function updateDisplay(W, H, errors, finalError) {
+      document.getElementById('reconError').textContent = finalError.toFixed(4);
+      document.getElementById('numComponents').textContent = H.length;
+      document.getElementById('iterationCount').textContent = errors.length;
+
+      const sparsity = calculateSparsity(W, H);
+      document.getElementById('sparsityMetric').textContent = sparsity.toFixed(1) + '%';
+
+      const componentInfos = [];
+      for (let k = 0; k < H.length; k++) {
+        const avgWeight = H[k].reduce((a, b) => a + b, 0) / H[k].length;
+        const maxWeight = Math.max(...H[k]);
+        componentInfos.push(`Component ${k + 1}: Avg weight = ${avgWeight.toFixed(3)}, Max weight = ${maxWeight.toFixed(3)}`);
+      }
+
+      document.getElementById('component1Info').innerHTML = `<strong>Component 1:</strong> ${componentInfos[0] || 'N/A'}`;
+      document.getElementById('component2Info').innerHTML = `<strong>Component 2:</strong> ${componentInfos[1] || 'N/A'}`;
+    }
+
+    function executeNMF() {
+      const V = generateSyntheticData();
+      const { W, H, errors, finalError } = runNMF(V, numComponents, maxIterations);
+
+      visualizeResults(V, W, H, errors);
+      updateDisplay(W, H, errors, finalError);
+    }
+
+    componentsSlider.addEventListener('input', function() {
+      numComponents = parseInt(this.value);
+      document.getElementById('componentsValue').textContent = numComponents;
+    });
+
+    iterationsSlider.addEventListener('input', function() {
+      maxIterations = parseInt(this.value);
+      document.getElementById('iterationsValue').textContent = maxIterations;
+    });
+
+    runNMFBtn.addEventListener('click', executeNMF);
+
+    const collapsibles = document.querySelectorAll('.collapsible');
+    collapsibles.forEach(button => {
+      button.addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        content.classList.toggle('active');
+
+        if (content.classList.contains('active')) {
+          content.style.maxHeight = content.scrollHeight + 'px';
+        } else {
+          content.style.maxHeight = null;
+        }
+      });
+    });
+
+    executeNMF();
+  </script>
+</body>
+</html>

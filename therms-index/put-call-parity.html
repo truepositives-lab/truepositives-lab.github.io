@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Put-Call Parity - Interactive Finance Learning</title>
+    <link rel="stylesheet" href="unified-styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">Finance Learning</a>
+            <div class="nav-links">
+                <a href="index.html">← Back to Articles</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="article-header">
+            <h1>Put-Call Parity</h1>
+            <p class="article-description">
+                Understand the fundamental relationship between call options, put options, and the underlying asset.
+            </p>
+        </header>
+
+        <div class="content-grid">
+            <section class="card">
+                <h2>Put-Call Parity Formula</h2>
+                <div class="formula-showcase">
+                    <div class="main-formula">
+                        C + PV(K) = P + S₀
+                    </div>
+                    <div class="formula-breakdown">
+                        <p><strong>Where:</strong></p>
+                        <ul>
+                            <li><strong>C</strong> = Call option price</li>
+                            <li><strong>P</strong> = Put option price</li>
+                            <li><strong>S₀</strong> = Current stock price</li>
+                            <li><strong>K</strong> = Strike price</li>
+                            <li><strong>PV(K)</strong> = Present value of strike price = K × e^(-rT)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="parity-rearrangements">
+                    <h3>Alternative Forms:</h3>
+                    <div class="formula-grid">
+                        <div class="formula-card">
+                            <h4>Synthetic Call</h4>
+                            <div class="formula">C = P + S₀ - PV(K)</div>
+                        </div>
+                        <div class="formula-card">
+                            <h4>Synthetic Put</h4>
+                            <div class="formula">P = C - S₀ + PV(K)</div>
+                        </div>
+                        <div class="formula-card">
+                            <h4>Synthetic Stock</h4>
+                            <div class="formula">S₀ = C - P + PV(K)</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Parity Calculator</h2>
+                <div class="calculator-grid">
+                    <div class="input-group">
+                        <label for="stockPrice">Stock Price (S₀):</label>
+                        <input type="number" id="stockPrice" value="100" step="0.01" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="strikePrice">Strike Price (K):</label>
+                        <input type="number" id="strikePrice" value="100" step="0.01" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="riskFreeRate">Risk-Free Rate (%):</label>
+                        <input type="number" id="riskFreeRate" value="5" step="0.1" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="timeToExpiry">Time to Expiry (days):</label>
+                        <input type="number" id="timeToExpiry" value="30" step="1" min="1" max="365">
+                    </div>
+                    <div class="input-group">
+                        <label for="dividendYield">Dividend Yield (%):</label>
+                        <input type="number" id="dividendYield" value="0" step="0.1" min="0">
+                    </div>
+                </div>
+
+                <div class="parity-results">
+                    <div class="result-card">
+                        <h3>Present Value of Strike</h3>
+                        <div class="metric-value" id="pvStrike">$95.12</div>
+                        <div class="formula">K × e^(-rT)</div>
+                    </div>
+                    <div class="result-card">
+                        <h3>Call Price (Given Put)</h3>
+                        <div class="metric-value" id="syntheticCall">$5.00</div>
+                        <div class="formula">P + S₀ - PV(K)</div>
+                    </div>
+                    <div class="result-card">
+                        <h3>Put Price (Given Call)</h3>
+                        <div class="metric-value" id="syntheticPut">$5.00</div>
+                        <div class="formula">C - S₀ + PV(K)</div>
+                    </div>
+                </div>
+
+                <div class="market-prices">
+                    <h3>Market Prices (Input to test arbitrage):</h3>
+                    <div class="price-inputs">
+                        <div class="input-group">
+                            <label for="marketCall">Market Call Price:</label>
+                            <input type="number" id="marketCall" value="5.25" step="0.01" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label for="marketPut">Market Put Price:</label>
+                            <input type="number" id="marketPut" value="4.75" step="0.01" min="0">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Arbitrage Analysis</h2>
+                <div class="arbitrage-status" id="arbitrageStatus">
+                    <!-- Status will be populated here -->
+                </div>
+
+                <div class="arbitrage-strategy" id="arbitrageStrategy">
+                    <!-- Strategy will be populated here -->
+                </div>
+
+                <div class="arbitrage-profit">
+                    <div class="metric-card">
+                        <h3>Arbitrage Profit</h3>
+                        <div class="metric-value" id="arbitrageProfit">$0.00</div>
+                        <small>Risk-free profit per share</small>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Parity Violation</h3>
+                        <div class="metric-value" id="parityViolation">0.00%</div>
+                        <small>Percentage deviation from parity</small>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Payoff Diagrams Comparison</h2>
+                <div id="payoffComparison" class="chart-container"></div>
+                <div class="payoff-legend">
+                    <div class="legend-item">
+                        <span class="legend-line call-line"></span>
+                        <span>Call Option</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line put-line"></span>
+                        <span>Put Option</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line synthetic-line"></span>
+                        <span>Synthetic Position</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Interactive Parity Relationship</h2>
+                <div id="parityVisualization" class="chart-container"></div>
+                <div class="parity-controls">
+                    <div class="input-group">
+                        <label for="stockPriceRange">Stock Price Range:</label>
+                        <input type="range" id="stockPriceRange" min="70" max="130" value="100" step="1">
+                        <span id="stockPriceValue">$100</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="volatility">Implied Volatility (%):</label>
+                        <input type="range" id="volatility" min="10" max="50" value="20" step="1">
+                        <span id="volatilityValue">20%</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Real-World Considerations</h2>
+                <div class="consideration-grid">
+                    <div class="consideration-card">
+                        <h3>📊 Dividends</h3>
+                        <p>When stocks pay dividends, put-call parity must be adjusted:</p>
+                        <div class="formula">C + PV(K) = P + S₀ - PV(Div)</div>
+                        <ul>
+                            <li>Dividends reduce call value and increase put value</li>
+                            <li>Must use ex-dividend stock price for parity</li>
+                            <li>American options may be exercised early before dividends</li>
+                        </ul>
+                    </div>
+
+                    <div class="consideration-card">
+                        <h3>🇺🇸 American Options</h3>
+                        <p>Early exercise premium affects parity:</p>
+                        <div class="formula">C + PV(K) ≤ P + S₀</div>
+                        <ul>
+                            <li>American puts may trade above parity value</li>
+                            <li>Early exercise becomes optimal when dividends are high</li>
+                            <li>Deep ITM puts often violate European parity</li>
+                        </ul>
+                    </div>
+
+                    <div class="consideration-card">
+                        <h3>💰 Transaction Costs</h3>
+                        <p>Real arbitrage must account for trading costs:</p>
+                        <ul>
+                            <li><strong>Bid-Ask Spreads:</strong> Reduce arbitrage opportunities</li>
+                            <li><strong>Commission:</strong> Fixed and percentage-based fees</li>
+                            <li><strong>Market Impact:</strong> Large orders move prices</li>
+                            <li><strong>Margin Requirements:</strong> Capital constraints</li>
+                        </ul>
+                    </div>
+
+                    <div class="consideration-card">
+                        <h3>⏰ Pin Risk</h3>
+                        <p>Risks near expiration when stock trades at strike:</p>
+                        <ul>
+                            <li><strong>Assignment Uncertainty:</strong> Don't know if options will be exercised</li>
+                            <li><strong>Weekend Risk:</strong> Stock price gaps over weekend</li>
+                            <li><strong>Position Management:</strong> Complex hedge adjustments</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Arbitrage Examples</h2>
+                <div class="example-scenarios">
+                    <div class="scenario-tabs">
+                        <button class="tab-button active" onclick="showExample('overpriced-call')">Overpriced Call</button>
+                        <button class="tab-button" onclick="showExample('overpriced-put')">Overpriced Put</button>
+                        <button class="tab-button" onclick="showExample('conversion')">Conversion</button>
+                        <button class="tab-button" onclick="showExample('reversal')">Reversal</button>
+                    </div>
+
+                    <div class="example-content" id="exampleContent">
+                        <!-- Example content will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Historical Violations</h2>
+                <div id="historicalViolations" class="chart-container"></div>
+                <div class="violation-stats">
+                    <div class="stat-card">
+                        <h4>Average Violation</h4>
+                        <div class="stat-value">0.15%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Max Violation</h4>
+                        <div class="stat-value">2.3%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Frequency</h4>
+                        <div class="stat-value">12%</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // Black-Scholes function for theoretical option prices
+        function blackScholes(S, K, T, r, sigma, type = 'call') {
+            const d1 = (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
+            const d2 = d1 - sigma * Math.sqrt(T);
+            
+            const N = (x) => 0.5 * (1 + erf(x / Math.sqrt(2)));
+            
+            if (type === 'call') {
+                return S * N(d1) - K * Math.exp(-r * T) * N(d2);
+            } else {
+                return K * Math.exp(-r * T) * N(-d2) - S * N(-d1);
+            }
+        }
+
+        function erf(x) {
+            // Approximation of error function
+            const a1 = 0.254829592;
+            const a2 = -0.284496736;
+            const a3 = 1.421413741;
+            const a4 = -1.453152027;
+            const a5 = 1.061405429;
+            const p = 0.3275911;
+            
+            const sign = x >= 0 ? 1 : -1;
+            x = Math.abs(x);
+            
+            const t = 1.0 / (1.0 + p * x);
+            const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+            
+            return sign * y;
+        }
+
+        function updateParityCalculations() {
+            const S = parseFloat(document.getElementById('stockPrice').value);
+            const K = parseFloat(document.getElementById('strikePrice').value);
+            const r = parseFloat(document.getElementById('riskFreeRate').value) / 100;
+            const T = parseFloat(document.getElementById('timeToExpiry').value) / 365;
+            const q = parseFloat(document.getElementById('dividendYield').value) / 100;
+            
+            const marketCall = parseFloat(document.getElementById('marketCall').value);
+            const marketPut = parseFloat(document.getElementById('marketPut').value);
+            
+            // Calculate present values
+            const pvStrike = K * Math.exp(-r * T);
+            const pvDividend = S * (1 - Math.exp(-q * T));
+            const adjustedStock = S - pvDividend;
+            
+            // Synthetic positions
+            const syntheticCall = marketPut + adjustedStock - pvStrike;
+            const syntheticPut = marketCall - adjustedStock + pvStrike;
+            
+            // Update display
+            document.getElementById('pvStrike').textContent = `$${pvStrike.toFixed(2)}`;
+            document.getElementById('syntheticCall').textContent = `$${syntheticCall.toFixed(2)}`;
+            document.getElementById('syntheticPut').textContent = `$${syntheticPut.toFixed(2)}`;
+            
+            // Arbitrage analysis
+            const leftSide = marketCall + pvStrike;
+            const rightSide = marketPut + adjustedStock;
+            const difference = leftSide - rightSide;
+            const violation = Math.abs(difference) / ((leftSide + rightSide) / 2) * 100;
+            
+            document.getElementById('arbitrageProfit').textContent = `$${Math.abs(difference).toFixed(3)}`;
+            document.getElementById('parityViolation').textContent = `${violation.toFixed(2)}%`;
+            
+            updateArbitrageStatus(difference, marketCall, marketPut, syntheticCall, syntheticPut);
+            updatePayoffComparison();
+            updateParityVisualization();
+        }
+
+        function updateArbitrageStatus(difference, marketCall, marketPut, syntheticCall, syntheticPut) {
+            const statusDiv = document.getElementById('arbitrageStatus');
+            const strategyDiv = document.getElementById('arbitrageStrategy');
+            
+            if (Math.abs(difference) < 0.01) {
+                statusDiv.innerHTML = `
+                    <div class="status-indicator success">
+                        <h3>✅ No Arbitrage Opportunity</h3>
+                        <p>Put-call parity holds within acceptable tolerance.</p>
+                    </div>
+                `;
+                strategyDiv.innerHTML = '';
+            } else if (difference > 0) {
+                // Call + PV(K) > Put + Stock - overpriced left side
+                statusDiv.innerHTML = `
+                    <div class="status-indicator warning">
+                        <h3>⚠️ Arbitrage Opportunity Detected</h3>
+                        <p>Call option appears overpriced relative to put option.</p>
+                    </div>
+                `;
+                strategyDiv.innerHTML = `
+                    <div class="strategy-box">
+                        <h3>Conversion Strategy (Risk-Free Profit)</h3>
+                        <div class="strategy-steps">
+                            <div class="step sell">1. SELL Call for $${marketCall.toFixed(2)}</div>
+                            <div class="step buy">2. BUY Put for $${marketPut.toFixed(2)}</div>
+                            <div class="step buy">3. BUY Stock for $${parseFloat(document.getElementById('stockPrice').value).toFixed(2)}</div>
+                            <div class="step neutral">4. Invest $${parseFloat(document.getElementById('pvStrike').textContent.slice(1)).toFixed(2)} at risk-free rate</div>
+                        </div>
+                        <div class="strategy-result">
+                            <strong>Risk-free profit: $${Math.abs(difference).toFixed(3)} per share</strong>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Put + Stock > Call + PV(K) - overpriced right side
+                statusDiv.innerHTML = `
+                    <div class="status-indicator warning">
+                        <h3>⚠️ Arbitrage Opportunity Detected</h3>
+                        <p>Put option appears overpriced relative to call option.</p>
+                    </div>
+                `;
+                strategyDiv.innerHTML = `
+                    <div class="strategy-box">
+                        <h3>Reversal Strategy (Risk-Free Profit)</h3>
+                        <div class="strategy-steps">
+                            <div class="step buy">1. BUY Call for $${marketCall.toFixed(2)}</div>
+                            <div class="step sell">2. SELL Put for $${marketPut.toFixed(2)}</div>
+                            <div class="step sell">3. SHORT Stock for $${parseFloat(document.getElementById('stockPrice').value).toFixed(2)}</div>
+                            <div class="step neutral">4. Invest $${parseFloat(document.getElementById('pvStrike').textContent.slice(1)).toFixed(2)} at risk-free rate</div>
+                        </div>
+                        <div class="strategy-result">
+                            <strong>Risk-free profit: $${Math.abs(difference).toFixed(3)} per share</strong>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function updatePayoffComparison() {
+            const K = parseFloat(document.getElementById('strikePrice').value);
+            const stockPrices = Array.from({length: 41}, (_, i) => K - 20 + i);
+            
+            const callPayoffs = stockPrices.map(S => Math.max(0, S - K));
+            const putPayoffs = stockPrices.map(S => Math.max(0, K - S));
+            
+            // Synthetic call = Put + Stock - PV(K)
+            const pvStrike = parseFloat(document.getElementById('pvStrike').textContent.slice(1));
+            const syntheticCallPayoffs = stockPrices.map(S => Math.max(0, K - S) + S - pvStrike);
+            
+            const trace1 = {
+                x: stockPrices,
+                y: callPayoffs,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Call Payoff',
+                line: { color: '#10b981', width: 3 }
+            };
+            
+            const trace2 = {
+                x: stockPrices,
+                y: putPayoffs,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Put Payoff',
+                line: { color: '#ef4444', width: 3 }
+            };
+            
+            const trace3 = {
+                x: stockPrices,
+                y: syntheticCallPayoffs,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Synthetic Call',
+                line: { color: '#6366f1', width: 2, dash: 'dash' }
+            };
+            
+            const layout = {
+                title: 'Payoff Comparison: Call vs Synthetic Call',
+                xaxis: { title: 'Stock Price at Expiration' },
+                yaxis: { title: 'Payoff ($)' },
+                hovermode: 'x unified'
+            };
+            
+            Plotly.newPlot('payoffComparison', [trace1, trace2, trace3], layout);
+        }
+
+        function updateParityVisualization() {
+            const S = parseFloat(document.getElementById('stockPriceRange').value);
+            const vol = parseFloat(document.getElementById('volatility').value) / 100;
+            const K = parseFloat(document.getElementById('strikePrice').value);
+            const r = parseFloat(document.getElementById('riskFreeRate').value) / 100;
+            const T = parseFloat(document.getElementById('timeToExpiry').value) / 365;
+            
+            document.getElementById('stockPriceValue').textContent = `$${S}`;
+            document.getElementById('volatilityValue').textContent = `${(vol * 100).toFixed(0)}%`;
+            
+            // Calculate theoretical option prices
+            const callPrice = blackScholes(S, K, T, r, vol, 'call');
+            const putPrice = blackScholes(S, K, T, r, vol, 'put');
+            const pvStrike = K * Math.exp(-r * T);
+            
+            // Parity components
+            const leftSide = callPrice + pvStrike;
+            const rightSide = putPrice + S;
+            
+            const trace1 = {
+                x: ['Call + PV(K)', 'Put + Stock'],
+                y: [leftSide, rightSide],
+                type: 'bar',
+                name: 'Parity Components',
+                marker: { 
+                    color: ['#3b82f6', '#10b981'],
+                    line: { color: '#1f2937', width: 2 }
+                }
+            };
+            
+            const layout = {
+                title: 'Put-Call Parity Balance',
+                yaxis: { title: 'Value ($)' },
+                showlegend: false
+            };
+            
+            Plotly.newPlot('parityVisualization', [trace1], layout);
+        }
+
+        function showExample(exampleType) {
+            // Update tab selection
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const contentDiv = document.getElementById('exampleContent');
+            
+            switch(exampleType) {
+                case 'overpriced-call':
+                    contentDiv.innerHTML = `
+                        <div class="example-scenario">
+                            <h3>Overpriced Call Example</h3>
+                            <div class="scenario-data">
+                                <p><strong>Stock Price:</strong> $100 | <strong>Strike:</strong> $100 | <strong>Time:</strong> 30 days | <strong>Rate:</strong> 5%</p>
+                                <p><strong>Theoretical Call:</strong> $2.50 | <strong>Market Call:</strong> $3.00 (overpriced by $0.50)</p>
+                                <p><strong>Theoretical Put:</strong> $2.02 | <strong>Market Put:</strong> $2.02</p>
+                            </div>
+                            <div class="arbitrage-action">
+                                <h4>Arbitrage Strategy:</h4>
+                                <ol>
+                                    <li>Sell 1 call for $3.00 (overpriced)</li>
+                                    <li>Buy 1 put for $2.02</li>
+                                    <li>Buy 100 shares for $10,000</li>
+                                    <li>Borrow $9,959 at 5% (PV of strike)</li>
+                                </ol>
+                                <p><strong>Net Cash Flow:</strong> +$39 (risk-free profit)</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'overpriced-put':
+                    contentDiv.innerHTML = `
+                        <div class="example-scenario">
+                            <h3>Overpriced Put Example</h3>
+                            <div class="scenario-data">
+                                <p><strong>Stock Price:</strong> $100 | <strong>Strike:</strong> $100 | <strong>Time:</strong> 30 days | <strong>Rate:</strong> 5%</p>
+                                <p><strong>Theoretical Call:</strong> $2.50 | <strong>Market Call:</strong> $2.50</p>
+                                <p><strong>Theoretical Put:</strong> $2.02 | <strong>Market Put:</strong> $2.75 (overpriced by $0.73)</p>
+                            </div>
+                            <div class="arbitrage-action">
+                                <h4>Arbitrage Strategy:</h4>
+                                <ol>
+                                    <li>Buy 1 call for $2.50</li>
+                                    <li>Sell 1 put for $2.75 (overpriced)</li>
+                                    <li>Sell short 100 shares for $10,000</li>
+                                    <li>Invest $9,959 at 5% (PV of strike)</li>
+                                </ol>
+                                <p><strong>Net Cash Flow:</strong> +$25 (risk-free profit)</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'conversion':
+                    contentDiv.innerHTML = `
+                        <div class="example-scenario">
+                            <h3>Conversion Strategy</h3>
+                            <p>A conversion involves buying stock and a put while selling a call - creating a synthetic short position.</p>
+                            <div class="strategy-breakdown">
+                                <h4>Position Components:</h4>
+                                <ul>
+                                    <li><strong>Long Stock:</strong> +100 shares</li>
+                                    <li><strong>Long Put:</strong> +1 contract (downside protection)</li>
+                                    <li><strong>Short Call:</strong> -1 contract (income generation)</li>
+                                </ul>
+                                <h4>Risk Profile:</h4>
+                                <p>Risk-free position that locks in the strike price regardless of where stock trades at expiration.</p>
+                                <h4>When to Use:</h4>
+                                <p>When call is overpriced relative to put-call parity relationship.</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'reversal':
+                    contentDiv.innerHTML = `
+                        <div class="example-scenario">
+                            <h3>Reversal Strategy</h3>
+                            <p>A reversal involves shorting stock and a call while buying a put - creating a synthetic long position.</p>
+                            <div class="strategy-breakdown">
+                                <h4>Position Components:</h4>
+                                <ul>
+                                    <li><strong>Short Stock:</strong> -100 shares</li>
+                                    <li><strong>Long Call:</strong> +1 contract (upside protection)</li>
+                                    <li><strong>Short Put:</strong> -1 contract (income generation)</li>
+                                </ul>
+                                <h4>Risk Profile:</h4>
+                                <p>Risk-free position that locks in the strike price regardless of where stock trades at expiration.</p>
+                                <h4>When to Use:</h4>
+                                <p>When put is overpriced relative to put-call parity relationship.</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        function generateHistoricalViolations() {
+            const dates = Array.from({length: 30}, (_, i) => new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000));
+            const violations = dates.map(() => (Math.random() - 0.5) * 2); // -1% to +1% violations
+            
+            const trace = {
+                x: dates,
+                y: violations,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Parity Violations',
+                line: { color: '#6366f1' },
+                marker: { size: 4 }
+            };
+            
+            const layout = {
+                title: 'Historical Put-Call Parity Violations',
+                xaxis: { title: 'Date' },
+                yaxis: { title: 'Violation (%)' },
+                shapes: [{
+                    type: 'line',
+                    x0: dates[0],
+                    x1: dates[dates.length - 1],
+                    y0: 0,
+                    y1: 0,
+                    line: { color: 'gray', dash: 'dash' }
+                }]
+            };
+            
+            Plotly.newPlot('historicalViolations', [trace], layout);
+        }
+
+        // Event listeners
+        ['stockPrice', 'strikePrice', 'riskFreeRate', 'timeToExpiry', 'dividendYield', 'marketCall', 'marketPut'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateParityCalculations);
+        });
+
+        ['stockPriceRange', 'volatility'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateParityVisualization);
+        });
+
+        // Initialize
+        updateParityCalculations();
+        showExample('overpriced-call');
+        generateHistoricalViolations();
+    </script>
+
+    <style>
+        .status-indicator {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .status-indicator.success {
+            background-color: #d1fae5;
+            border: 1px solid #10b981;
+            color: #047857;
+        }
+
+        .status-indicator.warning {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+        }
+
+        .strategy-box {
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .strategy-steps {
+            margin: 1rem 0;
+        }
+
+        .step {
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            border-radius: 4px;
+            font-family: 'Monaco', monospace;
+        }
+
+        .step.buy {
+            background-color: #d1fae5;
+            color: #047857;
+        }
+
+        .step.sell {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .step.neutral {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+
+        .strategy-result {
+            background: var(--color-primary);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 4px;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .payoff-legend {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-line {
+            width: 30px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .call-line {
+            background-color: #10b981;
+        }
+
+        .put-line {
+            background-color: #ef4444;
+        }
+
+        .synthetic-line {
+            background-color: #6366f1;
+        }
+
+        .consideration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .consideration-card {
+            padding: 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background: var(--color-card-bg);
+        }
+
+        .violation-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 120px;
+            padding: 1rem;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--color-primary);
+            margin-top: 0.5rem;
+        }
+    </style>
+</body>
+</html>

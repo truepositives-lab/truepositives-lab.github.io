@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bayes' Rule</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Bayes' Rule</h2>
+
+  <div class="description">
+    <p><strong>Bayes' Rule</strong> allows us to update our beliefs about the probability of an event based on new
+      evidence. It's fundamental for making informed decisions under uncertainty.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>P(A|B) = P(B|A) × P(A) / P(B)</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>P(A|B)</strong> = Posterior probability (what we want to find)</li>
+      <li><strong>P(B|A)</strong> = Likelihood (probability of evidence given the event)</li>
+      <li><strong>P(A)</strong> = Prior probability (initial belief)</li>
+      <li><strong>P(B)</strong> = Marginal probability (total probability of evidence)</li>
+    </ul>
+    <div class="highlight">
+      <p><strong>Key insight:</strong> P(B) is calculated using the Law of Total Probability:</p>
+      <p class="text-center"><strong>P(B) = P(B|A) × P(A) + P(B|A') × P(A')</strong></p>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>🏦 Simple Credit Risk Example</h3>
+    <p>Imagine a bank with 1000 loan applicants. We want to answer: <strong>"If someone has a low credit score, what's
+        the chance they'll default?"</strong></p>
+
+    <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+      <div style="padding: 10px; background: #f5f5f5; border-radius: 5px;">
+        <h4>What we define:</h4>
+        <ul style="margin: 5px 0;">
+          <li><strong>A</strong> = Person defaults on loan</li>
+          <li><strong>B</strong> = Person has low credit score</li>
+        </ul>
+      </div>
+      <div style="padding: 10px; background: #fafafa; border-radius: 5px;">
+        <h4>What we seek:</h4>
+        <p style="margin: 5px 0;"><strong>P(Default | Low Score)</strong></p>
+        <p style="font-size: 0.9em; color: #666;">The probability of default given a low score</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background: #fff0f0; border: 2px solid #ff6b6b;">
+    <h3>⚠️ Critical Distinction: Two Different Conditional Probabilities</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+      <div style="padding: 15px; background: #ffe0e0; border-radius: 5px;">
+        <h4 style="color: #d32f2f;">P(Low Score | Default)</h4>
+        <p><strong>What we know:</strong></p>
+        <p>"Among people who defaulted, what percentage had low credit scores?"</p>
+        <p style="color: #666;">This is often available from historical data</p>
+        <p><strong>Direction:</strong> Default → Low Score</p>
+      </div>
+      <div style="padding: 15px; background: #e0f0ff; border-radius: 5px;">
+        <h4 style="color: #1976d2;">P(Default | Low Score)</h4>
+        <p><strong>What we want:</strong></p>
+        <p>"Among people with low credit scores, what percentage will default?"</p>
+        <p style="color: #666;">This is what we need for decision making</p>
+        <p><strong>Direction:</strong> Low Score → Default</p>
+      </div>
+    </div>
+    <p style="margin-top: 15px; font-weight: bold; text-align: center;">
+      ⚡ These are NOT the same! Bayes' Rule connects them.
+    </p>
+  </div>
+
+  <div class="control">
+    <label for="priorRange">Prior P(Default): <span id="priorValue">0.05</span></label>
+    <input type="range" id="priorRange" min="0.01" max="0.2" step="0.01" value="0.05" />
+    <small>Historical default rate in the general population</small>
+  </div>
+
+  <div class="control">
+    <label for="likelihoodRange">Likelihood P(Low Score | Default): <span id="likelihoodValue">0.80</span></label>
+    <input type="range" id="likelihoodRange" min="0.5" max="0.95" step="0.01" value="0.80" />
+    <small>Probability that defaulters have low credit scores</small>
+  </div>
+
+  <div class="control">
+    <label for="falsePositiveRange">P(Low Score | No Default): <span id="falsePositiveValue">0.15</span></label>
+    <input type="range" id="falsePositiveRange" min="0.05" max="0.4" step="0.01" value="0.15" />
+    <small>Probability that non-defaulters have low credit scores</small>
+  </div>
+
+  <div id="comparisonPlot" style="width:100%;height:300px;"></div>
+  <div id="treePlot" style="width:100%;height:400px;"></div>
+  <div id="plot" style="width:100%;height:350px;"></div>
+
+  <div class="highlight">
+    <h3>Key Result</h3>
+    <p><strong>Posterior Probability P(Default | Low Score): <span id="posteriorProb"></span></strong></p>
+    <p>This means that given a low credit score, the probability of default is <span id="posteriorPercent"></span>%</p>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50; margin-top: 20px;">
+    <h3>📊 Step-by-Step Calculation Example</h3>
+
+    <div style="margin-top: 15px; padding: 15px; background: #e8f5e9; border-radius: 5px;">
+      <h4>🎯 Task Definition</h4>
+      <p><strong>Question:</strong> "What is the probability that a loan applicant will default, given that they have a
+        low credit score?"</p>
+      <p><strong>In mathematical terms:</strong> Find P(Default | Low Credit Score)</p>
+      <p><strong>Why this matters:</strong> Banks need to decide whether to approve loans for applicants with low credit
+        scores.</p>
+    </div>
+
+    <div style="margin-top: 10px; padding: 15px; background: #e3f2fd; border-radius: 5px;">
+      <h4>📥 Input Data (What We Know)</h4>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>P(Default)</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;">= <span id="inputPrior"></span></td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;">Historical default rate across all applicants</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>P(Low Score | Default)</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;">= <span id="inputLikelihood"></span></td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;">Among defaulters, percentage with low scores</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px;"><strong>P(Low Score | No Default)</strong></td>
+          <td style="padding: 8px;">= <span id="inputFalsePositive"></span></td>
+          <td style="padding: 8px;">Among non-defaulters, percentage with low scores</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="margin-top: 10px; padding: 15px; background: #fff; border-radius: 5px;">
+      <h4>Step 1: Convert to Concrete Numbers</h4>
+      <p>Let's use <strong>1000 applicants</strong> to make calculations clearer:</p>
+      <ul>
+        <li>Total applicants: <strong>1000</strong></li>
+        <li>Defaulters: <strong><span id="step1Prior"></span>% × 1000 = <span id="step1DefaultCount"></span>
+            people</strong></li>
+        <li>Non-defaulters: <strong><span id="step1NoDefaultPercent"></span>% × 1000 = <span
+              id="step1NoDefaultCount"></span> people</strong></li>
+      </ul>
+    </div>
+
+    <div style="margin-top: 10px; padding: 15px; background: #fff; border-radius: 5px;">
+      <h4>Step 2: Calculate Low Score Counts in Each Group</h4>
+      <div style="margin: 10px 0; padding: 10px; background: #f5f5f5; border-left: 3px solid #ff6b6b;">
+        <p><strong>Among the <span id="step2DefaultCount"></span> defaulters:</strong></p>
+        <p style="margin-left: 20px;">P(Low Score | Default) × Defaulters = <span id="step2LikelihoodPercent"></span>% ×
+          <span id="step2DefaultCount2"></span>
+        </p>
+        <p style="margin-left: 20px;">= <strong><span id="step2DefaultLowCount"></span> people with low scores who will
+            default</strong></p>
+      </div>
+      <div style="margin: 10px 0; padding: 10px; background: #f5f5f5; border-left: 3px solid #4caf50;">
+        <p><strong>Among the <span id="step2NoDefaultCount"></span> non-defaulters:</strong></p>
+        <p style="margin-left: 20px;">P(Low Score | No Default) × Non-defaulters = <span
+            id="step2FalsePositivePercent"></span>% × <span id="step2NoDefaultCount2"></span></p>
+        <p style="margin-left: 20px;">= <strong><span id="step2NoDefaultLowCount"></span> people with low scores who
+            won't default</strong></p>
+      </div>
+    </div>
+
+    <div style="margin-top: 10px; padding: 15px; background: #e8f5e9; border-radius: 5px;">
+      <h4>Step 3: Calculate Total Low Score Population (Law of Total Probability)</h4>
+      <div style="margin: 10px 0; padding: 10px; background: #f0f8ff; border-radius: 5px;">
+        <p><strong>Total people with low scores:</strong></p>
+        <p style="margin-left: 20px;">= (Low score defaulters) + (Low score non-defaulters)</p>
+        <p style="margin-left: 20px;">= <span id="step3DefaultLow"></span> + <span id="step3NoDefaultLow"></span></p>
+        <p style="margin-left: 20px;">= <strong><span id="step3TotalLow"></span> people</strong></p>
+      </div>
+      <div style="margin: 10px 0; padding: 10px; background: #f0f8ff; border-radius: 5px;">
+        <p><strong>Therefore, P(Low Score):</strong></p>
+        <p style="margin-left: 20px;">= Total with low scores / Total applicants</p>
+        <p style="margin-left: 20px;">= <span id="step3TotalLow2"></span> / 1000</p>
+        <p style="margin-left: 20px;">= <strong><span id="step3Probability"></span></strong></p>
+      </div>
+    </div>
+
+    <div style="margin-top: 10px; padding: 15px; background: #fffacd; border-radius: 5px;">
+      <h4>Step 4: Final Calculation Using Bayes' Rule</h4>
+      <div style="margin: 10px 0; padding: 10px; background: #fff8dc; border-radius: 5px;">
+        <p><strong>We now know:</strong></p>
+        <ul style="margin: 10px 0;">
+          <li>Total people with low scores: <strong><span id="step4TotalLow"></span></strong></li>
+          <li>Low score people who will default: <strong><span id="step4DefaultLow"></span></strong></li>
+          <li>Low score people who won't default: <strong><span id="step4NoDefaultLow"></span></strong></li>
+        </ul>
+      </div>
+      <div style="margin: 10px 0; padding: 15px; background: #fff8dc; border: 2px solid #ffd700; border-radius: 5px;">
+        <p><strong>Answer: P(Default | Low Score)</strong></p>
+        <p style="margin-left: 20px;">= Defaulters with low scores / Total with low scores</p>
+        <p style="margin-left: 20px;">= <span id="step4DefaultLow2"></span> / <span id="step4TotalLow2"></span></p>
+        <p style="margin-left: 20px; font-size: 1.2em;">= <strong><span id="step4Result"></span>%</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="calculations">
+    <h3>Mathematical Formula Connection</h3>
+    <div style="padding: 15px; background: #f8f8f8; border-radius: 5px; margin-bottom: 15px;">
+      <h4>Bayes' Rule:</h4>
+      <p class="text-center" style="font-size: 1.2em;"><strong>P(Default | Low Score) = P(Low Score | Default) ×
+          P(Default) / P(Low Score)</strong></p>
+    </div>
+    <div style="padding: 15px; background: #e3f2fd; border-radius: 5px;">
+      <h4>Where P(Low Score) comes from Law of Total Probability:</h4>
+      <p class="text-center" style="font-size: 1.1em;"><strong>P(Low Score) = P(Low Score | Default) × P(Default) +
+          P(Low Score | No Default) × P(No Default)</strong></p>
+    </div>
+    <div style="margin-top: 15px;">
+      <p><strong>With current values:</strong></p>
+      <p id="calculationDetails"></p>
+      <p id="marginalCalculation"></p>
+    </div>
+  </div>
+
+  <div id="breakdown">
+    <h3>Probability Breakdown</h3>
+    <table>
+      <tr>
+        <th>Component</th>
+        <th>Symbol</th>
+        <th>Value</th>
+        <th>Interpretation</th>
+      </tr>
+      <tr>
+        <td>Prior</td>
+        <td>P(Default)</td>
+        <td id="priorProb"></td>
+        <td>Base rate of defaults</td>
+      </tr>
+      <tr>
+        <td>Likelihood</td>
+        <td>P(Low Score | Default)</td>
+        <td id="likelihoodProb"></td>
+        <td>How often defaulters have low scores</td>
+      </tr>
+      <tr>
+        <td>False Positive</td>
+        <td>P(Low Score | No Default)</td>
+        <td id="falsePositiveProb"></td>
+        <td>How often non-defaulters have low scores</td>
+      </tr>
+      <tr>
+        <td>Marginal</td>
+        <td>P(Low Score)</td>
+        <td id="marginalProb"></td>
+        <td>Overall rate of low scores</td>
+      </tr>
+      <tr style="background: #fffacd;">
+        <td><strong>Posterior</strong></td>
+        <td><strong>P(Default | Low Score)</strong></td>
+        <td id="posteriorProbTable"></td>
+        <td><strong>Updated probability of default</strong></td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="results">
+    <h3>Business Impact</h3>
+    <table>
+      <tr>
+        <th>Scenario</th>
+        <th>Probability</th>
+        <th>Per 1000 Applicants</th>
+      </tr>
+      <tr>
+        <td>Low score applicants who will default</td>
+        <td id="truePositives"></td>
+        <td id="truePositivesCount"></td>
+      </tr>
+      <tr>
+        <td>Low score applicants who won't default</td>
+        <td id="falsePositives"></td>
+        <td id="falsePositivesCount"></td>
+      </tr>
+      <tr>
+        <td>Total low score applicants</td>
+        <td id="totalLowScore"></td>
+        <td id="totalLowScoreCount"></td>
+      </tr>
+    </table>
+  </div>
+
+  <script>
+    const priorInput = document.getElementById('priorRange');
+    const likelihoodInput = document.getElementById('likelihoodRange');
+    const falsePositiveInput = document.getElementById('falsePositiveRange');
+    const priorValue = document.getElementById('priorValue');
+    const likelihoodValue = document.getElementById('likelihoodValue');
+    const falsePositiveValue = document.getElementById('falsePositiveValue');
+    const posteriorProb = document.getElementById('posteriorProb');
+    const posteriorPercent = document.getElementById('posteriorPercent');
+    const calculationDetails = document.getElementById('calculationDetails');
+    const marginalCalculation = document.getElementById('marginalCalculation');
+
+    function update() {
+      const pDefault = parseFloat(priorInput.value);
+      const pNoDefault = 1 - pDefault;
+      const pLowScoreGivenDefault = parseFloat(likelihoodInput.value);
+      const pLowScoreGivenNoDefault = parseFloat(falsePositiveInput.value);
+
+      priorValue.textContent = pDefault.toFixed(3);
+      likelihoodValue.textContent = pLowScoreGivenDefault.toFixed(2);
+      falsePositiveValue.textContent = pLowScoreGivenNoDefault.toFixed(2);
+
+      // Calculate marginal probability P(Low Score) using Law of Total Probability
+      const pLowScore = pLowScoreGivenDefault * pDefault + pLowScoreGivenNoDefault * pNoDefault;
+
+      // Calculate posterior using Bayes' Rule
+      const pDefaultGivenLowScore = (pLowScoreGivenDefault * pDefault) / pLowScore;
+
+      // Joint probabilities
+      const pDefaultAndLowScore = pLowScoreGivenDefault * pDefault;
+      const pNoDefaultAndLowScore = pLowScoreGivenNoDefault * pNoDefault;
+
+      posteriorProb.textContent = pDefaultGivenLowScore.toFixed(4);
+      posteriorPercent.textContent = (pDefaultGivenLowScore * 100).toFixed(1);
+
+      calculationDetails.innerHTML = `P(Default | Low Score) = ${pLowScoreGivenDefault.toFixed(2)} × ${pDefault.toFixed(3)} / ${pLowScore.toFixed(4)} = ${pDefaultGivenLowScore.toFixed(4)}`;
+      marginalCalculation.innerHTML = `P(Low Score) = ${pLowScoreGivenDefault.toFixed(2)} × ${pDefault.toFixed(3)} + ${pLowScoreGivenNoDefault.toFixed(2)} × ${pNoDefault.toFixed(3)} = ${pLowScore.toFixed(4)}`;
+
+      // Update breakdown table
+      document.getElementById('priorProb').textContent = pDefault.toFixed(3);
+      document.getElementById('likelihoodProb').textContent = pLowScoreGivenDefault.toFixed(2);
+      document.getElementById('falsePositiveProb').textContent = pLowScoreGivenNoDefault.toFixed(2);
+      document.getElementById('marginalProb').textContent = pLowScore.toFixed(4);
+      document.getElementById('posteriorProbTable').textContent = pDefaultGivenLowScore.toFixed(4);
+
+      // Update results table
+      document.getElementById('truePositives').textContent = pDefaultAndLowScore.toFixed(4);
+      document.getElementById('truePositivesCount').textContent = Math.round(pDefaultAndLowScore * 1000);
+      document.getElementById('falsePositives').textContent = pNoDefaultAndLowScore.toFixed(4);
+      document.getElementById('falsePositivesCount').textContent = Math.round(pNoDefaultAndLowScore * 1000);
+      document.getElementById('totalLowScore').textContent = pLowScore.toFixed(4);
+      document.getElementById('totalLowScoreCount').textContent = Math.round(pLowScore * 1000);
+
+      // Update step-by-step example
+      const defaultCount = Math.round(pDefault * 1000);
+      const noDefaultCount = 1000 - defaultCount;
+      const defaultLowCount = Math.round(pLowScoreGivenDefault * defaultCount);
+      const noDefaultLowCount = Math.round(pLowScoreGivenNoDefault * noDefaultCount);
+      const totalLowCount = defaultLowCount + noDefaultLowCount;
+
+      // Input data
+      document.getElementById('inputPrior').textContent = pDefault.toFixed(3);
+      document.getElementById('inputLikelihood').textContent = pLowScoreGivenDefault.toFixed(2);
+      document.getElementById('inputFalsePositive').textContent = pLowScoreGivenNoDefault.toFixed(2);
+
+      // Step 1
+      document.getElementById('step1Prior').textContent = (pDefault * 100).toFixed(1);
+      document.getElementById('step1DefaultCount').textContent = defaultCount;
+      document.getElementById('step1NoDefaultPercent').textContent = (pNoDefault * 100).toFixed(1);
+      document.getElementById('step1NoDefaultCount').textContent = noDefaultCount;
+
+      // Step 2
+      document.getElementById('step2DefaultCount').textContent = defaultCount;
+      document.getElementById('step2DefaultCount2').textContent = defaultCount;
+      document.getElementById('step2LikelihoodPercent').textContent = (pLowScoreGivenDefault * 100).toFixed(0);
+      document.getElementById('step2DefaultLowCount').textContent = defaultLowCount;
+      document.getElementById('step2NoDefaultCount').textContent = noDefaultCount;
+      document.getElementById('step2NoDefaultCount2').textContent = noDefaultCount;
+      document.getElementById('step2FalsePositivePercent').textContent = (pLowScoreGivenNoDefault * 100).toFixed(0);
+      document.getElementById('step2NoDefaultLowCount').textContent = noDefaultLowCount;
+
+      // Step 3
+      document.getElementById('step3DefaultLow').textContent = defaultLowCount;
+      document.getElementById('step3NoDefaultLow').textContent = noDefaultLowCount;
+      document.getElementById('step3TotalLow').textContent = totalLowCount;
+      document.getElementById('step3TotalLow2').textContent = totalLowCount;
+      document.getElementById('step3Probability').textContent = pLowScore.toFixed(4);
+
+      // Step 4
+      document.getElementById('step4TotalLow').textContent = totalLowCount;
+      document.getElementById('step4DefaultLow').textContent = defaultLowCount;
+      document.getElementById('step4NoDefaultLow').textContent = noDefaultLowCount;
+      document.getElementById('step4DefaultLow2').textContent = defaultLowCount;
+      document.getElementById('step4TotalLow2').textContent = totalLowCount;
+      document.getElementById('step4Result').textContent = (pDefaultGivenLowScore * 100).toFixed(1);
+
+      // Create comparison visualization
+      createComparisonVisualization(pLowScoreGivenDefault, pDefaultGivenLowScore);
+
+      // Create probability tree visualization
+      createTreeVisualization(pDefault, pNoDefault, pLowScoreGivenDefault, pLowScoreGivenNoDefault, pDefaultGivenLowScore);
+
+      // Create bar chart
+      createBarChart(pDefaultAndLowScore, pNoDefaultAndLowScore, pDefaultGivenLowScore);
+    }
+
+    function createComparisonVisualization(pLowGivenDefault, pDefaultGivenLow) {
+      const data = [
+        {
+          x: ['P(Low Score | Default)', 'P(Default | Low Score)'],
+          y: [pLowGivenDefault * 100, pDefaultGivenLow * 100],
+          type: 'bar',
+          marker: {
+            color: ['#ff6b6b', '#4ecdc4'],
+            line: { width: 2, color: ['#d32f2f', '#1976d2'] }
+          },
+          text: [`${(pLowGivenDefault * 100).toFixed(1)}%`, `${(pDefaultGivenLow * 100).toFixed(1)}%`],
+          textposition: 'outside'
+        }
+      ];
+
+      const layout = {
+        title: 'Conditional Probability Comparison: Same Data, Different Questions',
+        xaxis: {
+          title: 'Conditional Probability Type',
+          tickfont: { size: 14 }
+        },
+        yaxis: {
+          title: 'Probability (%)',
+          range: [0, 100]
+        },
+        annotations: [
+          {
+            x: 0,
+            y: pLowGivenDefault * 100 + 5,
+            text: 'Known from data',
+            showarrow: false,
+            font: { size: 11, color: '#666' }
+          },
+          {
+            x: 1,
+            y: pDefaultGivenLow * 100 + 5,
+            text: 'Calculated via Bayes',
+            showarrow: false,
+            font: { size: 11, color: '#666' }
+          }
+        ],
+        margin: { t: 80, b: 80 }
+      };
+
+      Plotly.newPlot('comparisonPlot', data, layout, { responsive: true });
+    }
+
+    function createTreeVisualization(pDefault, pNoDefault, pLowGivenDefault, pLowGivenNoDefault, posterior) {
+      const data = [{
+        type: "sankey",
+        node: {
+          pad: 15,
+          thickness: 20,
+          line: { color: "black", width: 0.5 },
+          label: ["Population", "Default", "No Default", "Low Score | Default", "High Score | Default", "Low Score | No Default", "High Score | No Default"],
+          color: ["#636EFA", "#EF553B", "#00CC96", "#AB63FA", "#FFA15A", "#19D3F3", "#FF6692"]
+        },
+        link: {
+          source: [0, 0, 1, 1, 2, 2],
+          target: [1, 2, 3, 4, 5, 6],
+          value: [pDefault, pNoDefault, pDefault * pLowGivenDefault, pDefault * (1 - pLowGivenDefault), pNoDefault * pLowGivenNoDefault, pNoDefault * (1 - pLowGivenNoDefault)],
+          label: [`P(Default) = ${pDefault.toFixed(3)}`, `P(No Default) = ${pNoDefault.toFixed(3)}`,
+          `${(pDefault * pLowGivenDefault).toFixed(4)}`, `${(pDefault * (1 - pLowGivenDefault)).toFixed(4)}`,
+          `${(pNoDefault * pLowGivenNoDefault).toFixed(4)}`, `${(pNoDefault * (1 - pLowGivenNoDefault)).toFixed(4)}`]
+        }
+      }];
+
+      const layout = {
+        title: "Credit Risk Assessment Flow",
+        font: { size: 12 }
+      };
+
+      Plotly.newPlot('treePlot', data, layout, { responsive: true });
+    }
+
+    function createBarChart(truePos, falsePos, posterior) {
+      const data = [
+        {
+          x: ['Will Default & Low Score', 'Won\'t Default & Low Score'],
+          y: [truePos, falsePos],
+          type: 'bar',
+          name: 'Joint Probabilities',
+          marker: { color: ['#EF553B', '#00CC96'] },
+          text: [`${(truePos * 1000).toFixed(0)} per 1000`, `${(falsePos * 1000).toFixed(0)} per 1000`],
+          textposition: 'auto'
+        }
+      ];
+
+      const layout = {
+        title: 'Composition of Low Credit Score Population',
+        xaxis: { title: 'Category' },
+        yaxis: { title: 'Probability' },
+        annotations: [{
+          x: 0.5,
+          y: Math.max(truePos, falsePos) * 1.1,
+          text: `Among low score applicants, ${(posterior * 100).toFixed(1)}% will default`,
+          showarrow: false,
+          font: { size: 14, color: 'black' },
+          xref: 'paper'
+        }]
+      };
+
+      Plotly.newPlot('plot', data, layout, { responsive: true });
+    }
+
+    [priorInput, likelihoodInput, falsePositiveInput].forEach(el => el.addEventListener('input', update));
+    update();
+  </script>
+
+
+
+
+  <h2 style="margin-top: 150px;">Probability Exercises</h2>
+  <p>Practice problems on Conditional Probability, Bayes' Rule, and Law of Total Probability. Click "Show Solution" to
+    reveal the answer.</p>
+
+  <div class="exercise">
+    <span class="category bayes">Bayes' Rule</span>
+    <h3>Exercise 1: Medical Diagnosis</h3>
+    <div class="problem">
+      A rare disease affects 0.1% of the population. A diagnostic test has:
+      <ul>
+        <li>95% sensitivity (correctly identifies diseased patients)</li>
+        <li>98% specificity (correctly identifies healthy patients)</li>
+      </ul>
+      If a randomly selected person tests positive, what is the probability they actually have the disease?
+    </div>
+    <div class="hint">💡 Hint: Use Bayes' Rule with P(Disease|Positive) = P(Positive|Disease) × P(Disease) / P(Positive)
+    </div>
+
+    <button class="collapsible">Show Solution</button>
+    <div class="content">
+      <div class="solution">
+        <div class="solution-step">
+          <strong>Step 1: Define events and given probabilities</strong><br>
+          • D = has disease, P(D) = 0.001<br>
+          • D' = no disease, P(D') = 0.999<br>
+          • + = tests positive<br>
+          • P(+|D) = 0.95 (sensitivity)<br>
+          • P(-|D') = 0.98 (specificity), so P(+|D') = 0.02
+        </div>
+
+        <div class="solution-step">
+          <strong>Step 2: Calculate P(+) using Law of Total Probability</strong>
+          <div class="formula">
+            P(+) = P(+|D) × P(D) + P(+|D') × P(D')<br>
+            P(+) = 0.95 × 0.001 + 0.02 × 0.999<br>
+            P(+) = 0.00095 + 0.01998 = 0.02093
+          </div>
+        </div>
+
+        <div class="solution-step">
+          <strong>Step 3: Apply Bayes' Rule</strong>
+          <div class="formula">
+            P(D|+) = P(+|D) × P(D) / P(+)<br>
+            P(D|+) = 0.95 × 0.001 / 0.02093<br>
+            P(D|+) = 0.00095 / 0.02093 ≈ 0.0454
+          </div>
+        </div>
+
+        <div class="answer">
+          Answer: Only 4.54% chance the person has the disease despite testing positive!<br>
+          This shows why rare diseases often have high false positive rates.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <span class="category total">Law of Total Probability</span>
+    <h3>Exercise 2: Quality Control</h3>
+    <div class="problem">
+      A factory has three production lines:
+      <ul>
+        <li>Line A produces 50% of output with 2% defect rate</li>
+        <li>Line B produces 30% of output with 3% defect rate</li>
+        <li>Line C produces 20% of output with 5% defect rate</li>
+      </ul>
+      What is the overall defect rate for the factory?
+    </div>
+    <div class="hint">💡 Hint: Use the Law of Total Probability to combine defect rates weighted by production shares
+    </div>
+
+    <button class="collapsible">Show Solution</button>
+    <div class="content">
+      <div class="solution">
+        <div class="solution-step">
+          <strong>Step 1: Identify the partition</strong><br>
+          • A = item from Line A, P(A) = 0.50<br>
+          • B = item from Line B, P(B) = 0.30<br>
+          • C = item from Line C, P(C) = 0.20<br>
+          • D = item is defective
+        </div>
+
+        <div class="solution-step">
+          <strong>Step 2: Given conditional probabilities</strong><br>
+          • P(D|A) = 0.02<br>
+          • P(D|B) = 0.03<br>
+          • P(D|C) = 0.05
+        </div>
+
+        <div class="solution-step">
+          <strong>Step 3: Apply Law of Total Probability</strong>
+          <div class="formula">
+            P(D) = P(D|A)P(A) + P(D|B)P(B) + P(D|C)P(C)<br>
+            P(D) = 0.02 × 0.50 + 0.03 × 0.30 + 0.05 × 0.20<br>
+            P(D) = 0.01 + 0.009 + 0.01<br>
+            P(D) = 0.029
+          </div>
+        </div>
+
+        <div class="answer">
+          Answer: The overall defect rate is 2.9% or 29 defective items per 1000 produced.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <span class="category conditional">Conditional Probability</span>
+    <h3>Exercise 3: Card Game</h3>
+    <div class="problem">
+      From a standard 52-card deck, you draw two cards without replacement.
+      <ul>
+        <li>The first card is a King</li>
+        <li>What is the probability that the second card is also a King?</li>
+      </ul>
+    </div>
+    <div class="hint">💡 Hint: After drawing one King, how many Kings and total cards remain?</div>
+
+    <button class="collapsible">Show Solution</button>
+    <div class="content">
+      <div class="solution">
+        <div class="solution-step">
+          <strong>Step 1: Initial situation</strong><br>
+          • Total cards: 52<br>
+          • Total Kings: 4<br>
+          • First card drawn is a King
+        </div>
+
+        <div class="solution-step">
+          <strong>Step 2: After first draw</strong><br>
+          • Remaining cards: 51<br>
+          • Remaining Kings: 3<br>
+        </div>
+
+        <div class="solution-step">
+          <strong>Step 3: Calculate conditional probability</strong>
+          <div class="formula">
+            P(2nd King | 1st King) = Remaining Kings / Remaining Cards<br>
+            P(2nd King | 1st King) = 3/51 = 1/17 ≈ 0.0588
+          </div>
+        </div>
+
+        <div class="answer">
+          Answer: 3/51 or approximately 5.88%<br>
+          Note: This is less than 4/52 (7.69%) because we removed one King.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <span class="category bayes">Bayes' Rule</span>
+    <span class="category total">Law of Total Probability</span>
+    <h3>Exercise 4: Email Spam Filter</h3>
+    <div class="problem">
+      An email spam filter has the following characteristics:
+      <ul>
+        <li>30% of all emails are spam</li>
+        <li>90% of spam emails contain the word "free"</li>
+        <li>10% of legitimate emails contain the word "free"</li>
+      </ul>
+      If an email contains the word "free", what is the probability it is spam?
+    </div>
+    <div class="hint">💡 Hint: Let S = spam, F = contains "free". Find P(S|F).</div>
+
+    <button class="collapsible">Show Solution</button>
+    <div class="content">
+      <div class="solution">
+        <div class="solution-step">
+          <strong>Step 1: Define events and probabilities</strong><br>
+          • S = email is spam, P(S) = 0.30<br>
+          • S' = email is legitimate, P(S') = 0.70<br>
+          • F = email contains "free"<br>
+          • P(F|S) = 0.90<br>
+          • P(F|S') = 0.10
+        </div>
+
+        <div class="solution-step">
+          <strong>Step 2: Calculate P(F) using Law of Total Probability</strong>
+          <div class="formula">
+            P(F) = P(F|S) × P(S) + P(F|S') × P(S')<br>
+            P(F) = 0.90 × 0.30 + 0.10 × 0.70<br>
+            P(F) = 0.27 + 0.07 = 0.34
+          </div>
+        </div>
+
+        <div class="solution-step">
+          <strong>Step 3: Apply Bayes' Rule</strong>
+          <div class="formula">
+            P(S|F) = P(F|S) × P(S) / P(F)<br>
+            P(S|F) = 0.90 × 0.30 / 0.34<br>
+            P(S|F) = 0.27 / 0.34 ≈ 0.794
+          </div>
+        </div>
+
+        <div class="answer">
+          Answer: 79.4% probability the email is spam<br>
+          The word "free" is a strong indicator of spam in this model.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <span class="category conditional">Conditional Probability</span>
+    <span class="category bayes">Bayes' Rule</span>
+    <h3>Exercise 5: Weather Forecast</h3>
+    <div class="problem">
+      A weather forecaster's accuracy is as follows:
+      <ul>
+        <li>When it actually rains, they predict rain 80% of the time</li>
+        <li>When it doesn't rain, they predict rain 20% of the time</li>
+        <li>Historically, it rains 25% of days in this region</li>
+      </ul>
+      Today they predicted rain. What's the probability it will actually rain?
+    </div>
+    <div class="hint">💡 Hint: Let R = actually rains, F = forecast predicts rain. Find P(R|F).</div>
+
+    <button class="collapsible">Show Solution</button>
+    <div class="content">
+      <div class="solution">
+        <div class="solution-step">
+          <strong>Step 1: Define events and probabilities</strong><br>
+          • R = it rains, P(R) = 0.25<br>
+          • R' = no rain, P(R') = 0.75<br>
+          • F = forecast predicts rain<br>
+          • P(F|R) = 0.80 (true positive rate)<br>
+          • P(F|R') = 0.20 (false positive rate)
+        </div>
+
+        <div class="solution-step">
+          <strong>Step 2: Calculate P(F) using Law of Total Probability</strong>
+          <div class="formula">
+            P(F) = P(F|R) × P(R) + P(F|R') × P(R')<br>
+            P(F) = 0.80 × 0.25 + 0.20 × 0.75<br>
+            P(F) = 0.20 + 0.15 = 0.35
+          </div>
+        </div>
+
+        <div class="solution-step">
+          <strong>Step 3: Apply Bayes' Rule</strong>
+          <div class="formula">
+            P(R|F) = P(F|R) × P(R) / P(F)<br>
+            P(R|F) = 0.80 × 0.25 / 0.35<br>
+            P(R|F) = 0.20 / 0.35 ≈ 0.571
+          </div>
+        </div>
+
+        <div class="answer">
+          Answer: 57.1% chance of rain when forecast predicts rain<br>
+          The forecast is better than random guessing but far from perfect!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var coll = document.getElementsByClassName("collapsible");
+    for (var i = 0; i < coll.length; i++) {
+      coll[i].addEventListener("click", function () {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+        } else {
+          content.style.maxHeight = content.scrollHeight + "px";
+        }
+      });
+    }
+  </script>
+
+</body>
+
+</html>

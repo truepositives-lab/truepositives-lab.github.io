@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBS - Mortgage-Backed Securities | Interactive Guide</title>
+    <link rel="stylesheet" href="unified-styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Mortgage-Backed Securities (MBS)</h1>
+        
+        <div class="intro-text">
+            <p>Mortgage-Backed Securities are bonds secured by pools of home loans. Through securitization, thousands of individual mortgages are packaged together, sliced into tranches, and sold to investors. Understanding MBS is crucial for comprehending the 2008 financial crisis and modern structured finance.</p>
+        </div>
+
+        <!-- Theoretical Foundation -->
+        <div class="card">
+            <h2>Understanding MBS: Theory & Mechanics</h2>
+            
+            <div class="theory-section">
+                <h3>What are Mortgage-Backed Securities?</h3>
+                <p>An MBS is a type of asset-backed security that is secured by a collection of mortgages. The process works as follows:</p>
+                <ol>
+                    <li><strong>Origination:</strong> Banks and mortgage lenders create home loans for borrowers</li>
+                    <li><strong>Pooling:</strong> Hundreds or thousands of similar mortgages are grouped together into a collateral pool</li>
+                    <li><strong>Securitization:</strong> The pool is sold to a Special Purpose Vehicle (SPV), which issues securities backed by the mortgage payments</li>
+                    <li><strong>Tranching:</strong> Securities are divided into tranches with different risk/return profiles</li>
+                    <li><strong>Distribution:</strong> Investment banks market and sell these tranches to various investors</li>
+                </ol>
+            </div>
+
+            <div class="theory-section">
+                <h3>Why MBS Exist: Economic Rationale</h3>
+                <div class="rationale-grid">
+                    <div class="rationale-card">
+                        <h4>For Originators</h4>
+                        <ul>
+                            <li><strong>Capital Relief:</strong> Banks can remove mortgages from their balance sheet, freeing up capital for new loans</li>
+                            <li><strong>Risk Transfer:</strong> Credit risk is transferred to investors</li>
+                            <li><strong>Liquidity:</strong> Illiquid 30-year mortgages converted to immediate cash</li>
+                            <li><strong>Origination Fees:</strong> Profit from creating and selling loans rather than holding them</li>
+                        </ul>
+                    </div>
+                    <div class="rationale-card">
+                        <h4>For Investors</h4>
+                        <ul>
+                            <li><strong>Yield Enhancement:</strong> Higher yields than government bonds</li>
+                            <li><strong>Diversification:</strong> Exposure to real estate without direct ownership</li>
+                            <li><strong>Customization:</strong> Choose tranches matching risk appetite</li>
+                            <li><strong>Liquidity:</strong> More liquid than individual mortgages</li>
+                        </ul>
+                    </div>
+                    <div class="rationale-card">
+                        <h4>For the Market</h4>
+                        <ul>
+                            <li><strong>Credit Expansion:</strong> More mortgage credit available to borrowers</li>
+                            <li><strong>Risk Distribution:</strong> Risk spread across many investors</li>
+                            <li><strong>Price Discovery:</strong> Market pricing of mortgage credit risk</li>
+                            <li><strong>Standardization:</strong> Creates fungible securities from unique mortgages</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theory-section">
+                <h3>Key Terminology Explained</h3>
+                <div class="terminology-grid">
+                    <div class="term-card">
+                        <h4>Collateral Pool</h4>
+                        <p>The underlying mortgages that generate cash flows. Quality depends on borrower creditworthiness (FICO scores), loan-to-value ratios (LTV), geographic diversity, and loan types.</p>
+                    </div>
+                    <div class="term-card">
+                        <h4>SPE/SPV</h4>
+                        <p>Special Purpose Entity/Vehicle - a legal entity created solely to hold the mortgages and issue MBS. It's "bankruptcy remote," meaning the originator's financial troubles can't affect it.</p>
+                    </div>
+                    <div class="term-card">
+                        <h4>Tranches</h4>
+                        <p>French for "slices" - different classes of securities with varying priority claims on cash flows. Senior tranches get paid first but earn lower yields; junior tranches absorb losses first but offer higher returns.</p>
+                    </div>
+                    <div class="term-card">
+                        <h4>Waterfall</h4>
+                        <p>The hierarchical payment structure. Cash flows from mortgage payments cascade down from senior to junior tranches, like water flowing down steps.</p>
+                    </div>
+                    <div class="term-card">
+                        <h4>Credit Enhancement</h4>
+                        <p>Structural features that protect senior tranches: subordination (junior tranches absorb losses first), overcollateralization (collateral exceeds securities), and excess spread (interest collected exceeds interest paid).</p>
+                    </div>
+                    <div class="term-card">
+                        <h4>Prepayment Risk</h4>
+                        <p>The risk that borrowers will pay off mortgages early (refinancing), returning principal sooner than expected. This affects yield calculations and investment duration.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MBS Structure Builder -->
+        <div class="card">
+            <h2>Interactive MBS Structure Builder</h2>
+            
+            <div class="explanation-box">
+                <p><strong>How this works:</strong> Adjust the parameters below to see how different mortgage pool characteristics affect the MBS structure. The model calculates appropriate tranche sizes and ratings based on collateral quality, following industry standards for credit enhancement levels.</p>
+            </div>
+            
+            <div class="structure-controls">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="poolSize">Collateral Pool Size ($M):</label>
+                        <input type="number" id="poolSize" value="100" step="10" min="10">
+                    </div>
+                    <div class="input-group">
+                        <label for="numMortgages">Number of Mortgages:</label>
+                        <input type="number" id="numMortgages" value="500" step="50" min="50">
+                    </div>
+                    <div class="input-group">
+                        <label for="avgLTV">Average LTV (%):</label>
+                        <input type="number" id="avgLTV" value="80" step="5" min="50" max="100">
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="avgFICO">Average FICO Score:</label>
+                        <input type="number" id="avgFICO" value="720" step="10" min="500" max="850">
+                    </div>
+                    <div class="input-group">
+                        <label for="avgCoupon">Average Mortgage Rate (%):</label>
+                        <input type="number" id="avgCoupon" value="6.5" step="0.25" min="3" max="10">
+                    </div>
+                    <div class="input-group">
+                        <label for="geographicConc">Geographic Concentration:</label>
+                        <select id="geographicConc">
+                            <option value="diversified">Diversified</option>
+                            <option value="concentrated">Concentrated</option>
+                            <option value="highly-concentrated">Highly Concentrated</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="buildMBSStructure()">Build MBS Structure</button>
+            </div>
+
+            <!-- Tranche Structure Display -->
+            <div class="tranche-structure" id="trancheStructure">
+                <h3>Tranche Structure</h3>
+                <div class="tranche-display">
+                    <div class="tranche senior" id="seniorTranche">
+                        <h4>Senior Tranche (AAA)</h4>
+                        <div class="tranche-details">
+                            <span>Size: $70M (70%)</span>
+                            <span>Coupon: 5.0%</span>
+                            <span>Credit Support: 30%</span>
+                        </div>
+                    </div>
+                    <div class="tranche mezzanine" id="mezzTranche">
+                        <h4>Mezzanine Tranche (BBB)</h4>
+                        <div class="tranche-details">
+                            <span>Size: $20M (20%)</span>
+                            <span>Coupon: 7.5%</span>
+                            <span>Credit Support: 10%</span>
+                        </div>
+                    </div>
+                    <div class="tranche equity" id="equityTranche">
+                        <h4>Equity/First Loss</h4>
+                        <div class="tranche-details">
+                            <span>Size: $10M (10%)</span>
+                            <span>Residual Cash Flow</span>
+                            <span>First Loss Position</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SPV Structure -->
+            <div class="spv-structure">
+                <h3>Special Purpose Vehicle (SPV) Structure</h3>
+                <div class="spv-diagram">
+                    <div class="entity originator">
+                        <h4>Originator Bank</h4>
+                        <p>• Creates mortgages<br>• Sells to SPV<br>• May retain servicing</p>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="entity spv">
+                        <h4>SPE/SPV</h4>
+                        <p>• Bankruptcy remote<br>• Holds collateral pool<br>• Issues MBS tranches</p>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="entity investors">
+                        <h4>Investors</h4>
+                        <p>• Buy tranches<br>• Receive cash flows<br>• Bear credit risk</p>
+                    </div>
+                </div>
+                <div class="investment-bank-role">
+                    <h4>Investment Bank Role</h4>
+                    <p>• Structures the deal<br>• Underwrites securities<br>• Markets to investors<br>• Arranges credit ratings</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Waterfall Cash Flow Simulator -->
+        <div class="card">
+            <h2>Waterfall Cash Flow Distribution</h2>
+            
+            <div class="theory-section">
+                <h3>Understanding the Waterfall Mechanism</h3>
+                <p>The waterfall structure is the heart of MBS functionality. It determines how cash flows from mortgage payments are distributed among different tranches. Think of it as a series of buckets arranged vertically:</p>
+                <ol>
+                    <li><strong>Top Priority - Fees & Expenses:</strong> Servicing fees, trustee fees, and administrative costs get paid first</li>
+                    <li><strong>Senior Interest:</strong> Interest payments to AAA-rated senior tranches</li>
+                    <li><strong>Senior Principal:</strong> Principal repayment to senior tranches (if any prepayments or scheduled)</li>
+                    <li><strong>Mezzanine Interest:</strong> Interest to middle-tier tranches (AA, A, BBB)</li>
+                    <li><strong>Mezzanine Principal:</strong> Principal to mezzanine tranches</li>
+                    <li><strong>Equity/Residual:</strong> Whatever remains flows to equity tranche holders</li>
+                </ol>
+                <p class="important-note">⚠️ <strong>Key Insight:</strong> If mortgage defaults reduce cash collections, payments stop flowing at whatever level runs dry. This is why junior tranches are riskier - they're last in line for payment but first to absorb losses.</p>
+            </div>
+            
+            <div class="waterfall-controls">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="monthlyCollections">Monthly Collections ($):</label>
+                        <input type="number" id="monthlyCollections" value="500000" step="10000">
+                    </div>
+                    <div class="input-group">
+                        <label for="defaultRate">Current Default Rate (%):</label>
+                        <input type="number" id="defaultRate" value="2" step="0.5" min="0" max="20">
+                    </div>
+                    <div class="input-group">
+                        <label for="prepaymentRate">Prepayment Rate (CPR %):</label>
+                        <input type="number" id="prepaymentRate" value="6" step="1" min="0" max="50">
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" onclick="simulateWaterfall()">Simulate Waterfall</button>
+            </div>
+
+            <div id="waterfallChart"></div>
+
+            <div class="waterfall-results">
+                <h3>Payment Distribution</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Priority</th>
+                            <th>Recipient</th>
+                            <th>Amount Due</th>
+                            <th>Amount Paid</th>
+                            <th>Shortfall</th>
+                        </tr>
+                    </thead>
+                    <tbody id="waterfallTable">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Collateral Pool Analysis -->
+        <div class="card">
+            <h2>Collateral Pool Characteristics</h2>
+            
+            <div class="theory-section">
+                <h3>The Foundation: Understanding Mortgage Collateral</h3>
+                <p>The collateral pool is the foundation of any MBS. Its quality determines the risk profile of all tranches. Key factors include:</p>
+                
+                <h4>Lien Position Hierarchy</h4>
+                <p><strong>First Lien Mortgages:</strong> Have the primary claim on the property. In foreclosure, these get paid first from the sale proceeds. Typically safer with lower default rates.</p>
+                <p><strong>Second Lien Mortgages (HELOCs, Home Equity Loans):</strong> Subordinate to first liens. Much riskier because they may receive nothing in foreclosure if the home value doesn't cover the first mortgage.</p>
+                
+                <h4>Refinancing Impact</h4>
+                <p><strong>Standard Refinancing:</strong> Borrower replaces existing mortgage with a new one, usually to get a lower rate. This creates prepayment risk for MBS investors.</p>
+                <p><strong>Cash-out Refinancing:</strong> Borrower takes a larger mortgage and receives the difference in cash. This increases LTV ratio and default risk, weakening the collateral pool.</p>
+                
+                <h4>Geographic Concentration Risk</h4>
+                <p>Mortgage defaults are highly correlated within regions due to local economic factors (employment, industry concentration, natural disasters). A diversified pool across many states reduces this correlation risk. During 2008, supposedly "diversified" pools all crashed together when the entire national housing market declined.</p>
+            </div>
+            
+            <div class="pool-analysis">
+                <div class="pool-metrics">
+                    <div class="metric-card">
+                        <h3>Lien Position Mix</h3>
+                        <div id="lienChart"></div>
+                        <div class="lien-details">
+                            <p><strong>First Lien:</strong> 85% - Lower risk, priority claim</p>
+                            <p><strong>Second Lien:</strong> 15% - Higher risk, subordinated</p>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <h3>Refinance Activity</h3>
+                        <div id="refinanceChart"></div>
+                        <div class="refinance-details">
+                            <p><strong>Standard Refinance:</strong> Rate reduction driven</p>
+                            <p><strong>Cash-out Refinance:</strong> Increases LTV, higher risk</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="concentration-risk">
+                    <h3>Correlation & Concentration Risk</h3>
+                    <div id="correlationMatrix"></div>
+                    <p class="risk-note">High geographic concentration increases default correlation during regional economic shocks.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Credit Risk Metrics -->
+        <div class="card">
+            <h2>Credit Risk Analysis</h2>
+            
+            <div class="theory-section">
+                <h3>Quantifying Credit Risk in MBS</h3>
+                
+                <h4>The Three Pillars of Credit Risk</h4>
+                <div class="risk-pillars">
+                    <div class="pillar">
+                        <h5>PD - Probability of Default</h5>
+                        <p>The likelihood a borrower will stop making payments. Calculated using:</p>
+                        <ul>
+                            <li>Credit scores (FICO)</li>
+                            <li>Debt-to-income ratios</li>
+                            <li>Payment history</li>
+                            <li>Economic conditions</li>
+                        </ul>
+                        <p class="formula">Typical range: 0.5% (prime) to 20%+ (subprime)</p>
+                    </div>
+                    <div class="pillar">
+                        <h5>LGD - Loss Given Default</h5>
+                        <p>The percentage of exposure lost when default occurs. Depends on:</p>
+                        <ul>
+                            <li>Recovery from foreclosure sale</li>
+                            <li>Legal and servicing costs</li>
+                            <li>Time to resolution</li>
+                            <li>Property condition</li>
+                        </ul>
+                        <p class="formula">LGD = 1 - Recovery Rate</p>
+                        <p class="formula">Typical LGD: 20-60%</p>
+                    </div>
+                    <div class="pillar">
+                        <h5>EAD - Exposure at Default</h5>
+                        <p>The amount owed when default occurs:</p>
+                        <ul>
+                            <li>Outstanding principal balance</li>
+                            <li>Accrued interest</li>
+                            <li>Fees and penalties</li>
+                        </ul>
+                        <p class="formula">Expected Loss = PD × LGD × EAD</p>
+                    </div>
+                </div>
+                
+                <h4>From Individual Loans to Portfolio Risk</h4>
+                <p>While individual mortgage risk is important, MBS investors care about portfolio-level risk. This introduces a critical factor: <strong>correlation</strong>.</p>
+                <p><strong>Default Correlation:</strong> The tendency for mortgages to default together. Pre-2008 models assumed low correlation (0.1-0.3), but the crisis revealed correlations approaching 1.0 during systemic stress.</p>
+                
+                <h4>Credit Enhancement Mechanisms</h4>
+                <p>To achieve investment-grade ratings, MBS use several credit enhancement techniques:</p>
+                <ul>
+                    <li><strong>Subordination:</strong> Junior tranches protect senior ones (typically 5-30% subordination for AAA)</li>
+                    <li><strong>Overcollateralization:</strong> Collateral value exceeds securities issued</li>
+                    <li><strong>Excess Spread:</strong> Interest collected exceeds interest paid to investors</li>
+                    <li><strong>Reserve Accounts:</strong> Cash reserves to cover temporary shortfalls</li>
+                </ul>
+            </div>
+            
+            <div class="risk-inputs">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="basePD">Base PD - Probability of Default (%):</label>
+                        <input type="number" id="basePD" value="2.5" step="0.1" min="0" max="100">
+                    </div>
+                    <div class="input-group">
+                        <label for="baseLGD">LGD - Loss Given Default (%):</label>
+                        <input type="number" id="baseLGD" value="40" step="5" min="0" max="100">
+                    </div>
+                    <div class="input-group">
+                        <label for="recoveryRate">Recovery Rate (%):</label>
+                        <input type="number" id="recoveryRate" value="60" step="5" min="0" max="100">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="calculateCreditRisk()">Calculate Risk Metrics</button>
+            </div>
+
+            <div class="risk-results">
+                <div class="risk-grid">
+                    <div class="risk-box">
+                        <h4>Expected Loss</h4>
+                        <div class="risk-value" id="expectedLoss">1.0%</div>
+                        <p>PD × LGD</p>
+                    </div>
+                    <div class="risk-box">
+                        <h4>Credit Enhancement Required</h4>
+                        <div class="risk-value" id="creditEnhancement">5.0%</div>
+                        <p>For AAA rating</p>
+                    </div>
+                    <div class="risk-box">
+                        <h4>Credit Spread</h4>
+                        <div class="risk-value" id="creditSpread">150 bps</div>
+                        <p>Over risk-free rate</p>
+                    </div>
+                    <div class="risk-box warning">
+                        <h4>Model Risk Alert</h4>
+                        <div class="risk-value">Medium</div>
+                        <p>Correlation assumptions critical</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rating-analysis">
+                <h3>Credit Rating by Tranche</h3>
+                <div id="ratingChart"></div>
+            </div>
+        </div>
+
+        <!-- Prepayment & Market Risk -->
+        <div class="card">
+            <h2>Prepayment & Market Dynamics</h2>
+            
+            <div class="theory-section">
+                <h3>The Prepayment Puzzle</h3>
+                <p>Prepayment risk is unique to MBS and critically affects returns. Unlike corporate bonds where early payment is restricted, homeowners can typically pay off mortgages anytime.</p>
+                
+                <h4>Why Prepayments Matter</h4>
+                <ul>
+                    <li><strong>Reinvestment Risk:</strong> When rates fall, borrowers refinance, forcing investors to reinvest returned principal at lower rates</li>
+                    <li><strong>Duration Uncertainty:</strong> The investment's lifespan becomes unpredictable</li>
+                    <li><strong>Negative Convexity:</strong> MBS prices don't rise as much as bonds when rates fall (due to prepayment risk) but fall similarly when rates rise</li>
+                </ul>
+                
+                <h4>Prepayment Models</h4>
+                <p><strong>PSA (Public Securities Association) Model:</strong> Industry standard assuming prepayment rates start at 0.2% annually and increase by 0.2% each month for 30 months, then level off at 6% CPR (Conditional Prepayment Rate).</p>
+                <p><strong>CPR to SMM Conversion:</strong> SMM (Single Monthly Mortality) = 1 - (1 - CPR)^(1/12)</p>
+                
+                <h4>Prepayment Drivers</h4>
+                <div class="driver-grid">
+                    <div class="driver-card">
+                        <h5>Interest Rates</h5>
+                        <p>Primary driver - when rates drop 2%+, refinancing surges</p>
+                    </div>
+                    <div class="driver-card">
+                        <h5>Home Prices</h5>
+                        <p>Rising prices enable cash-out refinancing</p>
+                    </div>
+                    <div class="driver-card">
+                        <h5>Seasonality</h5>
+                        <p>Higher in summer due to home sales</p>
+                    </div>
+                    <div class="driver-card">
+                        <h5>Burnout</h5>
+                        <p>Borrowers who don't refinance initially are less likely to later</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="prepayment-analysis">
+                <h3>Prepayment Speed Impact</h3>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="psaSpeed">PSA Speed (%):</label>
+                        <input type="range" id="psaSpeed" min="50" max="300" value="100" step="10">
+                        <span id="psaValue">100%</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="interestRateShock">Rate Change (bps):</label>
+                        <input type="range" id="interestRateShock" min="-200" max="200" value="0" step="25">
+                        <span id="rateShockValue">0</span>
+                    </div>
+                </div>
+
+                <div id="prepaymentChart"></div>
+
+                <div class="market-dynamics">
+                    <h3>Market Friction & Liquidity</h3>
+                    <div class="liquidity-grid">
+                        <div class="liquidity-card normal">
+                            <h4>Normal Market</h4>
+                            <p>Bid-Ask Spread: 1-2 bps</p>
+                            <p>Liquidity: High</p>
+                            <p>Fungibility: Good</p>
+                        </div>
+                        <div class="liquidity-card stressed">
+                            <h4>Stressed Market</h4>
+                            <p>Bid-Ask Spread: 10-50 bps</p>
+                            <p>Liquidity: Limited</p>
+                            <p>Market Friction: High</p>
+                        </div>
+                        <div class="liquidity-card crisis">
+                            <h4>Crisis (2008)</h4>
+                            <p>Bid-Ask Spread: 100+ bps</p>
+                            <p>Liquidity: None</p>
+                            <p>Fungibility: Lost</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2008 Crisis Simulator -->
+        <div class="card">
+            <h2>2008 Financial Crisis: MBS Collapse</h2>
+            
+            <div class="theory-section">
+                <h3>How MBS Destroyed the Global Financial System</h3>
+                
+                <h4>The Perfect Storm: Multiple Failures Aligned</h4>
+                
+                <div class="crisis-factors">
+                    <div class="factor-card">
+                        <h5>1. Origination Breakdown</h5>
+                        <p><strong>The Problem:</strong> "Originate-to-distribute" model meant lenders immediately sold loans, removing incentive for quality underwriting.</p>
+                        <p><strong>Result:</strong> NINJA loans (No Income, No Job, No Assets), liar loans, and predatory lending became common.</p>
+                        <p><strong>Moral Hazard:</strong> Lenders profited from volume, not loan performance.</p>
+                    </div>
+                    
+                    <div class="factor-card">
+                        <h5>2. Rating Agency Failures</h5>
+                        <p><strong>The Problem:</strong> Agencies were paid by issuers (conflict of interest) and competed for business by offering favorable ratings.</p>
+                        <p><strong>Result:</strong> 90% of AAA-rated mortgage securities from 2006-2007 were eventually downgraded to junk.</p>
+                        <p><strong>Model Risk:</strong> Used historical data from benign periods, underestimating tail risks.</p>
+                    </div>
+                    
+                    <div class="factor-card">
+                        <h5>3. Correlation Misconception</h5>
+                        <p><strong>The Problem:</strong> Models assumed housing markets in different regions were uncorrelated (correlation ~0.3).</p>
+                        <p><strong>Reality:</strong> During crisis, correlation approached 1.0 - everything crashed together.</p>
+                        <p><strong>Why:</strong> National factors (interest rates, lending standards, investor sentiment) dominated local factors.</p>
+                    </div>
+                    
+                    <div class="factor-card">
+                        <h5>4. Leverage Amplification</h5>
+                        <p><strong>The Problem:</strong> Banks, hedge funds, and SIVs used massive leverage (30:1 or higher) to buy MBS.</p>
+                        <p><strong>Result:</strong> Small losses were magnified into insolvency.</p>
+                        <p><strong>Contagion:</strong> Forced selling created price spirals and margin calls.</p>
+                    </div>
+                </div>
+                
+                <h4>The Wealth and Credit-Price Effects</h4>
+                <div class="effect-explanation">
+                    <p><strong>Wealth Effect:</strong> As home prices fell 30%+, household wealth evaporated by $16 trillion. Consumers drastically cut spending, deepening the recession. The psychological impact was severe - even households with no mortgage trouble reduced consumption.</p>
+                    
+                    <p><strong>Credit-Price Effect:</strong> A vicious cycle emerged:</p>
+                    <ol>
+                        <li>MBS losses caused banks to tighten lending</li>
+                        <li>Reduced credit availability pushed home prices lower</li>
+                        <li>Lower prices caused more MBS losses</li>
+                        <li>Banks tightened further... spiral continued</li>
+                    </ol>
+                </div>
+                
+                <h4>Liquidity Evaporation and Market Friction</h4>
+                <p><strong>Before Crisis:</strong> MBS were considered liquid, tradeable securities with tight bid-ask spreads (1-2 basis points).</p>
+                <p><strong>During Crisis:</strong> Markets completely froze. Bid-ask spreads widened to 100+ basis points. Many securities had no bids at all.</p>
+                <p><strong>Fungibility Lost:</strong> Each MBS became unique as investors tried to analyze individual mortgage pools. The standardization that made MBS attractive disappeared.</p>
+                <p><strong>Market Friction:</strong> Transaction costs, information asymmetry, and counterparty risk made trading nearly impossible.</p>
+            </div>
+            
+            <div class="crisis-simulator">
+                <h3>Crisis Timeline Simulator</h3>
+                <div class="timeline-controls">
+                    <button class="btn btn-warning" onclick="simulateCrisis('pre-crisis')">2006: Pre-Crisis</button>
+                    <button class="btn btn-warning" onclick="simulateCrisis('early-crisis')">2007: Early Signs</button>
+                    <button class="btn btn-danger" onclick="simulateCrisis('peak-crisis')">2008: Peak Crisis</button>
+                    <button class="btn btn-secondary" onclick="simulateCrisis('post-crisis')">2009: Aftermath</button>
+                </div>
+
+                <div id="crisisChart"></div>
+
+                <div class="crisis-effects">
+                    <h3>Systemic Effects</h3>
+                    <div class="effects-grid">
+                        <div class="effect-card">
+                            <h4>Wealth Effect</h4>
+                            <p id="wealthEffect">Household wealth declined by $16 trillion as home prices fell 30%</p>
+                        </div>
+                        <div class="effect-card">
+                            <h4>Credit-Price Effect</h4>
+                            <p id="creditPriceEffect">Credit contraction led to further price declines in self-reinforcing spiral</p>
+                        </div>
+                        <div class="effect-card">
+                            <h4>Moral Hazard</h4>
+                            <p id="moralHazard">Originate-to-distribute model created misaligned incentives</p>
+                        </div>
+                        <div class="effect-card">
+                            <h4>Correlation Breakdown</h4>
+                            <p id="correlationEffect">Assumed 0.3 correlation became 0.9+ during crisis</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Educational Section -->
+        <div class="card">
+            <h2>Key Concepts & Lessons</h2>
+            
+            <div class="concepts-grid">
+                <div class="concept-box">
+                    <h3>SPE/SPV Purpose</h3>
+                    <p>Special Purpose Entities isolate mortgage assets from originator's balance sheet, providing bankruptcy remoteness and enabling true sale treatment.</p>
+                </div>
+                
+                <div class="concept-box">
+                    <h3>Waterfall Mechanism</h3>
+                    <p>Cash flows from mortgage payments cascade through tranches in order of seniority. Senior tranches get paid first, equity absorbs first losses.</p>
+                </div>
+                
+                <div class="concept-box">
+                    <h3>Credit Enhancement</h3>
+                    <p>Subordination, overcollateralization, and excess spread protect senior tranches. Required enhancement levels determine credit ratings.</p>
+                </div>
+                
+                <div class="concept-box">
+                    <h3>Model Risk Reality</h3>
+                    <p>Pre-crisis models underestimated correlation, used historical data from benign periods, and ignored tail risks. Reality proved far worse than models predicted.</p>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <h3>⚠️ Critical Risk Factors</h3>
+                <ul>
+                    <li><strong>Geographic Concentration:</strong> Increases correlation of defaults</li>
+                    <li><strong>Refinance Risk:</strong> Cash-out refinancing weakens collateral</li>
+                    <li><strong>Liquidity Illusion:</strong> Markets can freeze suddenly</li>
+                    <li><strong>Rating Shopping:</strong> Agencies competed for business</li>
+                    <li><strong>Moral Hazard:</strong> Originate-to-distribute reduces underwriting quality</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .theory-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f7f9fc;
+            border-radius: 8px;
+            border-left: 4px solid #2563eb;
+        }
+
+        .theory-section h3 {
+            margin-top: 0;
+            color: #1e40af;
+            font-size: 1.3rem;
+        }
+
+        .theory-section h4 {
+            color: #2563eb;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .theory-section h5 {
+            color: #4b5563;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .theory-section ol, .theory-section ul {
+            margin: 15px 0;
+            line-height: 1.8;
+        }
+
+        .theory-section li {
+            margin: 8px 0;
+        }
+
+        .rationale-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .rationale-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .rationale-card h4 {
+            margin-top: 0;
+            color: #2563eb;
+            font-size: 1.1rem;
+        }
+
+        .terminology-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .term-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .term-card h4 {
+            margin-top: 0;
+            color: #2563eb;
+            font-size: 1.1rem;
+        }
+
+        .term-card p {
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        .explanation-box {
+            padding: 15px;
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .explanation-box p {
+            margin: 0;
+            color: #1e40af;
+        }
+
+        .important-note {
+            padding: 15px;
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .risk-pillars {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .pillar {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .pillar h5 {
+            margin-top: 0;
+            color: #dc2626;
+            font-size: 1.1rem;
+        }
+
+        .formula {
+            font-family: 'Courier New', monospace;
+            background: #f3f4f6;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: inline-block;
+            color: #111827;
+        }
+
+        .driver-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .driver-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .driver-card h5 {
+            margin-top: 0;
+            color: #2563eb;
+            font-size: 1rem;
+        }
+
+        .crisis-factors {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .factor-card {
+            background: #fef2f2;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+        }
+
+        .factor-card h5 {
+            margin-top: 0;
+            color: #dc2626;
+            font-size: 1.1rem;
+        }
+
+        .factor-card p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .effect-explanation {
+            background: #fff7ed;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #fed7aa;
+            margin: 20px 0;
+        }
+
+        .effect-explanation ol {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+
+        .structure-controls {
+            margin-bottom: 30px;
+        }
+
+        .tranche-display {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .tranche {
+            padding: 20px;
+            border-radius: 8px;
+            color: white;
+            position: relative;
+        }
+
+        .tranche.senior {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .tranche.mezzanine {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .tranche.equity {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .tranche h4 {
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+
+        .tranche-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .spv-structure {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f7f9fc;
+            border-radius: 8px;
+        }
+
+        .spv-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .entity {
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .entity h4 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+
+        .entity p {
+            margin: 10px 0 0 0;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            margin: 0 20px;
+            color: #2563eb;
+        }
+
+        .investment-bank-role {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff7ed;
+            border-radius: 6px;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .investment-bank-role h4 {
+            margin-top: 0;
+            color: #d97706;
+        }
+
+        .waterfall-results {
+            margin-top: 30px;
+        }
+
+        .pool-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: #f7f9fc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .metric-card h3 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+
+        .lien-details, .refinance-details {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .lien-details p, .refinance-details p {
+            margin: 5px 0;
+        }
+
+        .concentration-risk {
+            padding: 20px;
+            background: #fef2f2;
+            border-radius: 8px;
+            border-left: 4px solid #ef4444;
+        }
+
+        .risk-note {
+            margin-top: 15px;
+            font-style: italic;
+            color: #7f1d1d;
+        }
+
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .risk-box {
+            background: #f7f9fc;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .risk-box.warning {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px solid #f59e0b;
+        }
+
+        .risk-box h4 {
+            margin-top: 0;
+            color: #4b5563;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .risk-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin: 10px 0;
+        }
+
+        .risk-box p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .liquidity-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .liquidity-card {
+            padding: 20px;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+        }
+
+        .liquidity-card.normal {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .liquidity-card.stressed {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .liquidity-card.crisis {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .liquidity-card h4 {
+            margin-top: 0;
+        }
+
+        .liquidity-card p {
+            margin: 8px 0;
+            font-size: 0.9rem;
+        }
+
+        .timeline-controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .effects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .effect-card {
+            background: #f7f9fc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #2563eb;
+        }
+
+        .effect-card h4 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+
+        .concepts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .concept-box {
+            background: #f7f9fc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .concept-box h3 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+
+        .warning-box {
+            background: #fef2f2;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ef4444;
+        }
+
+        .warning-box h3 {
+            margin-top: 0;
+            color: #dc2626;
+        }
+
+        .warning-box ul {
+            margin: 15px 0;
+        }
+
+        .warning-box li {
+            margin: 10px 0;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .spv-diagram {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+                margin: 10px 0;
+            }
+
+            .liquidity-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script>
+        // PSA speed slider
+        document.getElementById('psaSpeed').addEventListener('input', function() {
+            document.getElementById('psaValue').textContent = this.value + '%';
+            updatePrepaymentChart();
+        });
+
+        // Interest rate shock slider
+        document.getElementById('interestRateShock').addEventListener('input', function() {
+            document.getElementById('rateShockValue').textContent = this.value;
+            updatePrepaymentChart();
+        });
+
+        function buildMBSStructure() {
+            const poolSize = parseFloat(document.getElementById('poolSize').value);
+            const numMortgages = parseInt(document.getElementById('numMortgages').value);
+            const avgLTV = parseFloat(document.getElementById('avgLTV').value);
+            const avgFICO = parseInt(document.getElementById('avgFICO').value);
+            const avgCoupon = parseFloat(document.getElementById('avgCoupon').value);
+            const geoConc = document.getElementById('geographicConc').value;
+
+            // Calculate tranche sizes based on credit quality
+            let seniorPct = 70;
+            let mezzPct = 20;
+            let equityPct = 10;
+
+            // Adjust based on pool quality
+            if (avgFICO < 700 || avgLTV > 85) {
+                seniorPct = 60;
+                mezzPct = 25;
+                equityPct = 15;
+            }
+            if (geoConc === 'highly-concentrated') {
+                seniorPct -= 5;
+                equityPct += 5;
+            }
+
+            // Calculate spreads based on risk
+            const baseSpread = 100; // basis points
+            const seniorSpread = baseSpread;
+            const mezzSpread = baseSpread + 250;
+            const seniorCoupon = (avgCoupon - 1.5).toFixed(2);
+            const mezzCoupon = (avgCoupon + 1.0).toFixed(2);
+
+            // Update display
+            document.getElementById('seniorTranche').innerHTML = `
+                <h4>Senior Tranche (AAA)</h4>
+                <div class="tranche-details">
+                    <span>Size: $${(poolSize * seniorPct / 100).toFixed(1)}M (${seniorPct}%)</span>
+                    <span>Coupon: ${seniorCoupon}%</span>
+                    <span>Credit Support: ${100 - seniorPct}%</span>
+                </div>
+            `;
+
+            document.getElementById('mezzTranche').innerHTML = `
+                <h4>Mezzanine Tranche (BBB)</h4>
+                <div class="tranche-details">
+                    <span>Size: $${(poolSize * mezzPct / 100).toFixed(1)}M (${mezzPct}%)</span>
+                    <span>Coupon: ${mezzCoupon}%</span>
+                    <span>Credit Support: ${equityPct}%</span>
+                </div>
+            `;
+
+            document.getElementById('equityTranche').innerHTML = `
+                <h4>Equity/First Loss</h4>
+                <div class="tranche-details">
+                    <span>Size: $${(poolSize * equityPct / 100).toFixed(1)}M (${equityPct}%)</span>
+                    <span>Residual Cash Flow</span>
+                    <span>First Loss Position</span>
+                </div>
+            `;
+
+            // Create lien chart
+            createLienChart();
+            
+            // Create refinance chart
+            createRefinanceChart();
+
+            // Create correlation matrix
+            createCorrelationMatrix(geoConc);
+        }
+
+        function createLienChart() {
+            const data = [{
+                values: [85, 15],
+                labels: ['First Lien', 'Second Lien'],
+                type: 'pie',
+                marker: {
+                    colors: ['#10b981', '#ef4444']
+                }
+            }];
+
+            const layout = {
+                height: 300,
+                margin: { t: 30, b: 30, l: 30, r: 30 }
+            };
+
+            Plotly.newPlot('lienChart', data, layout);
+        }
+
+        function createRefinanceChart() {
+            const years = ['2003', '2004', '2005', '2006', '2007', '2008'];
+            const standardRefi = [20, 25, 30, 28, 15, 5];
+            const cashoutRefi = [10, 15, 25, 35, 40, 10];
+
+            Plotly.newPlot('refinanceChart', [
+                {
+                    x: years,
+                    y: standardRefi,
+                    name: 'Standard Refinance',
+                    type: 'bar',
+                    marker: { color: '#10b981' }
+                },
+                {
+                    x: years,
+                    y: cashoutRefi,
+                    name: 'Cash-out Refinance',
+                    type: 'bar',
+                    marker: { color: '#f59e0b' }
+                }
+            ], {
+                title: 'Refinancing Activity (%)',
+                barmode: 'stack',
+                height: 300,
+                margin: { t: 40, b: 40, l: 40, r: 40 }
+            });
+        }
+
+        function createCorrelationMatrix(concentration) {
+            let correlationValue = 0.3;
+            if (concentration === 'concentrated') correlationValue = 0.5;
+            if (concentration === 'highly-concentrated') correlationValue = 0.7;
+
+            const regions = ['CA', 'FL', 'NY', 'TX', 'AZ'];
+            const z = [];
+            
+            for (let i = 0; i < 5; i++) {
+                const row = [];
+                for (let j = 0; j < 5; j++) {
+                    if (i === j) {
+                        row.push(1.0);
+                    } else {
+                        row.push(correlationValue + (Math.random() - 0.5) * 0.2);
+                    }
+                }
+                z.push(row);
+            }
+
+            Plotly.newPlot('correlationMatrix', [{
+                z: z,
+                x: regions,
+                y: regions,
+                type: 'heatmap',
+                colorscale: 'RdBu',
+                reversescale: true
+            }], {
+                title: 'Default Correlation Matrix',
+                height: 300,
+                margin: { t: 40, b: 40, l: 40, r: 40 }
+            });
+        }
+
+        function simulateWaterfall() {
+            const monthlyCollections = parseFloat(document.getElementById('monthlyCollections').value);
+            const defaultRate = parseFloat(document.getElementById('defaultRate').value) / 100;
+            const prepaymentRate = parseFloat(document.getElementById('prepaymentRate').value) / 100;
+
+            const poolSize = parseFloat(document.getElementById('poolSize').value) * 1000000;
+            
+            // Calculate available cash after losses
+            const scheduledPayments = monthlyCollections;
+            const defaults = scheduledPayments * defaultRate;
+            const prepayments = (poolSize * prepaymentRate) / 12;
+            const availableCash = scheduledPayments - defaults + prepayments;
+
+            // Waterfall priority
+            const waterfallItems = [
+                { priority: 1, recipient: 'Servicing Fees', due: 5000, paid: 0, shortfall: 0 },
+                { priority: 2, recipient: 'Senior Interest', due: poolSize * 0.7 * 0.05 / 12, paid: 0, shortfall: 0 },
+                { priority: 3, recipient: 'Senior Principal', due: poolSize * 0.7 / 360, paid: 0, shortfall: 0 },
+                { priority: 4, recipient: 'Mezzanine Interest', due: poolSize * 0.2 * 0.075 / 12, paid: 0, shortfall: 0 },
+                { priority: 5, recipient: 'Mezzanine Principal', due: poolSize * 0.2 / 360, paid: 0, shortfall: 0 },
+                { priority: 6, recipient: 'Equity Residual', due: 0, paid: 0, shortfall: 0 }
+            ];
+
+            // Distribute cash through waterfall
+            let remainingCash = availableCash;
+            waterfallItems.forEach(item => {
+                if (item.recipient === 'Equity Residual') {
+                    item.paid = Math.max(0, remainingCash);
+                    item.due = item.paid;
+                } else {
+                    item.paid = Math.min(item.due, remainingCash);
+                    item.shortfall = item.due - item.paid;
+                    remainingCash -= item.paid;
+                }
+            });
+
+            // Update table
+            const tableBody = document.getElementById('waterfallTable');
+            tableBody.innerHTML = '';
+            waterfallItems.forEach(item => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${item.priority}</td>
+                    <td>${item.recipient}</td>
+                    <td>$${item.due.toFixed(2)}</td>
+                    <td>$${item.paid.toFixed(2)}</td>
+                    <td class="${item.shortfall > 0 ? 'negative' : ''}">$${item.shortfall.toFixed(2)}</td>
+                `;
+            });
+
+            // Create waterfall chart
+            const x = waterfallItems.map(item => item.recipient);
+            const y = waterfallItems.map(item => item.paid);
+
+            Plotly.newPlot('waterfallChart', [{
+                x: x,
+                y: y,
+                type: 'waterfall',
+                connector: { line: { color: 'rgb(63, 63, 63)' } },
+                decreasing: { marker: { color: '#ef4444' } },
+                increasing: { marker: { color: '#10b981' } },
+                totals: { marker: { color: '#2563eb' } }
+            }], {
+                title: 'Cash Flow Waterfall Distribution',
+                showlegend: false,
+                height: 400
+            });
+        }
+
+        function calculateCreditRisk() {
+            const pd = parseFloat(document.getElementById('basePD').value) / 100;
+            const lgd = parseFloat(document.getElementById('baseLGD').value) / 100;
+            const rr = parseFloat(document.getElementById('recoveryRate').value) / 100;
+
+            // Note: Recovery Rate and LGD are related: LGD = 1 - RR
+            const actualLGD = 1 - rr;
+            
+            // Calculate expected loss
+            const expectedLoss = pd * actualLGD;
+            
+            // Credit enhancement for AAA (typically 5x expected loss)
+            const creditEnhancement = expectedLoss * 5;
+            
+            // Credit spread calculation (simplified)
+            const creditSpread = Math.round(expectedLoss * 10000); // basis points
+
+            // Update display
+            document.getElementById('expectedLoss').textContent = (expectedLoss * 100).toFixed(2) + '%';
+            document.getElementById('creditEnhancement').textContent = (creditEnhancement * 100).toFixed(1) + '%';
+            document.getElementById('creditSpread').textContent = creditSpread + ' bps';
+
+            // Create rating chart
+            createRatingChart(creditEnhancement);
+        }
+
+        function createRatingChart(creditEnhancement) {
+            const ratings = ['AAA', 'AA', 'A', 'BBB', 'BB', 'B'];
+            const requiredEnhancement = [
+                creditEnhancement * 100,
+                creditEnhancement * 80,
+                creditEnhancement * 60,
+                creditEnhancement * 40,
+                creditEnhancement * 20,
+                creditEnhancement * 10
+            ];
+
+            Plotly.newPlot('ratingChart', [{
+                x: ratings,
+                y: requiredEnhancement,
+                type: 'bar',
+                marker: {
+                    color: ['#10b981', '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#dc2626']
+                }
+            }], {
+                title: 'Credit Enhancement by Rating (%)',
+                yaxis: { title: 'Enhancement Required (%)' },
+                height: 300
+            });
+        }
+
+        function updatePrepaymentChart() {
+            const psaSpeed = parseFloat(document.getElementById('psaSpeed').value) / 100;
+            const rateShock = parseFloat(document.getElementById('interestRateShock').value) / 100;
+
+            const months = [];
+            const cpr = [];
+            const smm = [];
+            
+            for (let month = 1; month <= 360; month++) {
+                months.push(month);
+                
+                // PSA model: CPR = 6% * min(month/30, 1) * PSA_multiplier
+                let monthCPR = 0.06 * Math.min(month / 30, 1) * psaSpeed;
+                
+                // Adjust for rate changes (refinancing incentive)
+                if (rateShock < 0) {
+                    monthCPR *= (1 + Math.abs(rateShock) * 2); // Increase prepayments
+                } else {
+                    monthCPR *= Math.max(0.3, 1 - rateShock); // Decrease prepayments
+                }
+                
+                cpr.push(monthCPR * 100);
+                // SMM = 1 - (1 - CPR)^(1/12)
+                smm.push((1 - Math.pow(1 - monthCPR, 1/12)) * 100);
+            }
+
+            Plotly.newPlot('prepaymentChart', [
+                {
+                    x: months,
+                    y: cpr,
+                    name: 'CPR (%)',
+                    type: 'scatter',
+                    mode: 'lines',
+                    line: { color: '#2563eb' }
+                },
+                {
+                    x: months,
+                    y: smm,
+                    name: 'SMM (%)',
+                    type: 'scatter',
+                    mode: 'lines',
+                    line: { color: '#10b981' },
+                    yaxis: 'y2'
+                }
+            ], {
+                title: 'Prepayment Speed Analysis',
+                xaxis: { title: 'Month' },
+                yaxis: { title: 'CPR (%)', side: 'left' },
+                yaxis2: { 
+                    title: 'SMM (%)', 
+                    overlaying: 'y', 
+                    side: 'right' 
+                },
+                height: 350
+            });
+        }
+
+        function simulateCrisis(period) {
+            let data = [];
+            let title = '';
+            let wealthEffect = '';
+            let creditPriceEffect = '';
+            let moralHazard = '';
+            let correlationEffect = '';
+
+            if (period === 'pre-crisis') {
+                title = '2006: Pre-Crisis - Peak of Housing Bubble';
+                data = [
+                    { name: 'AAA MBS', values: [100, 101, 102, 103, 104, 105], color: '#10b981' },
+                    { name: 'BBB MBS', values: [100, 102, 104, 106, 108, 110], color: '#f59e0b' },
+                    { name: 'House Prices', values: [100, 105, 110, 115, 120, 125], color: '#3b82f6' }
+                ];
+                wealthEffect = 'Rising home prices created $8 trillion in housing wealth, fueling consumption';
+                creditPriceEffect = 'Easy credit pushed prices higher, creating positive feedback loop';
+                moralHazard = 'Originate-to-distribute model meant lenders had no skin in the game';
+                correlationEffect = 'Risk models assumed regional housing markets were uncorrelated';
+                
+            } else if (period === 'early-crisis') {
+                title = '2007: Early Signs - Subprime Cracks Appear';
+                data = [
+                    { name: 'AAA MBS', values: [100, 99, 98, 95, 92, 90], color: '#10b981' },
+                    { name: 'BBB MBS', values: [100, 95, 85, 70, 50, 30], color: '#f59e0b' },
+                    { name: 'House Prices', values: [100, 98, 95, 92, 88, 85], color: '#3b82f6' }
+                ];
+                wealthEffect = 'Home price declines began eroding household wealth';
+                creditPriceEffect = 'Credit tightening started, reducing buyer demand';
+                moralHazard = 'NINJA loans and liar loans exposure became apparent';
+                correlationEffect = 'Subprime defaults began spreading across regions';
+                
+            } else if (period === 'peak-crisis') {
+                title = '2008: Peak Crisis - System Collapse';
+                data = [
+                    { name: 'AAA MBS', values: [100, 80, 60, 40, 35, 30], color: '#10b981' },
+                    { name: 'BBB MBS', values: [100, 40, 10, 5, 2, 1], color: '#f59e0b' },
+                    { name: 'House Prices', values: [100, 85, 75, 70, 68, 65], color: '#3b82f6' }
+                ];
+                wealthEffect = 'Household wealth declined by $16 trillion, crushing consumption';
+                creditPriceEffect = 'Complete credit freeze led to forced selling and price collapse';
+                moralHazard = 'Bailouts created moral hazard for too-big-to-fail institutions';
+                correlationEffect = 'Correlation went to 1.0 - everything fell together';
+                
+            } else if (period === 'post-crisis') {
+                title = '2009: Aftermath - Slow Recovery Begins';
+                data = [
+                    { name: 'AAA MBS', values: [30, 35, 40, 45, 50, 55], color: '#10b981' },
+                    { name: 'BBB MBS', values: [1, 2, 3, 5, 8, 10], color: '#f59e0b' },
+                    { name: 'House Prices', values: [65, 63, 62, 62, 63, 65], color: '#3b82f6' }
+                ];
+                wealthEffect = 'Wealth effect reversed - savings rate increased dramatically';
+                creditPriceEffect = 'Credit remained tight, preventing price recovery';
+                moralHazard = 'New regulations attempted to address moral hazard issues';
+                correlationEffect = 'Models rebuilt with higher correlation assumptions';
+            }
+
+            // Create crisis chart
+            const traces = data.map(series => ({
+                x: ['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov'],
+                y: series.values,
+                name: series.name,
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: series.color, width: 3 }
+            }));
+
+            Plotly.newPlot('crisisChart', traces, {
+                title: title,
+                yaxis: { title: 'Index (Jan = 100)' },
+                height: 400,
+                showlegend: true
+            });
+
+            // Update effects
+            document.getElementById('wealthEffect').textContent = wealthEffect;
+            document.getElementById('creditPriceEffect').textContent = creditPriceEffect;
+            document.getElementById('moralHazard').textContent = moralHazard;
+            document.getElementById('correlationEffect').textContent = correlationEffect;
+        }
+
+        // Initialize on load
+        buildMBSStructure();
+        simulateWaterfall();
+        calculateCreditRisk();
+        updatePrepaymentChart();
+        simulateCrisis('pre-crisis');
+    </script>
+</body>
+</html>

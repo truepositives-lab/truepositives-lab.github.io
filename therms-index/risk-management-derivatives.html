@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Management with Derivatives - Interactive Dashboard</title>
+    <link rel="stylesheet" href="unified-styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Risk Management with Derivatives</h1>
+        
+        <div class="intro-text">
+            <p>Effective risk management using derivatives requires understanding various risk metrics, stress testing scenarios, and implementing appropriate controls. This comprehensive dashboard helps analyze and manage derivative portfolio risks.</p>
+        </div>
+
+        <!-- Portfolio Risk Dashboard -->
+        <div class="card">
+            <h2>Portfolio Risk Dashboard</h2>
+            
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="portfolioType">Portfolio Type:</label>
+                    <select id="portfolioType">
+                        <option value="equity-options">Equity Options</option>
+                        <option value="index-options">Index Options</option>
+                        <option value="futures">Futures Portfolio</option>
+                        <option value="mixed">Mixed Derivatives</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="portfolioSize">Portfolio Size ($):</label>
+                    <input type="number" id="portfolioSize" value="1000000" step="10000" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="riskLimit">Risk Limit (%):</label>
+                    <input type="number" id="riskLimit" value="5" step="0.5" min="0" max="100">
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="calculateRiskMetrics()">Calculate Risk Metrics</button>
+
+            <!-- Risk Metrics Grid -->
+            <div class="risk-metrics-grid">
+                <div class="risk-metric-card critical">
+                    <h3>Value at Risk (VaR)</h3>
+                    <div class="metric-value" id="varValue">$50,000</div>
+                    <div class="metric-detail">95% confidence, 1-day</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" id="varFill" style="width: 50%"></div>
+                    </div>
+                </div>
+
+                <div class="risk-metric-card warning">
+                    <h3>Conditional VaR (CVaR)</h3>
+                    <div class="metric-value" id="cvarValue">$75,000</div>
+                    <div class="metric-detail">Expected shortfall</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" id="cvarFill" style="width: 75%"></div>
+                    </div>
+                </div>
+
+                <div class="risk-metric-card moderate">
+                    <h3>Maximum Drawdown</h3>
+                    <div class="metric-value" id="maxDrawdown">-12.5%</div>
+                    <div class="metric-detail">Historical worst case</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" id="drawdownFill" style="width: 25%"></div>
+                    </div>
+                </div>
+
+                <div class="risk-metric-card info">
+                    <h3>Sharpe Ratio</h3>
+                    <div class="metric-value" id="sharpeRatio">1.25</div>
+                    <div class="metric-detail">Risk-adjusted return</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill good" id="sharpeFill" style="width: 62%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stress Testing -->
+        <div class="card">
+            <h2>Stress Testing Scenarios</h2>
+            
+            <div class="stress-test-controls">
+                <div class="scenario-selector">
+                    <button class="stress-btn" onclick="runStressTest('2008-crisis')">2008 Financial Crisis</button>
+                    <button class="stress-btn" onclick="runStressTest('covid-crash')">COVID-19 Crash</button>
+                    <button class="stress-btn" onclick="runStressTest('vol-spike')">Volatility Spike</button>
+                    <button class="stress-btn" onclick="runStressTest('rate-shock')">Interest Rate Shock</button>
+                    <button class="stress-btn" onclick="runStressTest('custom')">Custom Scenario</button>
+                </div>
+            </div>
+
+            <div class="custom-scenario" id="customScenario" style="display: none;">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="priceShock">Price Shock (%):</label>
+                        <input type="number" id="priceShock" value="-20" step="1">
+                    </div>
+                    <div class="input-group">
+                        <label for="volShock">Volatility Shock (%):</label>
+                        <input type="number" id="volShock" value="50" step="5">
+                    </div>
+                    <div class="input-group">
+                        <label for="rateShock">Rate Shock (bps):</label>
+                        <input type="number" id="rateShock" value="100" step="25">
+                    </div>
+                </div>
+            </div>
+
+            <div id="stressTestChart"></div>
+
+            <div class="stress-test-results">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Risk Factor</th>
+                            <th>Shock Applied</th>
+                            <th>Portfolio Impact</th>
+                            <th>% of Portfolio</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stressResultsTable">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Greeks Risk Management -->
+        <div class="card">
+            <h2>Greeks Risk Monitoring</h2>
+            
+            <div class="greeks-monitoring">
+                <div class="greek-monitor">
+                    <h3>Delta Risk</h3>
+                    <div class="greek-gauge" id="deltaGauge"></div>
+                    <div class="greek-info">
+                        <span>Portfolio Delta:</span>
+                        <span id="portfolioDeltaValue">$125,000</span>
+                    </div>
+                    <div class="greek-limits">
+                        <span>Limit: ±$200,000</span>
+                        <span class="status ok">Within Limits</span>
+                    </div>
+                </div>
+
+                <div class="greek-monitor">
+                    <h3>Gamma Risk</h3>
+                    <div class="greek-gauge" id="gammaGauge"></div>
+                    <div class="greek-info">
+                        <span>Portfolio Gamma:</span>
+                        <span id="portfolioGammaValue">$2,500</span>
+                    </div>
+                    <div class="greek-limits">
+                        <span>Limit: ±$5,000</span>
+                        <span class="status ok">Within Limits</span>
+                    </div>
+                </div>
+
+                <div class="greek-monitor">
+                    <h3>Vega Risk</h3>
+                    <div class="greek-gauge" id="vegaGauge"></div>
+                    <div class="greek-info">
+                        <span>Portfolio Vega:</span>
+                        <span id="portfolioVegaValue">$8,000</span>
+                    </div>
+                    <div class="greek-limits">
+                        <span>Limit: ±$10,000</span>
+                        <span class="status warning">Near Limit</span>
+                    </div>
+                </div>
+
+                <div class="greek-monitor">
+                    <h3>Theta Decay</h3>
+                    <div class="greek-gauge" id="thetaGauge"></div>
+                    <div class="greek-info">
+                        <span>Daily Theta:</span>
+                        <span id="portfolioThetaValue">-$1,200</span>
+                    </div>
+                    <div class="greek-limits">
+                        <span>Expected: -$1,000</span>
+                        <span class="status ok">Normal</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Margin and Collateral Management -->
+        <div class="card">
+            <h2>Margin & Collateral Management</h2>
+            
+            <div class="margin-overview">
+                <div class="margin-card">
+                    <h3>Initial Margin</h3>
+                    <div class="margin-value">$150,000</div>
+                    <div class="margin-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%"></div>
+                        </div>
+                        <span>60% utilized</span>
+                    </div>
+                </div>
+
+                <div class="margin-card">
+                    <h3>Maintenance Margin</h3>
+                    <div class="margin-value">$120,000</div>
+                    <div class="margin-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill warning" style="width: 75%"></div>
+                        </div>
+                        <span>75% utilized</span>
+                    </div>
+                </div>
+
+                <div class="margin-card">
+                    <h3>Excess Liquidity</h3>
+                    <div class="margin-value">$80,000</div>
+                    <div class="margin-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill good" style="width: 40%"></div>
+                        </div>
+                        <span>40% buffer</span>
+                    </div>
+                </div>
+
+                <div class="margin-card">
+                    <h3>Margin Call Level</h3>
+                    <div class="margin-value">-15%</div>
+                    <div class="margin-progress">
+                        <span class="status ok">Safe Distance</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="marginChart"></div>
+        </div>
+
+        <!-- Risk Limits and Controls -->
+        <div class="card">
+            <h2>Risk Limits & Controls</h2>
+            
+            <div class="limits-grid">
+                <div class="limit-card">
+                    <h3>Position Limits</h3>
+                    <table class="limit-table">
+                        <tr>
+                            <td>Single Name Exposure</td>
+                            <td>$250,000</td>
+                            <td class="status ok">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Sector Concentration</td>
+                            <td>30%</td>
+                            <td class="status ok">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Option Contracts</td>
+                            <td>500</td>
+                            <td class="status warning">!</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="limit-card">
+                    <h3>Market Risk Limits</h3>
+                    <table class="limit-table">
+                        <tr>
+                            <td>Daily VaR Limit</td>
+                            <td>$100,000</td>
+                            <td class="status ok">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Stop Loss Trigger</td>
+                            <td>-5%</td>
+                            <td class="status ok">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Max Leverage</td>
+                            <td>10x</td>
+                            <td class="status ok">✓</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="limit-card">
+                    <h3>Operational Controls</h3>
+                    <table class="limit-table">
+                        <tr>
+                            <td>Trade Approval</td>
+                            <td>Required >$50k</td>
+                            <td class="status ok">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Risk Review</td>
+                            <td>Daily</td>
+                            <td class="status ok">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Audit Trail</td>
+                            <td>Complete</td>
+                            <td class="status ok">✓</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Reporting -->
+        <div class="card">
+            <h2>Risk Reporting Dashboard</h2>
+            
+            <div class="reporting-controls">
+                <button class="btn btn-secondary" onclick="generateRiskReport()">Generate Risk Report</button>
+                <button class="btn btn-secondary" onclick="exportRiskData()">Export Data</button>
+            </div>
+
+            <div id="riskReport" class="risk-report" style="display: none;">
+                <h3>Portfolio Risk Report</h3>
+                <div class="report-timestamp">Generated: <span id="reportTime"></span></div>
+                
+                <div class="report-section">
+                    <h4>Executive Summary</h4>
+                    <ul>
+                        <li>Portfolio Value: <span id="reportPortfolioValue"></span></li>
+                        <li>Risk Utilization: <span id="reportRiskUtil"></span></li>
+                        <li>Key Risks: <span id="reportKeyRisks"></span></li>
+                        <li>Recommendations: <span id="reportRecommendations"></span></li>
+                    </ul>
+                </div>
+                
+                <div class="report-section">
+                    <h4>Risk Metrics Summary</h4>
+                    <div id="reportMetrics"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .risk-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .risk-metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        
+        .risk-metric-card.critical {
+            border-left-color: #ef4444;
+        }
+        
+        .risk-metric-card.warning {
+            border-left-color: #f59e0b;
+        }
+        
+        .risk-metric-card.moderate {
+            border-left-color: #3b82f6;
+        }
+        
+        .risk-metric-card.info {
+            border-left-color: #10b981;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+        
+        .metric-detail {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+        
+        .metric-bar {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .metric-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #f59e0b);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .metric-fill.good {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+        
+        .stress-test-controls {
+            margin: 20px 0;
+        }
+        
+        .scenario-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .stress-btn {
+            padding: 10px 20px;
+            background: #f7f9fc;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .stress-btn:hover,
+        .stress-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        
+        .custom-scenario {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f7f9fc;
+            border-radius: 8px;
+        }
+        
+        .stress-test-results {
+            margin-top: 30px;
+        }
+        
+        .greeks-monitoring {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .greek-monitor {
+            background: #f7f9fc;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .greek-monitor h3 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+        
+        .greek-gauge {
+            height: 100px;
+            margin: 20px 0;
+        }
+        
+        .greek-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px 0;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .greek-limits {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+        
+        .status {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status.ok {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status.warning {
+            background: #fed7aa;
+            color: #92400e;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .margin-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .margin-card {
+            background: #f7f9fc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .margin-card h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: #6b7280;
+        }
+        
+        .margin-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .margin-progress {
+            margin-top: 10px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+        
+        .progress-fill.warning {
+            background: #f59e0b;
+        }
+        
+        .progress-fill.good {
+            background: #10b981;
+        }
+        
+        .limits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .limit-card {
+            background: #f7f9fc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .limit-card h3 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+        
+        .limit-table {
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .limit-table td {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .limit-table td:last-child {
+            text-align: right;
+        }
+        
+        .risk-report {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f7f9fc;
+            border-radius: 8px;
+        }
+        
+        .report-timestamp {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+        
+        .report-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+        }
+        
+        .report-section h4 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+        
+        .reporting-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+
+    <script>
+        function calculateRiskMetrics() {
+            const portfolioSize = parseFloat(document.getElementById('portfolioSize').value);
+            const riskLimit = parseFloat(document.getElementById('riskLimit').value) / 100;
+            
+            // Calculate risk metrics (simplified)
+            const var95 = portfolioSize * 0.05;
+            const cvar = var95 * 1.5;
+            const maxDD = -0.125;
+            const sharpe = 1.25;
+            
+            // Update displays
+            document.getElementById('varValue').textContent = '$' + var95.toLocaleString();
+            document.getElementById('cvarValue').textContent = '$' + cvar.toLocaleString();
+            document.getElementById('maxDrawdown').textContent = (maxDD * 100).toFixed(1) + '%';
+            document.getElementById('sharpeRatio').textContent = sharpe.toFixed(2);
+            
+            // Update progress bars
+            document.getElementById('varFill').style.width = (var95 / (portfolioSize * riskLimit) * 100) + '%';
+            document.getElementById('cvarFill').style.width = (cvar / (portfolioSize * riskLimit) * 100) + '%';
+            document.getElementById('drawdownFill').style.width = Math.abs(maxDD * 100 * 2) + '%';
+            document.getElementById('sharpeFill').style.width = Math.min(100, sharpe * 40) + '%';
+            
+            // Update Greeks
+            updateGreeksMonitoring(portfolioSize);
+            
+            // Create margin chart
+            createMarginChart(portfolioSize);
+        }
+        
+        function updateGreeksMonitoring(portfolioSize) {
+            const delta = portfolioSize * 0.125;
+            const gamma = portfolioSize * 0.0025;
+            const vega = portfolioSize * 0.008;
+            const theta = -portfolioSize * 0.0012;
+            
+            document.getElementById('portfolioDeltaValue').textContent = '$' + delta.toLocaleString();
+            document.getElementById('portfolioGammaValue').textContent = '$' + gamma.toLocaleString();
+            document.getElementById('portfolioVegaValue').textContent = '$' + vega.toLocaleString();
+            document.getElementById('portfolioThetaValue').textContent = '$' + theta.toLocaleString();
+            
+            // Create simple gauge charts for Greeks
+            createGreekGauges(delta, gamma, vega, theta);
+        }
+        
+        function createGreekGauges(delta, gamma, vega, theta) {
+            // Delta gauge
+            const deltaData = [{
+                type: "indicator",
+                mode: "gauge+number",
+                value: Math.abs(delta),
+                title: { text: "Delta Exposure" },
+                gauge: {
+                    axis: { range: [0, 200000] },
+                    bar: { color: "#2563eb" },
+                    steps: [
+                        { range: [0, 100000], color: "#e5e7eb" },
+                        { range: [100000, 200000], color: "#f3f4f6" }
+                    ],
+                    threshold: {
+                        line: { color: "red", width: 4 },
+                        thickness: 0.75,
+                        value: 180000
+                    }
+                }
+            }];
+            
+            Plotly.newPlot('deltaGauge', deltaData, { height: 100, margin: { t: 0, b: 0, l: 0, r: 0 } });
+            
+            // Similar for other Greeks
+            const gammaData = [{...deltaData[0], value: Math.abs(gamma), gauge: {...deltaData[0].gauge, axis: { range: [0, 5000] }}}];
+            Plotly.newPlot('gammaGauge', gammaData, { height: 100, margin: { t: 0, b: 0, l: 0, r: 0 } });
+            
+            const vegaData = [{...deltaData[0], value: Math.abs(vega), gauge: {...deltaData[0].gauge, axis: { range: [0, 10000] }}}];
+            Plotly.newPlot('vegaGauge', vegaData, { height: 100, margin: { t: 0, b: 0, l: 0, r: 0 } });
+            
+            const thetaData = [{...deltaData[0], value: Math.abs(theta), gauge: {...deltaData[0].gauge, axis: { range: [0, 2000] }}}];
+            Plotly.newPlot('thetaGauge', thetaData, { height: 100, margin: { t: 0, b: 0, l: 0, r: 0 } });
+        }
+        
+        function runStressTest(scenario) {
+            // Show/hide custom scenario inputs
+            document.getElementById('customScenario').style.display = scenario === 'custom' ? 'block' : 'none';
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.stress-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const portfolioSize = parseFloat(document.getElementById('portfolioSize').value);
+            
+            let shocks = {};
+            switch(scenario) {
+                case '2008-crisis':
+                    shocks = { price: -40, vol: 150, rate: -300, credit: 500 };
+                    break;
+                case 'covid-crash':
+                    shocks = { price: -35, vol: 200, rate: -150, credit: 200 };
+                    break;
+                case 'vol-spike':
+                    shocks = { price: -10, vol: 100, rate: 0, credit: 50 };
+                    break;
+                case 'rate-shock':
+                    shocks = { price: -5, vol: 30, rate: 200, credit: 25 };
+                    break;
+                case 'custom':
+                    shocks = {
+                        price: parseFloat(document.getElementById('priceShock').value),
+                        vol: parseFloat(document.getElementById('volShock').value),
+                        rate: parseFloat(document.getElementById('rateShock').value),
+                        credit: 0
+                    };
+                    break;
+            }
+            
+            // Calculate impacts
+            const impacts = {
+                price: portfolioSize * (shocks.price / 100),
+                vol: portfolioSize * 0.01 * (shocks.vol / 100),
+                rate: portfolioSize * 0.001 * (shocks.rate / 100),
+                credit: portfolioSize * 0.002 * (shocks.credit / 100),
+                total: 0
+            };
+            
+            impacts.total = impacts.price + impacts.vol + impacts.rate + impacts.credit;
+            
+            // Create stress test visualization
+            createStressTestChart(shocks, impacts);
+            
+            // Update results table
+            updateStressResultsTable(shocks, impacts, portfolioSize);
+        }
+        
+        function createStressTestChart(shocks, impacts) {
+            const factors = ['Price', 'Volatility', 'Interest Rate', 'Credit'];
+            const shockValues = [shocks.price, shocks.vol / 10, shocks.rate / 10, shocks.credit / 10];
+            const impactValues = [impacts.price, impacts.vol, impacts.rate, impacts.credit];
+            
+            Plotly.newPlot('stressTestChart', [
+                {
+                    x: factors,
+                    y: shockValues,
+                    type: 'bar',
+                    name: 'Shock Applied (%)',
+                    marker: { color: '#ef4444' },
+                    yaxis: 'y'
+                },
+                {
+                    x: factors,
+                    y: impactValues,
+                    type: 'bar',
+                    name: 'Portfolio Impact ($)',
+                    marker: { color: '#2563eb' },
+                    yaxis: 'y2'
+                }
+            ], {
+                title: 'Stress Test Results',
+                xaxis: { title: 'Risk Factor' },
+                yaxis: { 
+                    title: 'Shock (%)', 
+                    side: 'left',
+                    titlefont: { color: '#ef4444' },
+                    tickfont: { color: '#ef4444' }
+                },
+                yaxis2: { 
+                    title: 'Impact ($)', 
+                    overlaying: 'y', 
+                    side: 'right',
+                    titlefont: { color: '#2563eb' },
+                    tickfont: { color: '#2563eb' }
+                },
+                barmode: 'group'
+            });
+        }
+        
+        function updateStressResultsTable(shocks, impacts, portfolioSize) {
+            const tableBody = document.getElementById('stressResultsTable');
+            tableBody.innerHTML = '';
+            
+            const factors = [
+                { name: 'Price Risk', shock: shocks.price + '%', impact: impacts.price },
+                { name: 'Volatility Risk', shock: shocks.vol + '%', impact: impacts.vol },
+                { name: 'Interest Rate Risk', shock: shocks.rate + 'bps', impact: impacts.rate },
+                { name: 'Credit Risk', shock: shocks.credit + 'bps', impact: impacts.credit },
+                { name: 'Total Impact', shock: 'Combined', impact: impacts.total }
+            ];
+            
+            factors.forEach(factor => {
+                const row = tableBody.insertRow();
+                const pctImpact = (factor.impact / portfolioSize * 100).toFixed(2);
+                const status = Math.abs(pctImpact) > 10 ? 'error' : Math.abs(pctImpact) > 5 ? 'warning' : 'ok';
+                
+                row.innerHTML = `
+                    <td>${factor.name}</td>
+                    <td>${factor.shock}</td>
+                    <td class="${factor.impact < 0 ? 'negative' : 'positive'}">$${factor.impact.toFixed(0)}</td>
+                    <td class="${factor.impact < 0 ? 'negative' : 'positive'}">${pctImpact}%</td>
+                    <td><span class="status ${status}">${status.toUpperCase()}</span></td>
+                `;
+            });
+        }
+        
+        function createMarginChart(portfolioSize) {
+            const days = Array.from({length: 30}, (_, i) => i + 1);
+            const initialMargin = portfolioSize * 0.15;
+            const maintenanceMargin = portfolioSize * 0.12;
+            const currentMargin = days.map(d => initialMargin - Math.random() * 30000 + 15000);
+            
+            Plotly.newPlot('marginChart', [
+                {
+                    x: days,
+                    y: currentMargin,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Current Margin',
+                    line: { color: '#2563eb', width: 2 }
+                },
+                {
+                    x: days,
+                    y: Array(30).fill(initialMargin),
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Initial Margin',
+                    line: { color: '#10b981', width: 2, dash: 'dash' }
+                },
+                {
+                    x: days,
+                    y: Array(30).fill(maintenanceMargin),
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Maintenance Margin',
+                    line: { color: '#f59e0b', width: 2, dash: 'dot' }
+                }
+            ], {
+                title: 'Margin Utilization Trend',
+                xaxis: { title: 'Days' },
+                yaxis: { title: 'Margin ($)' },
+                showlegend: true
+            });
+        }
+        
+        function generateRiskReport() {
+            const portfolioSize = parseFloat(document.getElementById('portfolioSize').value);
+            const now = new Date();
+            
+            document.getElementById('reportTime').textContent = now.toLocaleString();
+            document.getElementById('reportPortfolioValue').textContent = '$' + portfolioSize.toLocaleString();
+            document.getElementById('reportRiskUtil').textContent = '65% of limits';
+            document.getElementById('reportKeyRisks').textContent = 'Vega exposure near limit, monitoring required';
+            document.getElementById('reportRecommendations').textContent = 'Consider reducing vega exposure, increase hedging';
+            
+            document.getElementById('reportMetrics').innerHTML = `
+                <table class="data-table">
+                    <tr><td>VaR (95%, 1-day)</td><td>$${(portfolioSize * 0.05).toLocaleString()}</td></tr>
+                    <tr><td>CVaR</td><td>$${(portfolioSize * 0.075).toLocaleString()}</td></tr>
+                    <tr><td>Sharpe Ratio</td><td>1.25</td></tr>
+                    <tr><td>Max Drawdown</td><td>-12.5%</td></tr>
+                </table>
+            `;
+            
+            document.getElementById('riskReport').style.display = 'block';
+        }
+        
+        function exportRiskData() {
+            alert('Risk data export functionality would be implemented here');
+        }
+        
+        // Initialize on load
+        calculateRiskMetrics();
+    </script>
+</body>
+</html>

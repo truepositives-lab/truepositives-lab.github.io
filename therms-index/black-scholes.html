@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black-Scholes Model - Interactive Finance Learning</title>
+    <link rel="stylesheet" href="unified-styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">Finance Learning</a>
+            <div class="nav-links">
+                <a href="index.html">← Back to Articles</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="article-header">
+            <h1>Black-Scholes Model</h1>
+            <p class="article-description">
+                Interactive exploration of the Nobel Prize-winning option pricing model with real-time calculations and visualizations.
+            </p>
+        </header>
+
+        <div class="content-grid">
+            <section class="card">
+                <h2>Black-Scholes Formula</h2>
+                <div class="formula-showcase">
+                    <div class="main-formula">
+                        C = S₀N(d₁) - Ke^(-rT)N(d₂)
+                    </div>
+                    <div class="formula-components">
+                        <div class="component-grid">
+                            <div class="component">
+                                <div class="component-formula">d₁ = [ln(S₀/K) + (r + σ²/2)T] / σ√T</div>
+                            </div>
+                            <div class="component">
+                                <div class="component-formula">d₂ = d₁ - σ√T</div>
+                            </div>
+                        </div>
+                        <div class="put-formula">
+                            <strong>Put Option:</strong> P = Ke^(-rT)N(-d₂) - S₀N(-d₁)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="parameter-definitions">
+                    <h3>Parameter Definitions:</h3>
+                    <div class="definition-grid">
+                        <div class="definition-item">
+                            <strong>S₀</strong> = Current stock price
+                        </div>
+                        <div class="definition-item">
+                            <strong>K</strong> = Strike price
+                        </div>
+                        <div class="definition-item">
+                            <strong>r</strong> = Risk-free interest rate
+                        </div>
+                        <div class="definition-item">
+                            <strong>T</strong> = Time to expiration
+                        </div>
+                        <div class="definition-item">
+                            <strong>σ</strong> = Volatility
+                        </div>
+                        <div class="definition-item">
+                            <strong>N(x)</strong> = Cumulative standard normal distribution
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Black-Scholes Calculator</h2>
+                <div class="calculator-grid">
+                    <div class="input-group">
+                        <label for="stockPrice">Stock Price (S₀):</label>
+                        <input type="number" id="stockPrice" value="100" step="0.01" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="strikePrice">Strike Price (K):</label>
+                        <input type="number" id="strikePrice" value="100" step="0.01" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="timeToExpiry">Time to Expiry (days):</label>
+                        <input type="number" id="timeToExpiry" value="30" step="1" min="1" max="1095">
+                    </div>
+                    <div class="input-group">
+                        <label for="riskFreeRate">Risk-Free Rate (%):</label>
+                        <input type="number" id="riskFreeRate" value="5" step="0.1" min="0" max="20">
+                    </div>
+                    <div class="input-group">
+                        <label for="volatility">Volatility (%):</label>
+                        <input type="number" id="volatility" value="20" step="0.1" min="1" max="200">
+                    </div>
+                    <div class="input-group">
+                        <label for="dividendYield">Dividend Yield (%):</label>
+                        <input type="number" id="dividendYield" value="0" step="0.1" min="0" max="20">
+                    </div>
+                </div>
+
+                <div class="bs-results">
+                    <div class="result-card call-result">
+                        <h3>Call Option Price</h3>
+                        <div class="metric-value" id="callPrice">$5.24</div>
+                        <div class="calculation-details">
+                            <small>d₁: <span id="d1Value">0.125</span></small>
+                            <small>d₂: <span id="d2Value">0.089</span></small>
+                        </div>
+                    </div>
+                    <div class="result-card put-result">
+                        <h3>Put Option Price</h3>
+                        <div class="metric-value" id="putPrice">$4.83</div>
+                        <div class="calculation-details">
+                            <small>N(d₁): <span id="nd1Value">0.550</span></small>
+                            <small>N(d₂): <span id="nd2Value">0.535</span></small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-by-step" id="stepByStep">
+                    <!-- Step-by-step calculation will be populated here -->
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Parameter Sensitivity Analysis</h2>
+                <div id="sensitivityChart" class="chart-container"></div>
+                
+                <div class="sensitivity-controls">
+                    <div class="input-group">
+                        <label for="sensitivityParameter">Vary Parameter:</label>
+                        <select id="sensitivityParameter">
+                            <option value="stockPrice">Stock Price</option>
+                            <option value="strikePrice">Strike Price</option>
+                            <option value="volatility" selected>Volatility</option>
+                            <option value="timeToExpiry">Time to Expiry</option>
+                            <option value="riskFreeRate">Risk-Free Rate</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="rangePercent">Range (±%):</label>
+                        <input type="number" id="rangePercent" value="50" step="5" min="10" max="100">
+                    </div>
+                </div>
+
+                <div class="sensitivity-metrics">
+                    <div class="metric-card">
+                        <h4>Call Sensitivity</h4>
+                        <div class="metric-value" id="callSensitivity">+$0.15</div>
+                        <small>Per 1% change</small>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Put Sensitivity</h4>
+                        <div class="metric-value" id="putSensitivity">+$0.12</div>
+                        <small>Per 1% change</small>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Greeks Dashboard</h2>
+                <div class="greeks-grid">
+                    <div class="greek-card delta-card">
+                        <h3>Delta (Δ)</h3>
+                        <div class="greek-values">
+                            <div class="greek-value">
+                                <span class="label">Call:</span>
+                                <span class="value" id="callDelta">0.55</span>
+                            </div>
+                            <div class="greek-value">
+                                <span class="label">Put:</span>
+                                <span class="value" id="putDelta">-0.45</span>
+                            </div>
+                        </div>
+                        <small>Price sensitivity to $1 stock move</small>
+                    </div>
+
+                    <div class="greek-card gamma-card">
+                        <h3>Gamma (Γ)</h3>
+                        <div class="greek-values">
+                            <div class="greek-value">
+                                <span class="label">Both:</span>
+                                <span class="value" id="gamma">0.018</span>
+                            </div>
+                        </div>
+                        <small>Delta sensitivity to $1 stock move</small>
+                    </div>
+
+                    <div class="greek-card theta-card">
+                        <h3>Theta (Θ)</h3>
+                        <div class="greek-values">
+                            <div class="greek-value">
+                                <span class="label">Call:</span>
+                                <span class="value" id="callTheta">-0.045</span>
+                            </div>
+                            <div class="greek-value">
+                                <span class="label">Put:</span>
+                                <span class="value" id="putTheta">-0.038</span>
+                            </div>
+                        </div>
+                        <small>Time decay per day</small>
+                    </div>
+
+                    <div class="greek-card vega-card">
+                        <h3>Vega (ν)</h3>
+                        <div class="greek-values">
+                            <div class="greek-value">
+                                <span class="label">Both:</span>
+                                <span class="value" id="vega">0.155</span>
+                            </div>
+                        </div>
+                        <small>Sensitivity to 1% volatility change</small>
+                    </div>
+
+                    <div class="greek-card rho-card">
+                        <h3>Rho (ρ)</h3>
+                        <div class="greek-values">
+                            <div class="greek-value">
+                                <span class="label">Call:</span>
+                                <span class="value" id="callRho">0.042</span>
+                            </div>
+                            <div class="greek-value">
+                                <span class="label">Put:</span>
+                                <span class="value" id="putRho">-0.038</span>
+                            </div>
+                        </div>
+                        <small>Sensitivity to 1% rate change</small>
+                    </div>
+                </div>
+
+                <div class="greeks-chart-container">
+                    <div id="greeksChart" class="chart-container"></div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Implied Volatility Calculator</h2>
+                <div class="iv-calculator">
+                    <div class="input-group">
+                        <label for="marketPrice">Market Option Price:</label>
+                        <input type="number" id="marketPrice" value="5.50" step="0.01" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="optionType">Option Type:</label>
+                        <select id="optionType">
+                            <option value="call">Call</option>
+                            <option value="put">Put</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="iv-results">
+                    <div class="result-card">
+                        <h3>Implied Volatility</h3>
+                        <div class="metric-value" id="impliedVolatility">22.3%</div>
+                        <small>Annual volatility implied by market price</small>
+                    </div>
+                    <div class="result-card">
+                        <h3>Theoretical Price</h3>
+                        <div class="metric-value" id="theoreticalPrice">$5.24</div>
+                        <small>Black-Scholes theoretical value</small>
+                    </div>
+                    <div class="result-card">
+                        <h3>Price Difference</h3>
+                        <div class="metric-value" id="priceDifference">+$0.26</div>
+                        <small>Market - Theoretical</small>
+                    </div>
+                </div>
+
+                <div class="iv-convergence" id="ivConvergence">
+                    <!-- Convergence details will be shown here -->
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Model Assumptions & Limitations</h2>
+                <div class="assumptions-grid">
+                    <div class="assumption-card valid">
+                        <h3>✅ Key Assumptions</h3>
+                        <ul>
+                            <li><strong>Constant Volatility:</strong> σ remains constant over option life</li>
+                            <li><strong>Constant Interest Rate:</strong> Risk-free rate is constant</li>
+                            <li><strong>No Dividends:</strong> Stock pays no dividends (or adjusted)</li>
+                            <li><strong>European Exercise:</strong> Can only exercise at expiration</li>
+                            <li><strong>Efficient Markets:</strong> No transaction costs or bid-ask spreads</li>
+                            <li><strong>Log-Normal Distribution:</strong> Stock prices follow geometric Brownian motion</li>
+                        </ul>
+                    </div>
+
+                    <div class="assumption-card limitations">
+                        <h3>⚠️ Real-World Limitations</h3>
+                        <ul>
+                            <li><strong>Volatility Smile:</strong> IV varies by strike and expiration</li>
+                            <li><strong>Early Exercise:</strong> American options can be exercised early</li>
+                            <li><strong>Dividends:</strong> Most stocks pay dividends</li>
+                            <li><strong>Interest Rates:</strong> Rates change over time</li>
+                            <li><strong>Transaction Costs:</strong> Bid-ask spreads and commissions</li>
+                            <li><strong>Jumps:</strong> Stock prices can gap significantly</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="model-extensions">
+                    <h3>Model Extensions & Improvements</h3>
+                    <div class="extension-grid">
+                        <div class="extension-card">
+                            <h4>🌊 Stochastic Volatility Models</h4>
+                            <p>Heston, SABR models account for changing volatility</p>
+                        </div>
+                        <div class="extension-card">
+                            <h4>🦘 Jump Diffusion Models</h4>
+                            <p>Merton model incorporates sudden price jumps</p>
+                        </div>
+                        <div class="extension-card">
+                            <h4>🇺🇸 American Options</h4>
+                            <p>Binomial trees, Monte Carlo for early exercise</p>
+                        </div>
+                        <div class="extension-card">
+                            <h4>💰 Dividend Adjustments</h4>
+                            <p>Black-Scholes-Merton model includes dividend yield</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Historical Context</h2>
+                <div class="history-timeline">
+                    <div class="timeline-item">
+                        <div class="year">1900</div>
+                        <div class="event">Louis Bachelier writes first mathematical treatment of options</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="year">1973</div>
+                        <div class="event">Fischer Black, Myron Scholes publish option pricing formula</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="year">1973</div>
+                        <div class="event">Chicago Board Options Exchange opens</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="year">1997</div>
+                        <div class="event">Myron Scholes and Robert Merton win Nobel Prize</div>
+                    </div>
+                </div>
+
+                <div class="impact-metrics">
+                    <h3>Market Impact</h3>
+                    <div class="impact-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">$600T+</div>
+                            <div class="stat-label">Global derivatives market</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">40B+</div>
+                            <div class="stat-label">Option contracts traded annually</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">1973</div>
+                            <div class="stat-label">Year modern options trading began</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Interactive Scenarios</h2>
+                <div class="scenario-buttons">
+                    <button onclick="loadScenario('earnings')" class="btn btn-secondary">Pre-Earnings</button>
+                    <button onclick="loadScenario('lowvol')" class="btn btn-secondary">Low Volatility</button>
+                    <button onclick="loadScenario('highvol')" class="btn btn-secondary">High Volatility</button>
+                    <button onclick="loadScenario('dividend')" class="btn btn-secondary">Ex-Dividend</button>
+                    <button onclick="loadScenario('expiry')" class="btn btn-secondary">Near Expiry</button>
+                </div>
+
+                <div class="scenario-description" id="scenarioDescription">
+                    <p>Select a scenario above to see how different market conditions affect Black-Scholes pricing.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // Mathematical functions
+        function normalCDF(x) {
+            // Approximation of cumulative standard normal distribution
+            return 0.5 * (1 + erf(x / Math.sqrt(2)));
+        }
+
+        function erf(x) {
+            // Approximation of error function
+            const a1 = 0.254829592;
+            const a2 = -0.284496736;
+            const a3 = 1.421413741;
+            const a4 = -1.453152027;
+            const a5 = 1.061405429;
+            const p = 0.3275911;
+            
+            const sign = x >= 0 ? 1 : -1;
+            x = Math.abs(x);
+            
+            const t = 1.0 / (1.0 + p * x);
+            const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+            
+            return sign * y;
+        }
+
+        function normalPDF(x) {
+            return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+        }
+
+        // Black-Scholes calculations
+        function blackScholes(S, K, T, r, sigma, q = 0, type = 'call') {
+            const d1 = (Math.log(S / K) + (r - q + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
+            const d2 = d1 - sigma * Math.sqrt(T);
+            
+            const nd1 = normalCDF(d1);
+            const nd2 = normalCDF(d2);
+            
+            const discountedStrike = K * Math.exp(-r * T);
+            const discountedStock = S * Math.exp(-q * T);
+            
+            if (type === 'call') {
+                return discountedStock * nd1 - discountedStrike * nd2;
+            } else {
+                return discountedStrike * normalCDF(-d2) - discountedStock * normalCDF(-d1);
+            }
+        }
+
+        function calculateGreeks(S, K, T, r, sigma, q = 0) {
+            const d1 = (Math.log(S / K) + (r - q + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
+            const d2 = d1 - sigma * Math.sqrt(T);
+            
+            const nd1 = normalCDF(d1);
+            const nd2 = normalCDF(d2);
+            const npd1 = normalPDF(d1);
+            
+            const discountedStock = S * Math.exp(-q * T);
+            const discountedStrike = K * Math.exp(-r * T);
+            
+            return {
+                d1: d1,
+                d2: d2,
+                nd1: nd1,
+                nd2: nd2,
+                callDelta: Math.exp(-q * T) * nd1,
+                putDelta: -Math.exp(-q * T) * normalCDF(-d1),
+                gamma: Math.exp(-q * T) * npd1 / (S * sigma * Math.sqrt(T)),
+                callTheta: -(discountedStock * npd1 * sigma) / (2 * Math.sqrt(T)) - r * discountedStrike * nd2 + q * discountedStock * nd1,
+                putTheta: -(discountedStock * npd1 * sigma) / (2 * Math.sqrt(T)) + r * discountedStrike * normalCDF(-d2) - q * discountedStock * normalCDF(-d1),
+                vega: discountedStock * npd1 * Math.sqrt(T),
+                callRho: discountedStrike * T * nd2,
+                putRho: -discountedStrike * T * normalCDF(-d2)
+            };
+        }
+
+        // Newton-Raphson method for implied volatility
+        function calculateImpliedVolatility(S, K, T, r, marketPrice, q = 0, type = 'call') {
+            let sigma = 0.3; // Initial guess
+            const tolerance = 0.0001;
+            const maxIterations = 100;
+            
+            for (let i = 0; i < maxIterations; i++) {
+                const price = blackScholes(S, K, T, r, sigma, q, type);
+                const greeks = calculateGreeks(S, K, T, r, sigma, q);
+                const vega = greeks.vega;
+                
+                const diff = price - marketPrice;
+                if (Math.abs(diff) < tolerance) break;
+                
+                if (vega === 0) break; // Avoid division by zero
+                
+                sigma = sigma - diff / vega;
+                if (sigma <= 0.001) sigma = 0.001; // Keep positive
+                if (sigma > 5) sigma = 5; // Cap at 500%
+            }
+            
+            return sigma;
+        }
+
+        function updateBlackScholesCalculations() {
+            const S = parseFloat(document.getElementById('stockPrice').value);
+            const K = parseFloat(document.getElementById('strikePrice').value);
+            const T = parseFloat(document.getElementById('timeToExpiry').value) / 365;
+            const r = parseFloat(document.getElementById('riskFreeRate').value) / 100;
+            const sigma = parseFloat(document.getElementById('volatility').value) / 100;
+            const q = parseFloat(document.getElementById('dividendYield').value) / 100;
+            
+            // Calculate option prices
+            const callPrice = blackScholes(S, K, T, r, sigma, q, 'call');
+            const putPrice = blackScholes(S, K, T, r, sigma, q, 'put');
+            
+            // Calculate Greeks
+            const greeks = calculateGreeks(S, K, T, r, sigma, q);
+            
+            // Update display
+            document.getElementById('callPrice').textContent = `$${callPrice.toFixed(2)}`;
+            document.getElementById('putPrice').textContent = `$${putPrice.toFixed(2)}`;
+            
+            document.getElementById('d1Value').textContent = greeks.d1.toFixed(3);
+            document.getElementById('d2Value').textContent = greeks.d2.toFixed(3);
+            document.getElementById('nd1Value').textContent = greeks.nd1.toFixed(3);
+            document.getElementById('nd2Value').textContent = greeks.nd2.toFixed(3);
+            
+            // Update Greeks
+            document.getElementById('callDelta').textContent = greeks.callDelta.toFixed(3);
+            document.getElementById('putDelta').textContent = greeks.putDelta.toFixed(3);
+            document.getElementById('gamma').textContent = greeks.gamma.toFixed(4);
+            document.getElementById('callTheta').textContent = (greeks.callTheta / 365).toFixed(4);
+            document.getElementById('putTheta').textContent = (greeks.putTheta / 365).toFixed(4);
+            document.getElementById('vega').textContent = (greeks.vega / 100).toFixed(4);
+            document.getElementById('callRho').textContent = (greeks.callRho / 100).toFixed(4);
+            document.getElementById('putRho').textContent = (greeks.putRho / 100).toFixed(4);
+            
+            updateStepByStep(S, K, T, r, sigma, q, greeks);
+            updateSensitivityChart();
+            updateGreeksChart();
+            updateImpliedVolatility();
+        }
+
+        function updateStepByStep(S, K, T, r, sigma, q, greeks) {
+            const stepByStepDiv = document.getElementById('stepByStep');
+            stepByStepDiv.innerHTML = `
+                <h3>Step-by-Step Calculation:</h3>
+                <div class="calculation-steps">
+                    <div class="step">1. Calculate d₁ = [ln(S/K) + (r-q+σ²/2)T] / σ√T</div>
+                    <div class="step">   d₁ = [ln(${S}/${K}) + (${r.toFixed(4)}-${q.toFixed(4)}+${(sigma*sigma/2).toFixed(4)})×${T.toFixed(4)}] / ${sigma.toFixed(4)}×√${T.toFixed(4)}</div>
+                    <div class="step">   d₁ = ${greeks.d1.toFixed(4)}</div>
+                    
+                    <div class="step">2. Calculate d₂ = d₁ - σ√T</div>
+                    <div class="step">   d₂ = ${greeks.d1.toFixed(4)} - ${sigma.toFixed(4)}×√${T.toFixed(4)} = ${greeks.d2.toFixed(4)}</div>
+                    
+                    <div class="step">3. Look up N(d₁) and N(d₂) from normal distribution</div>
+                    <div class="step">   N(d₁) = ${greeks.nd1.toFixed(4)}, N(d₂) = ${greeks.nd2.toFixed(4)}</div>
+                    
+                    <div class="step">4. Calculate call price: C = S₀e^(-qT)N(d₁) - Ke^(-rT)N(d₂)</div>
+                    <div class="step">   C = ${S}×e^(-${q.toFixed(4)}×${T.toFixed(4)})×${greeks.nd1.toFixed(4)} - ${K}×e^(-${r.toFixed(4)}×${T.toFixed(4)})×${greeks.nd2.toFixed(4)}</div>
+                    <div class="step">   C = $${blackScholes(S, K, T, r, sigma, q, 'call').toFixed(2)}</div>
+                </div>
+            `;
+        }
+
+        function updateSensitivityChart() {
+            const parameter = document.getElementById('sensitivityParameter').value;
+            const range = parseFloat(document.getElementById('rangePercent').value) / 100;
+            
+            const S = parseFloat(document.getElementById('stockPrice').value);
+            const K = parseFloat(document.getElementById('strikePrice').value);
+            const T = parseFloat(document.getElementById('timeToExpiry').value) / 365;
+            const r = parseFloat(document.getElementById('riskFreeRate').value) / 100;
+            const sigma = parseFloat(document.getElementById('volatility').value) / 100;
+            const q = parseFloat(document.getElementById('dividendYield').value) / 100;
+            
+            const baseValues = { S, K, T, r, sigma, q };
+            const baseValue = baseValues[parameter === 'timeToExpiry' ? 'T' : parameter];
+            
+            // Generate range of values
+            const points = 21;
+            const values = [];
+            const callPrices = [];
+            const putPrices = [];
+            
+            for (let i = 0; i < points; i++) {
+                const multiplier = 1 - range + (2 * range * i) / (points - 1);
+                let testValue = baseValue * multiplier;
+                
+                if (parameter === 'timeToExpiry') testValue = Math.max(testValue, 1/365); // Min 1 day
+                
+                const params = { ...baseValues };
+                params[parameter === 'timeToExpiry' ? 'T' : parameter] = testValue;
+                
+                values.push(parameter === 'timeToExpiry' ? testValue * 365 : testValue);
+                callPrices.push(blackScholes(params.S, params.K, params.T, params.r, params.sigma, params.q, 'call'));
+                putPrices.push(blackScholes(params.S, params.K, params.T, params.r, params.sigma, params.q, 'put'));
+            }
+            
+            const trace1 = {
+                x: values,
+                y: callPrices,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Call Price',
+                line: { color: '#10b981', width: 3 }
+            };
+            
+            const trace2 = {
+                x: values,
+                y: putPrices,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Put Price',
+                line: { color: '#ef4444', width: 3 }
+            };
+            
+            const layout = {
+                title: `Option Price Sensitivity to ${parameter.charAt(0).toUpperCase() + parameter.slice(1)}`,
+                xaxis: { title: getParameterLabel(parameter) },
+                yaxis: { title: 'Option Price ($)' },
+                hovermode: 'x unified'
+            };
+            
+            Plotly.newPlot('sensitivityChart', [trace1, trace2], layout);
+            
+            // Update sensitivity metrics
+            const midIndex = Math.floor(points / 2);
+            if (midIndex > 0 && midIndex < points - 1) {
+                const callSens = (callPrices[midIndex + 1] - callPrices[midIndex - 1]) / (values[midIndex + 1] - values[midIndex - 1]);
+                const putSens = (putPrices[midIndex + 1] - putPrices[midIndex - 1]) / (values[midIndex + 1] - values[midIndex - 1]);
+                
+                document.getElementById('callSensitivity').textContent = `${callSens >= 0 ? '+' : ''}$${callSens.toFixed(3)}`;
+                document.getElementById('putSensitivity').textContent = `${putSens >= 0 ? '+' : ''}$${putSens.toFixed(3)}`;
+            }
+        }
+
+        function getParameterLabel(parameter) {
+            const labels = {
+                stockPrice: 'Stock Price ($)',
+                strikePrice: 'Strike Price ($)',
+                volatility: 'Volatility',
+                timeToExpiry: 'Time to Expiry (days)',
+                riskFreeRate: 'Risk-Free Rate'
+            };
+            return labels[parameter] || parameter;
+        }
+
+        function updateGreeksChart() {
+            const S = parseFloat(document.getElementById('stockPrice').value);
+            const K = parseFloat(document.getElementById('strikePrice').value);
+            const T = parseFloat(document.getElementById('timeToExpiry').value) / 365;
+            const r = parseFloat(document.getElementById('riskFreeRate').value) / 100;
+            const sigma = parseFloat(document.getElementById('volatility').value) / 100;
+            const q = parseFloat(document.getElementById('dividendYield').value) / 100;
+            
+            // Generate stock price range
+            const stockPrices = Array.from({length: 41}, (_, i) => S * 0.7 + (S * 0.6 * i) / 40);
+            
+            const deltas = stockPrices.map(price => calculateGreeks(price, K, T, r, sigma, q).callDelta);
+            const gammas = stockPrices.map(price => calculateGreeks(price, K, T, r, sigma, q).gamma * 100);
+            const vegas = stockPrices.map(price => calculateGreeks(price, K, T, r, sigma, q).vega / 100);
+            
+            const trace1 = {
+                x: stockPrices,
+                y: deltas,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Delta',
+                line: { color: '#3b82f6' }
+            };
+            
+            const trace2 = {
+                x: stockPrices,
+                y: gammas,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Gamma × 100',
+                yaxis: 'y2',
+                line: { color: '#10b981' }
+            };
+            
+            const trace3 = {
+                x: stockPrices,
+                y: vegas,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Vega / 100',
+                yaxis: 'y2',
+                line: { color: '#f59e0b' }
+            };
+            
+            const layout = {
+                title: 'Greeks vs Stock Price',
+                xaxis: { title: 'Stock Price ($)' },
+                yaxis: { title: 'Delta', side: 'left' },
+                yaxis2: { title: 'Gamma & Vega (scaled)', side: 'right', overlaying: 'y' },
+                hovermode: 'x unified'
+            };
+            
+            Plotly.newPlot('greeksChart', [trace1, trace2, trace3], layout);
+        }
+
+        function updateImpliedVolatility() {
+            const S = parseFloat(document.getElementById('stockPrice').value);
+            const K = parseFloat(document.getElementById('strikePrice').value);
+            const T = parseFloat(document.getElementById('timeToExpiry').value) / 365;
+            const r = parseFloat(document.getElementById('riskFreeRate').value) / 100;
+            const q = parseFloat(document.getElementById('dividendYield').value) / 100;
+            const marketPrice = parseFloat(document.getElementById('marketPrice').value);
+            const optionType = document.getElementById('optionType').value;
+            
+            const impliedVol = calculateImpliedVolatility(S, K, T, r, marketPrice, q, optionType);
+            const theoreticalPrice = blackScholes(S, K, T, r, impliedVol, q, optionType);
+            const priceDiff = marketPrice - theoreticalPrice;
+            
+            document.getElementById('impliedVolatility').textContent = `${(impliedVol * 100).toFixed(1)}%`;
+            document.getElementById('theoreticalPrice').textContent = `$${theoreticalPrice.toFixed(2)}`;
+            document.getElementById('priceDifference').textContent = `${priceDiff >= 0 ? '+' : ''}$${priceDiff.toFixed(3)}`;
+            
+            // Show convergence info
+            const convergenceDiv = document.getElementById('ivConvergence');
+            if (Math.abs(priceDiff) < 0.01) {
+                convergenceDiv.innerHTML = `
+                    <div class="convergence-success">
+                        ✅ Converged successfully. Market price matches theoretical value within $0.01.
+                    </div>
+                `;
+            } else {
+                convergenceDiv.innerHTML = `
+                    <div class="convergence-warning">
+                        ⚠️ Price difference of $${Math.abs(priceDiff).toFixed(3)} may indicate model limitations or market inefficiencies.
+                    </div>
+                `;
+            }
+        }
+
+        function loadScenario(scenario) {
+            const scenarios = {
+                earnings: {
+                    description: "Pre-earnings scenario with elevated implied volatility due to uncertainty.",
+                    params: { stockPrice: 150, strikePrice: 150, timeToExpiry: 3, volatility: 45, riskFreeRate: 5 }
+                },
+                lowvol: {
+                    description: "Low volatility environment typical of bull markets with low VIX.",
+                    params: { stockPrice: 100, strikePrice: 100, timeToExpiry: 30, volatility: 12, riskFreeRate: 3 }
+                },
+                highvol: {
+                    description: "High volatility crisis scenario with elevated fear and uncertainty.",
+                    params: { stockPrice: 100, strikePrice: 100, timeToExpiry: 30, volatility: 60, riskFreeRate: 2 }
+                },
+                dividend: {
+                    description: "Stock about to go ex-dividend, affecting put-call parity and early exercise.",
+                    params: { stockPrice: 100, strikePrice: 100, timeToExpiry: 2, volatility: 20, dividendYield: 4 }
+                },
+                expiry: {
+                    description: "Options near expiration with high gamma risk and time decay acceleration.",
+                    params: { stockPrice: 100, strikePrice: 100, timeToExpiry: 1, volatility: 25, riskFreeRate: 5 }
+                }
+            };
+            
+            const selected = scenarios[scenario];
+            if (!selected) return;
+            
+            // Update inputs
+            Object.keys(selected.params).forEach(param => {
+                const element = document.getElementById(param);
+                if (element) element.value = selected.params[param];
+            });
+            
+            // Update description
+            document.getElementById('scenarioDescription').innerHTML = `
+                <div class="scenario-active">
+                    <h3>${scenario.charAt(0).toUpperCase() + scenario.slice(1)} Scenario</h3>
+                    <p>${selected.description}</p>
+                </div>
+            `;
+            
+            // Recalculate
+            updateBlackScholesCalculations();
+        }
+
+        // Event listeners
+        ['stockPrice', 'strikePrice', 'timeToExpiry', 'riskFreeRate', 'volatility', 'dividendYield'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateBlackScholesCalculations);
+        });
+
+        ['sensitivityParameter', 'rangePercent'].forEach(id => {
+            document.getElementById(id).addEventListener('change', updateSensitivityChart);
+        });
+
+        ['marketPrice', 'optionType'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateImpliedVolatility);
+        });
+
+        // Initialize
+        updateBlackScholesCalculations();
+    </script>
+
+    <style>
+        .formula-showcase {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .main-formula {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+            font-family: 'Times New Roman', serif;
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .component-formula {
+            background: var(--color-background);
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            font-size: 1.1rem;
+        }
+
+        .put-formula {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--color-card-bg);
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+        }
+
+        .definition-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .definition-item {
+            padding: 0.5rem;
+            background: var(--color-background);
+            border-radius: 4px;
+            font-family: 'Monaco', monospace;
+        }
+
+        .bs-results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .call-result {
+            border-left: 4px solid #10b981;
+        }
+
+        .put-result {
+            border-left: 4px solid #ef4444;
+        }
+
+        .calculation-details {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+        }
+
+        .greeks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .greek-card {
+            padding: 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background: var(--color-card-bg);
+        }
+
+        .delta-card { border-top: 3px solid #3b82f6; }
+        .gamma-card { border-top: 3px solid #10b981; }
+        .theta-card { border-top: 3px solid #ef4444; }
+        .vega-card { border-top: 3px solid #f59e0b; }
+        .rho-card { border-top: 3px solid #8b5cf6; }
+
+        .greek-values {
+            margin: 0.5rem 0;
+        }
+
+        .greek-value {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.25rem 0;
+            font-family: 'Monaco', monospace;
+        }
+
+        .greek-value .value {
+            font-weight: bold;
+        }
+
+        .assumptions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .assumption-card {
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+        }
+
+        .assumption-card.valid {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .assumption-card.limitations {
+            background-color: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .extension-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .extension-card {
+            padding: 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background: var(--color-card-bg);
+        }
+
+        .history-timeline {
+            position: relative;
+            padding: 1rem 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--color-background);
+            border-radius: 8px;
+            border-left: 4px solid var(--color-primary);
+        }
+
+        .year {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--color-primary);
+            min-width: 80px;
+            margin-right: 1rem;
+        }
+
+        .impact-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--color-primary);
+        }
+
+        .stat-label {
+            margin-top: 0.5rem;
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .calculation-steps {
+            font-family: 'Monaco', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .step {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: var(--color-background);
+            border-radius: 4px;
+        }
+
+        .convergence-success {
+            color: #047857;
+            background: #d1fae5;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .convergence-warning {
+            color: #92400e;
+            background: #fef3c7;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .scenario-active {
+            background: var(--color-primary);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .scenario-active h3 {
+            margin-top: 0;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .main-formula {
+                font-size: 1.5rem;
+            }
+            
+            .component-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .bs-results {
+                grid-template-columns: 1fr;
+            }
+            
+            .assumptions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

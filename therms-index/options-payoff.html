@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Options Payoff Diagrams - Interactive Finance</title>
+    <link rel="stylesheet" href="unified-styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <nav>
+        <a href="index.html">← Back to Directory</a>
+    </nav>
+
+    <header>
+        <h1>Options Payoff Diagrams</h1>
+        <p class="subtitle">Understanding profit and loss profiles of options at expiration</p>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2>What are Options?</h2>
+            <p>Options are financial derivatives that give the holder the right, but not the obligation, to buy (call) or sell (put) an underlying asset at a predetermined price (strike) before or at expiration.</p>
+            
+            <div class="formula-box">
+                <h3>Basic Option Payoffs at Expiration</h3>
+                <div class="formula">
+                    <strong>Long Call:</strong> max(S - K, 0) - Premium<br>
+                    <strong>Short Call:</strong> Premium - max(S - K, 0)<br>
+                    <strong>Long Put:</strong> max(K - S, 0) - Premium<br>
+                    <strong>Short Put:</strong> Premium - max(K - S, 0)
+                </div>
+                <p class="formula-note">Where S = Spot price at expiration, K = Strike price</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Interactive Payoff Diagram</h2>
+            
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="optionType">Option Type:</label>
+                    <select id="optionType">
+                        <option value="long-call">Long Call</option>
+                        <option value="short-call">Short Call</option>
+                        <option value="long-put">Long Put</option>
+                        <option value="short-put">Short Put</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="strikePrice">Strike Price ($):</label>
+                    <input type="number" id="strikePrice" value="100" min="50" max="150" step="5">
+                </div>
+                
+                <div class="control-group">
+                    <label for="premium">Option Premium ($):</label>
+                    <input type="number" id="premium" value="5" min="0.1" max="20" step="0.5">
+                </div>
+                
+                <div class="control-group">
+                    <label for="currentSpot">Current Spot Price ($):</label>
+                    <input type="number" id="currentSpot" value="100" min="50" max="150" step="1">
+                </div>
+            </div>
+
+            <div id="payoffChart" class="chart-container"></div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>At Current Spot</h3>
+                    <div id="currentPayoff" class="highlight-value">$0.00</div>
+                    <p class="info-label">Payoff at expiration</p>
+                </div>
+                <div class="info-card">
+                    <h3>Breakeven Price</h3>
+                    <div id="breakeven" class="highlight-value">$0.00</div>
+                    <p class="info-label">Zero profit/loss point</p>
+                </div>
+                <div class="info-card">
+                    <h3>Max Profit</h3>
+                    <div id="maxProfit" class="highlight-value">$0.00</div>
+                    <p class="info-label">Maximum possible gain</p>
+                </div>
+                <div class="info-card">
+                    <h3>Max Loss</h3>
+                    <div id="maxLoss" class="highlight-value">$0.00</div>
+                    <p class="info-label">Maximum possible loss</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Multi-Leg Strategy Builder</h2>
+            <p>Combine multiple options to create complex strategies:</p>
+            
+            <div class="strategy-builder">
+                <div class="legs-container" id="legsContainer">
+                    <div class="leg-item">
+                        <select class="leg-type">
+                            <option value="none">-- Select --</option>
+                            <option value="long-call">Long Call</option>
+                            <option value="short-call">Short Call</option>
+                            <option value="long-put">Long Put</option>
+                            <option value="short-put">Short Put</option>
+                        </select>
+                        <input type="number" class="leg-strike" placeholder="Strike" value="100" min="50" max="150">
+                        <input type="number" class="leg-premium" placeholder="Premium" value="5" min="0.1" max="20" step="0.5">
+                        <input type="number" class="leg-quantity" placeholder="Qty" value="1" min="1" max="10">
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button onclick="addLeg()" class="btn-secondary">Add Leg</button>
+                    <button onclick="clearLegs()" class="btn-secondary">Clear All</button>
+                    <button onclick="loadStrategy('straddle')" class="btn-primary">Load Straddle</button>
+                    <button onclick="loadStrategy('strangle')" class="btn-primary">Load Strangle</button>
+                    <button onclick="loadStrategy('butterfly')" class="btn-primary">Load Butterfly</button>
+                    <button onclick="loadStrategy('iron-condor')" class="btn-primary">Load Iron Condor</button>
+                </div>
+            </div>
+
+            <div id="strategyChart" class="chart-container"></div>
+            
+            <div id="strategyMetrics" class="metrics-display"></div>
+        </div>
+
+        <div class="card">
+            <h2>Common Option Strategies</h2>
+            
+            <div class="scenario-box">
+                <h3>Bullish Strategies</h3>
+                <ul>
+                    <li><strong>Long Call:</strong> Profit from price increase with limited risk</li>
+                    <li><strong>Bull Call Spread:</strong> Limited profit and loss, lower cost than long call</li>
+                    <li><strong>Protective Put:</strong> Insurance for long stock position</li>
+                </ul>
+            </div>
+            
+            <div class="scenario-box">
+                <h3>Bearish Strategies</h3>
+                <ul>
+                    <li><strong>Long Put:</strong> Profit from price decrease with limited risk</li>
+                    <li><strong>Bear Put Spread:</strong> Limited profit and loss, lower cost than long put</li>
+                    <li><strong>Covered Call:</strong> Generate income on long stock position</li>
+                </ul>
+            </div>
+            
+            <div class="scenario-box">
+                <h3>Neutral/Volatility Strategies</h3>
+                <ul>
+                    <li><strong>Straddle:</strong> Profit from large moves in either direction</li>
+                    <li><strong>Strangle:</strong> Similar to straddle but with different strikes</li>
+                    <li><strong>Iron Condor:</strong> Profit from low volatility within a range</li>
+                    <li><strong>Butterfly:</strong> Profit from price staying near strike</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Key Concepts</h2>
+            
+            <div class="concept-grid">
+                <div class="concept">
+                    <h3>Moneyness</h3>
+                    <p><strong>ITM (In-the-Money):</strong> Has intrinsic value</p>
+                    <p><strong>ATM (At-the-Money):</strong> Strike ≈ Current price</p>
+                    <p><strong>OTM (Out-of-the-Money):</strong> No intrinsic value</p>
+                </div>
+                
+                <div class="concept">
+                    <h3>Exercise Styles</h3>
+                    <p><strong>American:</strong> Can exercise any time before expiration</p>
+                    <p><strong>European:</strong> Can only exercise at expiration</p>
+                </div>
+                
+                <div class="concept">
+                    <h3>Risk Profile</h3>
+                    <p><strong>Long Options:</strong> Limited risk (premium paid)</p>
+                    <p><strong>Short Options:</strong> Potentially unlimited risk</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Single option payoff calculation
+        function calculatePayoff(type, strike, premium, spot) {
+            let intrinsic = 0;
+            
+            switch(type) {
+                case 'long-call':
+                    intrinsic = Math.max(spot - strike, 0);
+                    return intrinsic - premium;
+                case 'short-call':
+                    intrinsic = Math.max(spot - strike, 0);
+                    return premium - intrinsic;
+                case 'long-put':
+                    intrinsic = Math.max(strike - spot, 0);
+                    return intrinsic - premium;
+                case 'short-put':
+                    intrinsic = Math.max(strike - spot, 0);
+                    return premium - intrinsic;
+            }
+            return 0;
+        }
+
+        // Calculate breakeven price
+        function calculateBreakeven(type, strike, premium) {
+            switch(type) {
+                case 'long-call':
+                    return strike + premium;
+                case 'short-call':
+                    return strike + premium;
+                case 'long-put':
+                    return strike - premium;
+                case 'short-put':
+                    return strike - premium;
+            }
+            return strike;
+        }
+
+        // Calculate max profit and loss
+        function calculateMaxProfitLoss(type, strike, premium) {
+            let maxProfit, maxLoss;
+            
+            switch(type) {
+                case 'long-call':
+                    maxProfit = Infinity;
+                    maxLoss = -premium;
+                    break;
+                case 'short-call':
+                    maxProfit = premium;
+                    maxLoss = -Infinity;
+                    break;
+                case 'long-put':
+                    maxProfit = strike - premium;
+                    maxLoss = -premium;
+                    break;
+                case 'short-put':
+                    maxProfit = premium;
+                    maxLoss = premium - strike;
+                    break;
+            }
+            
+            return { maxProfit, maxLoss };
+        }
+
+        // Update single option payoff chart
+        function updatePayoffChart() {
+            const type = document.getElementById('optionType').value;
+            const strike = parseFloat(document.getElementById('strikePrice').value);
+            const premium = parseFloat(document.getElementById('premium').value);
+            const currentSpot = parseFloat(document.getElementById('currentSpot').value);
+            
+            // Generate price range
+            const minPrice = strike * 0.5;
+            const maxPrice = strike * 1.5;
+            const prices = [];
+            const payoffs = [];
+            const profits = [];
+            
+            for (let price = minPrice; price <= maxPrice; price += 1) {
+                prices.push(price);
+                const payoff = calculatePayoff(type, strike, premium, price);
+                payoffs.push(payoff);
+                profits.push(payoff);
+            }
+            
+            // Create traces
+            const traces = [
+                {
+                    x: prices,
+                    y: payoffs,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Payoff',
+                    line: { color: '#2563eb', width: 3 }
+                },
+                {
+                    x: [minPrice, maxPrice],
+                    y: [0, 0],
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Break-even',
+                    line: { color: '#94a3b8', width: 1, dash: 'dash' }
+                },
+                {
+                    x: [strike, strike],
+                    y: [Math.min(...payoffs), Math.max(...payoffs)],
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Strike',
+                    line: { color: '#ef4444', width: 2, dash: 'dot' }
+                },
+                {
+                    x: [currentSpot],
+                    y: [calculatePayoff(type, strike, premium, currentSpot)],
+                    type: 'scatter',
+                    mode: 'markers',
+                    name: 'Current Spot',
+                    marker: { color: '#10b981', size: 10 }
+                }
+            ];
+            
+            const layout = {
+                title: `${type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} Payoff Diagram`,
+                xaxis: { title: 'Spot Price at Expiration ($)' },
+                yaxis: { title: 'Profit/Loss ($)' },
+                hovermode: 'x unified',
+                showlegend: true,
+                height: 400
+            };
+            
+            Plotly.newPlot('payoffChart', traces, layout);
+            
+            // Update metrics
+            const currentPayoff = calculatePayoff(type, strike, premium, currentSpot);
+            const breakeven = calculateBreakeven(type, strike, premium);
+            const { maxProfit, maxLoss } = calculateMaxProfitLoss(type, strike, premium);
+            
+            document.getElementById('currentPayoff').textContent = 
+                `$${currentPayoff.toFixed(2)}`;
+            document.getElementById('currentPayoff').style.color = 
+                currentPayoff >= 0 ? '#10b981' : '#ef4444';
+            
+            document.getElementById('breakeven').textContent = `$${breakeven.toFixed(2)}`;
+            
+            document.getElementById('maxProfit').textContent = 
+                maxProfit === Infinity ? 'Unlimited' : `$${maxProfit.toFixed(2)}`;
+            document.getElementById('maxProfit').style.color = '#10b981';
+            
+            document.getElementById('maxLoss').textContent = 
+                maxLoss === -Infinity ? 'Unlimited' : `$${maxLoss.toFixed(2)}`;
+            document.getElementById('maxLoss').style.color = '#ef4444';
+        }
+
+        // Multi-leg strategy functions
+        let strategyLegs = [];
+
+        function addLeg() {
+            const container = document.getElementById('legsContainer');
+            const legDiv = document.createElement('div');
+            legDiv.className = 'leg-item';
+            legDiv.innerHTML = `
+                <select class="leg-type">
+                    <option value="none">-- Select --</option>
+                    <option value="long-call">Long Call</option>
+                    <option value="short-call">Short Call</option>
+                    <option value="long-put">Long Put</option>
+                    <option value="short-put">Short Put</option>
+                </select>
+                <input type="number" class="leg-strike" placeholder="Strike" value="100" min="50" max="150">
+                <input type="number" class="leg-premium" placeholder="Premium" value="5" min="0.1" max="20" step="0.5">
+                <input type="number" class="leg-quantity" placeholder="Qty" value="1" min="1" max="10">
+                <button onclick="this.parentElement.remove(); updateStrategyChart();" class="btn-remove">×</button>
+            `;
+            container.appendChild(legDiv);
+        }
+
+        function clearLegs() {
+            const container = document.getElementById('legsContainer');
+            container.innerHTML = `
+                <div class="leg-item">
+                    <select class="leg-type">
+                        <option value="none">-- Select --</option>
+                        <option value="long-call">Long Call</option>
+                        <option value="short-call">Short Call</option>
+                        <option value="long-put">Long Put</option>
+                        <option value="short-put">Short Put</option>
+                    </select>
+                    <input type="number" class="leg-strike" placeholder="Strike" value="100" min="50" max="150">
+                    <input type="number" class="leg-premium" placeholder="Premium" value="5" min="0.1" max="20" step="0.5">
+                    <input type="number" class="leg-quantity" placeholder="Qty" value="1" min="1" max="10">
+                </div>
+            `;
+            updateStrategyChart();
+        }
+
+        function loadStrategy(strategy) {
+            clearLegs();
+            const container = document.getElementById('legsContainer');
+            container.innerHTML = '';
+            
+            let legsHTML = '';
+            
+            switch(strategy) {
+                case 'straddle':
+                    legsHTML = `
+                        <div class="leg-item">
+                            <select class="leg-type"><option value="long-call" selected>Long Call</option></select>
+                            <input type="number" class="leg-strike" value="100">
+                            <input type="number" class="leg-premium" value="5">
+                            <input type="number" class="leg-quantity" value="1">
+                        </div>
+                        <div class="leg-item">
+                            <select class="leg-type"><option value="long-put" selected>Long Put</option></select>
+                            <input type="number" class="leg-strike" value="100">
+                            <input type="number" class="leg-premium" value="5">
+                            <input type="number" class="leg-quantity" value="1">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'strangle':
+                    legsHTML = `
+                        <div class="leg-item">
+                            <select class="leg-type"><option value="long-call" selected>Long Call</option></select>
+                            <input type="number" class="leg-strike" value="110">
+                            <input type="number" class="leg-premium" value="3">
+                            <input type="number" class="leg-quantity" value="1">
+                        </div>
+                        <div class="leg-item">
+                            <select class="leg-type"><option value="long-put" selected>Long Put</option></select>
+                            <input type="number" class="leg-strike" value="90">
+                            <input type="number" class="leg-premium" value="3">
+                            <input type="number" class="leg-quantity" value="1">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'butterfly':
+                    legsHTML = `
+                        <div class="leg-item">
+                            <select class="leg-type"><option value="long-call" selected>Long Call</option></select>
+                            <input type="number" class="leg-strike" value="95">
+                            <input type="number" class="leg-premium" value="7">
+                            <input type="number" class="leg-quantity" value="1">
+                        </div>
+                        <div class="leg-item">
+                            <select class="leg-type"><option value="short-call" selected>Short Call</option></select>
+                            <input type="number" class="leg-strike" value="100">
+                            <input type="number" class="leg-premium" value="5">
+                            <input type="number" class="leg-quantity" value="2">
+                        </div>
+                        <div class="leg-item">
+                            <select class="leg-type"><option value="long-call" selected>Long Call</option></select>
+                            <input type="number" class="leg-strike" value="105">
+                            <input type="number" class="leg-premium" value="3">
+                            <input type="number" class="leg-quantity" value="1">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'iron-condor':
+                    legsHTML = `
+                        <div class="leg-item">
+                            <select class="leg-type"><option value="long-put" selected>Long Put</option></select>
+                            <input type="number" class="leg-strike" value="85">
+                            <input type="number" class="leg-premium" value="1">
+                            <input type="number" class="leg-quantity" value="1">
+                        </div>
+                        <div class="leg-item">
+                            <select class="leg-type"><option value="short-put" selected>Short Put</option></select>
+                            <input type="number" class="leg-strike" value="90">
+                            <input type="number" class="leg-premium" value="2">
+                            <input type="number" class="leg-quantity" value="1">
+                        </div>
+                        <div class="leg-item">
+                            <select class="leg-type"><option value="short-call" selected>Short Call</option></select>
+                            <input type="number" class="leg-strike" value="110">
+                            <input type="number" class="leg-premium" value="2">
+                            <input type="number" class="leg-quantity" value="1">
+                        </div>
+                        <div class="leg-item">
+                            <select class="leg-type"><option value="long-call" selected>Long Call</option></select>
+                            <input type="number" class="leg-strike" value="115">
+                            <input type="number" class="leg-premium" value="1">
+                            <input type="number" class="leg-quantity" value="1">
+                        </div>
+                    `;
+                    break;
+            }
+            
+            container.innerHTML = legsHTML;
+            updateStrategyChart();
+        }
+
+        function updateStrategyChart() {
+            const legItems = document.querySelectorAll('.leg-item');
+            const legs = [];
+            
+            legItems.forEach(item => {
+                const type = item.querySelector('.leg-type').value;
+                if (type !== 'none') {
+                    legs.push({
+                        type: type,
+                        strike: parseFloat(item.querySelector('.leg-strike').value),
+                        premium: parseFloat(item.querySelector('.leg-premium').value),
+                        quantity: parseFloat(item.querySelector('.leg-quantity').value)
+                    });
+                }
+            });
+            
+            if (legs.length === 0) {
+                Plotly.purge('strategyChart');
+                document.getElementById('strategyMetrics').innerHTML = '';
+                return;
+            }
+            
+            // Calculate strategy payoff
+            const strikes = legs.map(l => l.strike);
+            const minPrice = Math.min(...strikes) * 0.5;
+            const maxPrice = Math.max(...strikes) * 1.5;
+            const prices = [];
+            const totalPayoffs = [];
+            
+            for (let price = minPrice; price <= maxPrice; price += 1) {
+                prices.push(price);
+                let totalPayoff = 0;
+                
+                legs.forEach(leg => {
+                    totalPayoff += calculatePayoff(leg.type, leg.strike, leg.premium, price) * leg.quantity;
+                });
+                
+                totalPayoffs.push(totalPayoff);
+            }
+            
+            // Find key metrics
+            const maxProfit = Math.max(...totalPayoffs);
+            const maxLoss = Math.min(...totalPayoffs);
+            const breakevens = [];
+            
+            for (let i = 1; i < totalPayoffs.length; i++) {
+                if ((totalPayoffs[i-1] < 0 && totalPayoffs[i] >= 0) || 
+                    (totalPayoffs[i-1] >= 0 && totalPayoffs[i] < 0)) {
+                    breakevens.push(prices[i]);
+                }
+            }
+            
+            // Create chart
+            const traces = [
+                {
+                    x: prices,
+                    y: totalPayoffs,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Strategy Payoff',
+                    line: { color: '#2563eb', width: 3 },
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(37, 99, 235, 0.1)'
+                },
+                {
+                    x: [minPrice, maxPrice],
+                    y: [0, 0],
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Break-even',
+                    line: { color: '#94a3b8', width: 1, dash: 'dash' }
+                }
+            ];
+            
+            // Add strike lines
+            strikes.forEach((strike, i) => {
+                traces.push({
+                    x: [strike, strike],
+                    y: [Math.min(...totalPayoffs), Math.max(...totalPayoffs)],
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: `Strike ${i+1}`,
+                    line: { color: '#ef4444', width: 1, dash: 'dot' },
+                    showlegend: false
+                });
+            });
+            
+            const layout = {
+                title: 'Multi-Leg Strategy Payoff',
+                xaxis: { title: 'Spot Price at Expiration ($)' },
+                yaxis: { title: 'Total Profit/Loss ($)' },
+                hovermode: 'x unified',
+                height: 400
+            };
+            
+            Plotly.newPlot('strategyChart', traces, layout);
+            
+            // Update metrics
+            const metricsHTML = `
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <span class="metric-label">Max Profit:</span>
+                        <span class="metric-value" style="color: #10b981;">
+                            ${maxProfit === Infinity ? 'Unlimited' : `$${maxProfit.toFixed(2)}`}
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Max Loss:</span>
+                        <span class="metric-value" style="color: #ef4444;">
+                            ${maxLoss === -Infinity ? 'Unlimited' : `$${maxLoss.toFixed(2)}`}
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Breakeven(s):</span>
+                        <span class="metric-value">
+                            ${breakevens.length > 0 ? breakevens.map(b => `$${b.toFixed(2)}`).join(', ') : 'None'}
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Net Premium:</span>
+                        <span class="metric-value">
+                            $${legs.reduce((sum, leg) => {
+                                const sign = leg.type.includes('long') ? -1 : 1;
+                                return sum + (sign * leg.premium * leg.quantity);
+                            }, 0).toFixed(2)}
+                        </span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('strategyMetrics').innerHTML = metricsHTML;
+        }
+
+        // Event listeners
+        document.getElementById('optionType').addEventListener('change', updatePayoffChart);
+        document.getElementById('strikePrice').addEventListener('input', updatePayoffChart);
+        document.getElementById('premium').addEventListener('input', updatePayoffChart);
+        document.getElementById('currentSpot').addEventListener('input', updatePayoffChart);
+
+        // Add event listener for strategy changes
+        document.getElementById('legsContainer').addEventListener('change', updateStrategyChart);
+
+        // Initial load
+        updatePayoffChart();
+        updateStrategyChart();
+    </script>
+
+    <style>
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .info-card {
+            background: var(--gray-50);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-card h3 {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-bottom: 0.5rem;
+        }
+
+        .highlight-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        .strategy-builder {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .legs-container {
+            margin-bottom: 1rem;
+        }
+
+        .leg-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+
+        .leg-item select,
+        .leg-item input {
+            padding: 0.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+        }
+
+        .btn-remove {
+            background: var(--error);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .metrics-display {
+            margin-top: 1rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            background: var(--gray-50);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .metric-label {
+            font-weight: 500;
+            color: var(--gray-600);
+        }
+
+        .metric-value {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .concept {
+            background: var(--gray-50);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .concept h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .concept p {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</body>
+</html>

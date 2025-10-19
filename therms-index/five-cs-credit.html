@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Five Cs of Credit Analysis</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Five Cs of Credit Analysis</h2>
+
+  <div class="card description">
+    <h3>Understanding Credit Risk Assessment</h3>
+    <p>The <strong>Five Cs of Credit Analysis</strong> provide a comprehensive framework for evaluating a borrower's creditworthiness. This systematic approach helps lenders assess the probability of default and structure appropriate loan terms.</p>
+    <p>Each "C" represents a critical dimension of credit risk, and together they form the foundation of modern credit underwriting.</p>
+  </div>
+
+  <div class="scenario">
+    <h3>📊 Interactive Credit Scoring Calculator</h3>
+    <p>Adjust the Five Cs parameters to see how they affect overall credit assessment and loan approval probability. Explore different borrower profiles and understand lending decisions.</p>
+  </div>
+
+  <div class="card">
+    <h3>🎯 The Five Cs Framework</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card" style="border-left: 4px solid var(--primary-color);">
+        <h4>1️⃣ Character</h4>
+        <p style="font-size: 0.9rem;">Borrower's reputation and track record</p>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--success-color);">
+        <h4>2️⃣ Capacity</h4>
+        <p style="font-size: 0.9rem;">Ability to repay the loan</p>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--warning-color);">
+        <h4>3️⃣ Capital</h4>
+        <p style="font-size: 0.9rem;">Financial resources and equity</p>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--info-color);">
+        <h4>4️⃣ Collateral</h4>
+        <p style="font-size: 0.9rem;">Assets securing the loan</p>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--error-color);">
+        <h4>5️⃣ Conditions</h4>
+        <p style="font-size: 0.9rem;">Economic and loan context</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="control">
+    <label for="borrowerType">Borrower Type:</label>
+    <select id="borrowerType" style="padding: 0.5rem; border-radius: 0.375rem; border: 1px solid var(--border-color); margin-bottom: 1rem;">
+      <option value="individual">Individual/Consumer</option>
+      <option value="smallBusiness">Small Business</option>
+      <option value="corporate">Corporate</option>
+      <option value="custom">Custom Profile</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <h3>📝 Credit Assessment Parameters</h3>
+    
+    <div class="scenario" style="border-left: 4px solid var(--primary-color);">
+      <h4>1. Character (Credit History & Reputation)</h4>
+      <div class="control">
+        <label for="creditScore">Credit Score (FICO/Similar): <span id="creditScoreValue">720</span></label>
+        <input type="range" id="creditScore" min="300" max="850" step="10" value="720" />
+        <small>300-579: Poor | 580-669: Fair | 670-739: Good | 740-799: Very Good | 800+: Excellent</small>
+      </div>
+      <div class="control">
+        <label for="paymentHistory">Payment History Score: <span id="paymentHistoryValue">85</span>%</label>
+        <input type="range" id="paymentHistory" min="0" max="100" step="5" value="85" />
+        <small>On-time payment percentage over past 24 months</small>
+      </div>
+    </div>
+
+    <div class="scenario" style="border-left: 4px solid var(--success-color);">
+      <h4>2. Capacity (Ability to Repay)</h4>
+      <div class="control">
+        <label for="dtiRatio">Debt-to-Income Ratio: <span id="dtiRatioValue">35</span>%</label>
+        <input type="range" id="dtiRatio" min="0" max="80" step="1" value="35" />
+        <small>Total monthly debt payments / Gross monthly income</small>
+      </div>
+      <div class="control">
+        <label for="dscr">Debt Service Coverage Ratio: <span id="dscrValue">1.25</span>x</label>
+        <input type="range" id="dscr" min="0.5" max="3.0" step="0.05" value="1.25" />
+        <small>Net Operating Income / Total Debt Service (Business loans)</small>
+      </div>
+    </div>
+
+    <div class="scenario" style="border-left: 4px solid var(--warning-color);">
+      <h4>3. Capital (Financial Resources)</h4>
+      <div class="control">
+        <label for="equityRatio">Equity/Down Payment Ratio: <span id="equityRatioValue">20</span>%</label>
+        <input type="range" id="equityRatio" min="0" max="50" step="1" value="20" />
+        <small>Borrower's equity contribution to total project/purchase</small>
+      </div>
+      <div class="control">
+        <label for="netWorth">Net Worth to Loan Ratio: <span id="netWorthValue">2.0</span>x</label>
+        <input type="range" id="netWorth" min="0.1" max="10.0" step="0.1" value="2.0" />
+        <small>Total assets minus liabilities relative to loan amount</small>
+      </div>
+    </div>
+
+    <div class="scenario" style="border-left: 4px solid var(--info-color);">
+      <h4>4. Collateral (Security)</h4>
+      <div class="control">
+        <label for="ltvRatio">Loan-to-Value Ratio: <span id="ltvRatioValue">80</span>%</label>
+        <input type="range" id="ltvRatio" min="50" max="100" step="1" value="80" />
+        <small>Loan amount / Collateral value</small>
+      </div>
+      <div class="control">
+        <label for="collateralQuality">Collateral Quality Score: <span id="collateralQualityValue">75</span>%</label>
+        <input type="range" id="collateralQuality" min="0" max="100" step="5" value="75" />
+        <small>Liquidity, stability, and marketability of collateral</small>
+      </div>
+    </div>
+
+    <div class="scenario" style="border-left: 4px solid var(--error-color);">
+      <h4>5. Conditions (Context & Environment)</h4>
+      <div class="control">
+        <label for="economicOutlook">Economic Outlook Score: <span id="economicOutlookValue">60</span>%</label>
+        <input type="range" id="economicOutlook" min="0" max="100" step="5" value="60" />
+        <small>Market conditions, industry trends, economic indicators</small>
+      </div>
+      <div class="control">
+        <label for="loanPurpose">Loan Purpose Risk Score: <span id="loanPurposeValue">70</span>%</label>
+        <input type="range" id="loanPurpose" min="0" max="100" step="5" value="70" />
+        <small>100% = Low risk (home purchase) | 0% = High risk (speculation)</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📊 Credit Assessment Results</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Overall Credit Score</h4>
+        <p id="overallScore" style="font-size: 2rem; font-weight: 600; color: var(--primary-color);">725</p>
+        <small id="creditRating">Very Good</small>
+      </div>
+      <div class="card">
+        <h4>Default Probability</h4>
+        <p id="defaultProb" style="font-size: 2rem; font-weight: 600; color: var(--error-color);">2.8%</p>
+        <small>12-month PD estimate</small>
+      </div>
+      <div class="card">
+        <h4>Recommended Rate</h4>
+        <p id="interestRate" style="font-size: 2rem; font-weight: 600; color: var(--success-color);">6.5%</p>
+        <small>Risk-adjusted pricing</small>
+      </div>
+      <div class="card">
+        <h4>Approval Status</h4>
+        <p id="approvalStatus" style="font-size: 1.5rem; font-weight: 600;">APPROVED</p>
+        <small id="approvalConditions">Standard terms</small>
+      </div>
+    </div>
+  </div>
+
+  <div id="radarPlot" style="width:100%;height:400px;"></div>
+  <div id="scoreBreakdownPlot" style="width:100%;height:350px;"></div>
+
+  <div class="card">
+    <h3>🎯 Credit Decision Matrix</h3>
+    <div id="decisionMatrix" class="scenario">
+      <h4>Lending Recommendation</h4>
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-top: 1rem;">
+        <div>
+          <strong>Risk Category:</strong>
+          <p id="riskCategory" style="font-size: 1.2rem; color: var(--primary-color);">Low Risk</p>
+        </div>
+        <div>
+          <strong>Recommended Actions:</strong>
+          <ul id="recommendedActions">
+            <li>Approve with standard terms</li>
+            <li>Consider competitive pricing</li>
+            <li>Minimal monitoring required</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-tertiary); border-radius: 0.5rem;">
+        <strong>Key Risk Factors:</strong>
+        <ul id="riskFactors">
+          <li>Strong credit history supports approval</li>
+          <li>Adequate capacity with manageable DTI</li>
+          <li>Sufficient collateral coverage</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background-color: var(--bg-secondary); border: 2px solid var(--info-color);">
+    <h3>📈 Industry Benchmarks</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>🏠 Mortgage Lending</h4>
+        <ul style="font-size: 0.9rem;">
+          <li>Min Credit Score: 620-640</li>
+          <li>Max DTI: 43-50%</li>
+          <li>Max LTV: 80-97%</li>
+          <li>Typical Rate: 6-7%</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🚗 Auto Lending</h4>
+        <ul style="font-size: 0.9rem;">
+          <li>Min Credit Score: 500-600</li>
+          <li>Max DTI: 40-50%</li>
+          <li>Max LTV: 100-125%</li>
+          <li>Typical Rate: 4-15%</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🏢 Business Lending</h4>
+        <ul style="font-size: 0.9rem;">
+          <li>Min Credit Score: 680+</li>
+          <li>Min DSCR: 1.20-1.25x</li>
+          <li>Max LTV: 70-80%</li>
+          <li>Typical Rate: 7-12%</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📊 Key Financial Ratios Explained</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+      <div class="scenario">
+        <h4>Debt-to-Income (DTI)</h4>
+        <div class="formula" style="margin: 0.5rem 0;">
+          <p><strong>DTI = Total Monthly Debt / Gross Monthly Income</strong></p>
+        </div>
+        <ul style="font-size: 0.9rem;">
+          <li>&lt; 20%: Excellent</li>
+          <li>20-36%: Good</li>
+          <li>36-43%: Acceptable</li>
+          <li>&gt; 43%: High Risk</li>
+        </ul>
+      </div>
+      <div class="scenario">
+        <h4>Debt Service Coverage (DSCR)</h4>
+        <div class="formula" style="margin: 0.5rem 0;">
+          <p><strong>DSCR = Net Operating Income / Total Debt Service</strong></p>
+        </div>
+        <ul style="font-size: 0.9rem;">
+          <li>&gt; 1.5x: Strong</li>
+          <li>1.25-1.5x: Adequate</li>
+          <li>1.0-1.25x: Marginal</li>
+          <li>&lt; 1.0x: Insufficient</li>
+        </ul>
+      </div>
+      <div class="scenario">
+        <h4>Loan-to-Value (LTV)</h4>
+        <div class="formula" style="margin: 0.5rem 0;">
+          <p><strong>LTV = Loan Amount / Collateral Value</strong></p>
+        </div>
+        <ul style="font-size: 0.9rem;">
+          <li>&lt; 60%: Conservative</li>
+          <li>60-80%: Standard</li>
+          <li>80-90%: Elevated</li>
+          <li>&gt; 90%: High Risk</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>⚠️ Risk Mitigation Strategies</h3>
+    <div style="background: #fef3cd; padding: 1rem; border-radius: 0.5rem; border: 1px solid #fcd34d;">
+      <h4>When One or More Cs Are Weak:</h4>
+      <ul>
+        <li><strong>Weak Character:</strong> Require co-signer, increase down payment, or decline</li>
+        <li><strong>Limited Capacity:</strong> Reduce loan amount, extend term, or require additional income sources</li>
+        <li><strong>Insufficient Capital:</strong> Increase down payment requirement or require additional collateral</li>
+        <li><strong>Poor Collateral:</strong> Reduce LTV, require additional security, or personal guarantees</li>
+        <li><strong>Adverse Conditions:</strong> Shorten loan term, add covenants, or increase monitoring</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Borrower profiles
+    const borrowerProfiles = {
+      individual: {
+        creditScore: 720, paymentHistory: 85, dtiRatio: 35, dscr: 1.25,
+        equityRatio: 20, netWorth: 2.0, ltvRatio: 80, collateralQuality: 75,
+        economicOutlook: 60, loanPurpose: 70
+      },
+      smallBusiness: {
+        creditScore: 680, paymentHistory: 80, dtiRatio: 40, dscr: 1.35,
+        equityRatio: 25, netWorth: 1.5, ltvRatio: 70, collateralQuality: 70,
+        economicOutlook: 55, loanPurpose: 65
+      },
+      corporate: {
+        creditScore: 750, paymentHistory: 95, dtiRatio: 25, dscr: 1.75,
+        equityRatio: 35, netWorth: 5.0, ltvRatio: 60, collateralQuality: 85,
+        economicOutlook: 65, loanPurpose: 80
+      }
+    };
+
+    // DOM elements
+    const borrowerType = document.getElementById('borrowerType');
+    const creditScore = document.getElementById('creditScore');
+    const paymentHistory = document.getElementById('paymentHistory');
+    const dtiRatio = document.getElementById('dtiRatio');
+    const dscr = document.getElementById('dscr');
+    const equityRatio = document.getElementById('equityRatio');
+    const netWorth = document.getElementById('netWorth');
+    const ltvRatio = document.getElementById('ltvRatio');
+    const collateralQuality = document.getElementById('collateralQuality');
+    const economicOutlook = document.getElementById('economicOutlook');
+    const loanPurpose = document.getElementById('loanPurpose');
+
+    // Display elements
+    const creditScoreValue = document.getElementById('creditScoreValue');
+    const paymentHistoryValue = document.getElementById('paymentHistoryValue');
+    const dtiRatioValue = document.getElementById('dtiRatioValue');
+    const dscrValue = document.getElementById('dscrValue');
+    const equityRatioValue = document.getElementById('equityRatioValue');
+    const netWorthValue = document.getElementById('netWorthValue');
+    const ltvRatioValue = document.getElementById('ltvRatioValue');
+    const collateralQualityValue = document.getElementById('collateralQualityValue');
+    const economicOutlookValue = document.getElementById('economicOutlookValue');
+    const loanPurposeValue = document.getElementById('loanPurposeValue');
+
+    // Results
+    const overallScore = document.getElementById('overallScore');
+    const creditRating = document.getElementById('creditRating');
+    const defaultProb = document.getElementById('defaultProb');
+    const interestRate = document.getElementById('interestRate');
+    const approvalStatus = document.getElementById('approvalStatus');
+    const approvalConditions = document.getElementById('approvalConditions');
+    const riskCategory = document.getElementById('riskCategory');
+    const recommendedActions = document.getElementById('recommendedActions');
+    const riskFactors = document.getElementById('riskFactors');
+
+    function calculateFiveCsScores() {
+      // Character score (35% weight)
+      const characterScore = (
+        (parseFloat(creditScore.value) - 300) / 550 * 60 +
+        parseFloat(paymentHistory.value) / 100 * 40
+      );
+
+      // Capacity score (25% weight)
+      const optimalDTI = 25;
+      const dtiScore = Math.max(0, 100 - Math.abs(parseFloat(dtiRatio.value) - optimalDTI) * 2);
+      const dscrScore = Math.min(100, parseFloat(dscr.value) * 40);
+      const capacityScore = (dtiScore * 0.6 + dscrScore * 0.4);
+
+      // Capital score (20% weight)
+      const capitalScore = (
+        Math.min(100, parseFloat(equityRatio.value) * 2) * 0.5 +
+        Math.min(100, parseFloat(netWorth.value) * 20) * 0.5
+      );
+
+      // Collateral score (10% weight)
+      const collateralScore = (
+        Math.max(0, 100 - (parseFloat(ltvRatio.value) - 50)) * 0.5 +
+        parseFloat(collateralQuality.value) * 0.5
+      );
+
+      // Conditions score (10% weight)
+      const conditionsScore = (
+        parseFloat(economicOutlook.value) * 0.5 +
+        parseFloat(loanPurpose.value) * 0.5
+      );
+
+      return {
+        character: characterScore,
+        capacity: capacityScore,
+        capital: capitalScore,
+        collateral: collateralScore,
+        conditions: conditionsScore
+      };
+    }
+
+    function calculateOverallMetrics(scores) {
+      // Weighted overall score
+      const weightedScore = 
+        scores.character * 0.35 +
+        scores.capacity * 0.25 +
+        scores.capital * 0.20 +
+        scores.collateral * 0.10 +
+        scores.conditions * 0.10;
+
+      // Convert to credit score scale (300-850)
+      const creditScoreResult = 300 + (weightedScore / 100) * 550;
+
+      // Calculate default probability (simplified model)
+      const pd = Math.max(0.1, 50 * Math.exp(-weightedScore / 15));
+
+      // Calculate interest rate based on risk
+      const baseRate = 3.0;
+      const riskPremium = Math.max(0, 15 * (1 - weightedScore / 100));
+      const rate = baseRate + riskPremium;
+
+      // Determine approval status
+      let status, conditions, risk, actions, factors;
+      
+      if (weightedScore >= 75) {
+        status = 'APPROVED';
+        conditions = 'Standard terms';
+        risk = 'Low Risk';
+        actions = ['Approve with standard terms', 'Consider competitive pricing', 'Annual review sufficient'];
+        factors = ['Strong credit profile across all dimensions', 'Minimal default risk', 'Prime borrower classification'];
+      } else if (weightedScore >= 60) {
+        status = 'APPROVED';
+        conditions = 'With conditions';
+        risk = 'Moderate Risk';
+        actions = ['Approve with enhanced monitoring', 'Standard pricing with risk premium', 'Quarterly review recommended'];
+        factors = ['Acceptable credit profile', 'Some areas of concern', 'Enhanced monitoring advised'];
+      } else if (weightedScore >= 45) {
+        status = 'CONDITIONAL';
+        conditions = 'Additional requirements';
+        risk = 'Elevated Risk';
+        actions = ['Require additional collateral or guarantor', 'Higher pricing to reflect risk', 'Monthly monitoring required'];
+        factors = ['Marginal credit profile', 'Multiple risk factors present', 'Mitigation measures required'];
+      } else {
+        status = 'DECLINED';
+        conditions = 'Does not meet criteria';
+        risk = 'High Risk';
+        actions = ['Decline or refer to special assets', 'Suggest credit improvement program', 'Reconsider after 6-12 months'];
+        factors = ['Insufficient creditworthiness', 'High probability of default', 'Does not meet minimum criteria'];
+      }
+
+      // Credit rating
+      let rating;
+      if (creditScoreResult >= 800) rating = 'Excellent';
+      else if (creditScoreResult >= 740) rating = 'Very Good';
+      else if (creditScoreResult >= 670) rating = 'Good';
+      else if (creditScoreResult >= 580) rating = 'Fair';
+      else rating = 'Poor';
+
+      return {
+        overallScore: creditScoreResult,
+        rating: rating,
+        defaultProbability: pd,
+        interestRate: rate,
+        approvalStatus: status,
+        approvalConditions: conditions,
+        riskCategory: risk,
+        recommendedActions: actions,
+        riskFactors: factors,
+        weightedScore: weightedScore
+      };
+    }
+
+    function updateDisplay() {
+      // Update input displays
+      creditScoreValue.textContent = creditScore.value;
+      paymentHistoryValue.textContent = paymentHistory.value;
+      dtiRatioValue.textContent = dtiRatio.value;
+      dscrValue.textContent = dscr.value;
+      equityRatioValue.textContent = equityRatio.value;
+      netWorthValue.textContent = netWorth.value;
+      ltvRatioValue.textContent = ltvRatio.value;
+      collateralQualityValue.textContent = collateralQuality.value;
+      economicOutlookValue.textContent = economicOutlook.value;
+      loanPurposeValue.textContent = loanPurpose.value;
+
+      // Calculate scores
+      const scores = calculateFiveCsScores();
+      const metrics = calculateOverallMetrics(scores);
+
+      // Update results
+      overallScore.textContent = Math.round(metrics.overallScore);
+      creditRating.textContent = metrics.rating;
+      defaultProb.textContent = metrics.defaultProbability.toFixed(1) + '%';
+      interestRate.textContent = metrics.interestRate.toFixed(1) + '%';
+      approvalStatus.textContent = metrics.approvalStatus;
+      approvalStatus.style.color = metrics.approvalStatus === 'APPROVED' ? 'var(--success-color)' : 
+                                  metrics.approvalStatus === 'CONDITIONAL' ? 'var(--warning-color)' : 
+                                  'var(--error-color)';
+      approvalConditions.textContent = metrics.approvalConditions;
+      riskCategory.textContent = metrics.riskCategory;
+      
+      // Update lists
+      recommendedActions.innerHTML = metrics.recommendedActions.map(action => `<li>${action}</li>`).join('');
+      riskFactors.innerHTML = metrics.riskFactors.map(factor => `<li>${factor}</li>`).join('');
+
+      // Update visualizations
+      updateRadarChart(scores);
+      updateScoreBreakdown(scores);
+    }
+
+    function updateRadarChart(scores) {
+      const data = [{
+        type: 'scatterpolar',
+        r: [scores.character, scores.capacity, scores.capital, scores.collateral, scores.conditions],
+        theta: ['Character', 'Capacity', 'Capital', 'Collateral', 'Conditions'],
+        fill: 'toself',
+        name: 'Current Profile',
+        marker: { color: 'rgba(37, 99, 235, 1)' },
+        fillcolor: 'rgba(37, 99, 235, 0.3)',
+        line: { color: 'rgba(37, 99, 235, 1)', width: 2 }
+      }, {
+        type: 'scatterpolar',
+        r: [70, 70, 70, 70, 70],
+        theta: ['Character', 'Capacity', 'Capital', 'Collateral', 'Conditions'],
+        fill: 'toself',
+        name: 'Minimum Acceptable',
+        marker: { color: 'rgba(239, 68, 68, 1)' },
+        fillcolor: 'rgba(239, 68, 68, 0.1)',
+        line: { color: 'rgba(239, 68, 68, 1)', width: 1, dash: 'dash' }
+      }];
+
+      const layout = {
+        title: 'Five Cs Assessment Radar',
+        polar: {
+          radialaxis: {
+            visible: true,
+            range: [0, 100]
+          }
+        },
+        showlegend: true
+      };
+
+      Plotly.newPlot('radarPlot', data, layout, { responsive: true });
+    }
+
+    function updateScoreBreakdown(scores) {
+      const categories = ['Character', 'Capacity', 'Capital', 'Collateral', 'Conditions'];
+      const values = [scores.character, scores.capacity, scores.capital, scores.collateral, scores.conditions];
+      const weights = [35, 25, 20, 10, 10];
+      const weightedValues = values.map((v, i) => v * weights[i] / 100);
+      
+      const colors = values.map(v => 
+        v >= 80 ? '#10b981' : 
+        v >= 60 ? '#f59e0b' : 
+        v >= 40 ? '#ef4444' : '#991b1b'
+      );
+
+      const trace1 = {
+        x: categories,
+        y: values,
+        type: 'bar',
+        name: 'Raw Score',
+        marker: { color: colors },
+        text: values.map(v => v.toFixed(0) + '%'),
+        textposition: 'outside'
+      };
+
+      const trace2 = {
+        x: categories,
+        y: weightedValues,
+        type: 'bar',
+        name: 'Weighted Contribution',
+        marker: { 
+          color: 'rgba(100, 116, 139, 0.5)',
+          line: { color: 'rgba(100, 116, 139, 1)', width: 2 }
+        },
+        text: weightedValues.map((v, i) => `${weights[i]}% weight`),
+        textposition: 'inside'
+      };
+
+      const layout = {
+        title: 'Five Cs Score Breakdown',
+        xaxis: { title: 'Credit Factors' },
+        yaxis: { 
+          title: 'Score',
+          range: [0, 100]
+        },
+        barmode: 'group',
+        annotations: categories.map((cat, i) => ({
+          x: cat,
+          y: values[i] + 5,
+          text: values[i] >= 70 ? '✓' : values[i] >= 50 ? '!' : '✗',
+          showarrow: false,
+          font: { 
+            size: 16,
+            color: values[i] >= 70 ? 'green' : values[i] >= 50 ? 'orange' : 'red'
+          }
+        }))
+      };
+
+      Plotly.newPlot('scoreBreakdownPlot', [trace1, trace2], layout, { responsive: true });
+    }
+
+    // Event listeners
+    borrowerType.addEventListener('change', function() {
+      if (this.value !== 'custom') {
+        const profile = borrowerProfiles[this.value];
+        creditScore.value = profile.creditScore;
+        paymentHistory.value = profile.paymentHistory;
+        dtiRatio.value = profile.dtiRatio;
+        dscr.value = profile.dscr;
+        equityRatio.value = profile.equityRatio;
+        netWorth.value = profile.netWorth;
+        ltvRatio.value = profile.ltvRatio;
+        collateralQuality.value = profile.collateralQuality;
+        economicOutlook.value = profile.economicOutlook;
+        loanPurpose.value = profile.loanPurpose;
+      }
+      updateDisplay();
+    });
+
+    // Add event listeners to all inputs
+    [creditScore, paymentHistory, dtiRatio, dscr, equityRatio, netWorth, 
+     ltvRatio, collateralQuality, economicOutlook, loanPurpose].forEach(input => {
+      input.addEventListener('input', updateDisplay);
+    });
+
+    // Initialize
+    updateDisplay();
+  </script>
+</body>
+</html>

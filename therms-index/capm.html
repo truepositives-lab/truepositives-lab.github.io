@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capital Asset Pricing Model (CAPM)</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Capital Asset Pricing Model (CAPM)</h2>
+
+  <div class="card description">
+    <h3>What is CAPM?</h3>
+    <p>The <strong>Capital Asset Pricing Model (CAPM)</strong> is a fundamental model in modern portfolio theory that describes the relationship between systematic risk and expected return for assets, particularly stocks.</p>
+    <p>CAPM helps investors understand the expected return on an investment given its risk relative to the overall market. It forms the basis for the Security Market Line and is widely used in finance for pricing risky securities and calculating costs of capital.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>CAPM Formula: E(Rᵢ) = Rₑ + βᵢ(E(Rₘ) - Rₑ)</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>E(Rᵢ)</strong> = Expected return of the investment</li>
+      <li><strong>Rₑ</strong> = Risk-free rate (e.g., Treasury bond yield)</li>
+      <li><strong>βᵢ</strong> = Beta of the investment (systematic risk measure)</li>
+      <li><strong>E(Rₘ)</strong> = Expected return of the market</li>
+      <li><strong>E(Rₘ) - Rₑ</strong> = Market risk premium</li>
+    </ul>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive CAPM Calculator</h3>
+    <p>Adjust the parameters below to see how they affect the expected return:</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+      <div class="control">
+        <label for="riskFreeRate">Risk-Free Rate (%):</label>
+        <input type="range" id="riskFreeRate" min="0" max="10" value="3" step="0.1">
+        <span id="riskFreeRateValue">3.0%</span>
+      </div>
+      
+      <div class="control">
+        <label for="marketReturn">Expected Market Return (%):</label>
+        <input type="range" id="marketReturn" min="0" max="20" value="10" step="0.1">
+        <span id="marketReturnValue">10.0%</span>
+      </div>
+      
+      <div class="control">
+        <label for="beta">Beta (β):</label>
+        <input type="range" id="beta" min="0" max="3" value="1.2" step="0.05">
+        <span id="betaValue">1.20</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📊 CAPM Results</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Expected Return</h4>
+        <p id="expectedReturn" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">11.4%</p>
+      </div>
+      <div class="card">
+        <h4>Market Risk Premium</h4>
+        <p id="marketPremium" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">7.0%</p>
+      </div>
+      <div class="card">
+        <h4>Risk Premium</h4>
+        <p id="riskPremium" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">8.4%</p>
+      </div>
+    </div>
+    
+    <div class="formula" style="margin-top: 1.5rem;">
+      <p id="calculationBreakdown"><strong>Calculation:</strong> E(R) = 3.0% + 1.20 × (10.0% - 3.0%) = 3.0% + 8.4% = 11.4%</p>
+    </div>
+  </div>
+
+  <div id="smlPlot" style="width:100%;height:500px;margin-top:2rem;"></div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Understanding Beta (β)</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="scenario">
+        <h4>β < 1 (Defensive)</h4>
+        <p>Stock is less volatile than the market. Examples: utilities, consumer staples</p>
+      </div>
+      <div class="scenario">
+        <h4>β = 1 (Neutral)</h4>
+        <p>Stock moves with the market. Examples: broad market index funds</p>
+      </div>
+      <div class="scenario">
+        <h4>β > 1 (Aggressive)</h4>
+        <p>Stock is more volatile than the market. Examples: technology, growth stocks</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <h3>Exercise: Portfolio Expected Return</h3>
+    <div class="problem">
+      <p>An investor is considering a stock with a beta of 1.5. The current risk-free rate is 2.5%, and the expected market return is 9.5%.</p>
+      <p><strong>Question:</strong> What is the expected return for this stock according to CAPM?</p>
+    </div>
+    
+    <button class="collapsible">Show Solution</button>
+    <div class="content">
+      <div class="solution">
+        <div class="solution-step">
+          <strong>Step 1:</strong> Identify the given values
+          <ul>
+            <li>Risk-free rate (Rf) = 2.5%</li>
+            <li>Expected market return E(Rm) = 9.5%</li>
+            <li>Beta (β) = 1.5</li>
+          </ul>
+        </div>
+        <div class="solution-step">
+          <strong>Step 2:</strong> Calculate the market risk premium
+          <p>Market Risk Premium = E(Rm) - Rf = 9.5% - 2.5% = 7.0%</p>
+        </div>
+        <div class="solution-step">
+          <strong>Step 3:</strong> Apply the CAPM formula
+          <p>E(R) = Rf + β × (E(Rm) - Rf)</p>
+          <p>E(R) = 2.5% + 1.5 × 7.0%</p>
+          <p>E(R) = 2.5% + 10.5%</p>
+        </div>
+        <div class="answer">
+          <strong>Answer:</strong> The expected return is 13.0%
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>CAPM Assumptions and Limitations</h3>
+    <div style="display: grid; gap: 1rem;">
+      <div class="highlight">
+        <h4>Key Assumptions:</h4>
+        <ul>
+          <li>Investors are rational and risk-averse</li>
+          <li>Markets are efficient (no transaction costs, perfect information)</li>
+          <li>All investors have the same expectations</li>
+          <li>Assets are infinitely divisible</li>
+          <li>Investors can borrow and lend at the risk-free rate</li>
+        </ul>
+      </div>
+      <div class="highlight" style="border-left-color: var(--warning-color);">
+        <h4>Limitations:</h4>
+        <ul>
+          <li>Beta may not fully capture all risks</li>
+          <li>Historical data may not predict future performance</li>
+          <li>Markets may not always be efficient</li>
+          <li>Single-period model doesn't account for time dynamics</li>
+          <li>Ignores taxes and transaction costs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Related Concepts</h3>
+    <ul>
+      <li><a href="sharpe-ratio.html">Sharpe Ratio</a> - Risk-adjusted performance measure</li>
+      <li><a href="mean-variance-criterion.html">Mean-Variance Criterion</a> - Portfolio optimization framework</li>
+      <li><a href="market-premium.html">Market Premium</a> - Excess return over risk-free rate</li>
+    </ul>
+  </div>
+
+  <script>
+    // Initialize controls and values
+    const riskFreeRateSlider = document.getElementById('riskFreeRate');
+    const marketReturnSlider = document.getElementById('marketReturn');
+    const betaSlider = document.getElementById('beta');
+    
+    const riskFreeRateValue = document.getElementById('riskFreeRateValue');
+    const marketReturnValue = document.getElementById('marketReturnValue');
+    const betaValue = document.getElementById('betaValue');
+    
+    const expectedReturnDisplay = document.getElementById('expectedReturn');
+    const marketPremiumDisplay = document.getElementById('marketPremium');
+    const riskPremiumDisplay = document.getElementById('riskPremium');
+    const calculationBreakdown = document.getElementById('calculationBreakdown');
+    
+    // Update function
+    function updateCAPM() {
+      const rf = parseFloat(riskFreeRateSlider.value);
+      const rm = parseFloat(marketReturnSlider.value);
+      const beta = parseFloat(betaSlider.value);
+      
+      // Update display values
+      riskFreeRateValue.textContent = rf.toFixed(1) + '%';
+      marketReturnValue.textContent = rm.toFixed(1) + '%';
+      betaValue.textContent = beta.toFixed(2);
+      
+      // Calculate CAPM
+      const marketRiskPremium = rm - rf;
+      const riskPremium = beta * marketRiskPremium;
+      const expectedReturn = rf + riskPremium;
+      
+      // Update results
+      expectedReturnDisplay.textContent = expectedReturn.toFixed(1) + '%';
+      marketPremiumDisplay.textContent = marketRiskPremium.toFixed(1) + '%';
+      riskPremiumDisplay.textContent = riskPremium.toFixed(1) + '%';
+      
+      // Update calculation breakdown
+      calculationBreakdown.innerHTML = `<strong>Calculation:</strong> E(R) = ${rf.toFixed(1)}% + ${beta.toFixed(2)} × (${rm.toFixed(1)}% - ${rf.toFixed(1)}%) = ${rf.toFixed(1)}% + ${riskPremium.toFixed(1)}% = ${expectedReturn.toFixed(1)}%`;
+      
+      // Update Security Market Line plot
+      updateSMLPlot(rf, rm, beta, expectedReturn);
+    }
+    
+    // Security Market Line visualization
+    function updateSMLPlot(rf, rm, currentBeta, currentExpectedReturn) {
+      // Generate beta range for SML
+      const betaRange = [];
+      const expectedReturns = [];
+      for (let b = 0; b <= 3; b += 0.05) {
+        betaRange.push(b);
+        expectedReturns.push(rf + b * (rm - rf));
+      }
+      
+      // SML line
+      const smlTrace = {
+        x: betaRange,
+        y: expectedReturns,
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Security Market Line',
+        line: {
+          color: '#2563eb',
+          width: 3
+        }
+      };
+      
+      // Current position
+      const currentPosition = {
+        x: [currentBeta],
+        y: [currentExpectedReturn],
+        type: 'scatter',
+        mode: 'markers+text',
+        name: 'Current Asset',
+        marker: {
+          color: '#ef4444',
+          size: 12
+        },
+        text: [`β=${currentBeta.toFixed(2)}, E(R)=${currentExpectedReturn.toFixed(1)}%`],
+        textposition: 'top center',
+        textfont: {
+          size: 12
+        }
+      };
+      
+      // Risk-free rate point
+      const riskFreePoint = {
+        x: [0],
+        y: [rf],
+        type: 'scatter',
+        mode: 'markers+text',
+        name: 'Risk-Free Asset',
+        marker: {
+          color: '#10b981',
+          size: 10
+        },
+        text: [`Rf=${rf.toFixed(1)}%`],
+        textposition: 'right'
+      };
+      
+      // Market portfolio
+      const marketPoint = {
+        x: [1],
+        y: [rm],
+        type: 'scatter',
+        mode: 'markers+text',
+        name: 'Market Portfolio',
+        marker: {
+          color: '#f59e0b',
+          size: 10
+        },
+        text: [`Market=${rm.toFixed(1)}%`],
+        textposition: 'top right'
+      };
+      
+      const layout = {
+        title: 'Security Market Line (SML)',
+        xaxis: {
+          title: 'Beta (β)',
+          range: [-0.1, 3.1],
+          gridcolor: '#e2e8f0',
+          zeroline: true,
+          zerolinecolor: '#94a3b8'
+        },
+        yaxis: {
+          title: 'Expected Return (%)',
+          range: [-1, Math.max(20, currentExpectedReturn + 2)],
+          gridcolor: '#e2e8f0',
+          zeroline: true,
+          zerolinecolor: '#94a3b8',
+          tickformat: '.1f'
+        },
+        hovermode: 'closest',
+        plot_bgcolor: '#f8fafc',
+        paper_bgcolor: 'white',
+        font: {
+          family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+        },
+        showlegend: true,
+        legend: {
+          x: 0.02,
+          y: 0.98,
+          xanchor: 'left',
+          yanchor: 'top',
+          bgcolor: 'rgba(255,255,255,0.9)',
+          bordercolor: '#e2e8f0',
+          borderwidth: 1
+        },
+        margin: {
+          l: 60,
+          r: 40,
+          t: 60,
+          b: 60
+        }
+      };
+      
+      const data = [smlTrace, currentPosition, riskFreePoint, marketPoint];
+      
+      Plotly.newPlot('smlPlot', data, layout, {responsive: true});
+    }
+    
+    // Event listeners
+    riskFreeRateSlider.addEventListener('input', updateCAPM);
+    marketReturnSlider.addEventListener('input', updateCAPM);
+    betaSlider.addEventListener('input', updateCAPM);
+    
+    // Collapsible functionality
+    const collapsibles = document.getElementsByClassName('collapsible');
+    for (let i = 0; i < collapsibles.length; i++) {
+      collapsibles[i].addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+          content.classList.remove('active');
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+          content.classList.add('active');
+        }
+      });
+    }
+    
+    // Initial update
+    updateCAPM();
+  </script>
+</body>
+</html>

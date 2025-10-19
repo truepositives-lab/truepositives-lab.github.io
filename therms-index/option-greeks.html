@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option Greeks - Interactive Finance</title>
+    <link rel="stylesheet" href="unified-styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <nav>
+        <a href="index.html">← Back to Directory</a>
+    </nav>
+
+    <header>
+        <h1>Option Greeks</h1>
+        <p class="subtitle">Understanding option price sensitivities and risk metrics</p>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2>What are Option Greeks?</h2>
+            <p>Option Greeks are risk measures that describe how an option's price changes in response to various factors. They are essential tools for understanding and managing options risk.</p>
+            
+            <div class="formula-box">
+                <h3>The Five Main Greeks</h3>
+                <div class="formula">
+                    <strong>Δ Delta:</strong> ∂V/∂S - Change in option price per $1 change in underlying<br>
+                    <strong>Γ Gamma:</strong> ∂²V/∂S² - Change in delta per $1 change in underlying<br>
+                    <strong>Θ Theta:</strong> ∂V/∂t - Change in option price per day (time decay)<br>
+                    <strong>ν Vega:</strong> ∂V/∂σ - Change in option price per 1% change in volatility<br>
+                    <strong>ρ Rho:</strong> ∂V/∂r - Change in option price per 1% change in interest rate
+                </div>
+                <p class="formula-note">V = Option value, S = Stock price, t = Time, σ = Volatility, r = Risk-free rate</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Interactive Greeks Calculator</h2>
+            
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="optionTypeGreeks">Option Type:</label>
+                    <select id="optionTypeGreeks">
+                        <option value="call">Call Option</option>
+                        <option value="put">Put Option</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="spotPrice">Spot Price ($):</label>
+                    <input type="number" id="spotPrice" value="100" min="50" max="150" step="1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="strikeGreeks">Strike Price ($):</label>
+                    <input type="number" id="strikeGreeks" value="100" min="50" max="150" step="1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="timeToExpiry">Time to Expiry (days):</label>
+                    <input type="number" id="timeToExpiry" value="30" min="1" max="365" step="1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="volatility">Implied Volatility (%):</label>
+                    <input type="number" id="volatility" value="20" min="5" max="100" step="1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="riskFreeRate">Risk-Free Rate (%):</label>
+                    <input type="number" id="riskFreeRate" value="5" min="0" max="10" step="0.5">
+                </div>
+            </div>
+
+            <div class="greeks-display">
+                <div class="greek-card">
+                    <div class="greek-symbol">Δ</div>
+                    <div class="greek-name">Delta</div>
+                    <div class="greek-value" id="deltaValue">0.00</div>
+                    <div class="greek-description">Price change per $1 move</div>
+                </div>
+                
+                <div class="greek-card">
+                    <div class="greek-symbol">Γ</div>
+                    <div class="greek-name">Gamma</div>
+                    <div class="greek-value" id="gammaValue">0.00</div>
+                    <div class="greek-description">Delta change per $1 move</div>
+                </div>
+                
+                <div class="greek-card">
+                    <div class="greek-symbol">Θ</div>
+                    <div class="greek-name">Theta</div>
+                    <div class="greek-value" id="thetaValue">0.00</div>
+                    <div class="greek-description">Daily time decay</div>
+                </div>
+                
+                <div class="greek-card">
+                    <div class="greek-symbol">ν</div>
+                    <div class="greek-name">Vega</div>
+                    <div class="greek-value" id="vegaValue">0.00</div>
+                    <div class="greek-description">Price change per 1% vol</div>
+                </div>
+                
+                <div class="greek-card">
+                    <div class="greek-symbol">ρ</div>
+                    <div class="greek-name">Rho</div>
+                    <div class="greek-value" id="rhoValue">0.00</div>
+                    <div class="greek-description">Price change per 1% rate</div>
+                </div>
+            </div>
+
+            <div id="greeksChart" class="chart-container"></div>
+        </div>
+
+        <div class="card">
+            <h2>Greeks Behavior Visualization</h2>
+            
+            <div class="visualization-controls">
+                <label>Visualize Greek:</label>
+                <div class="button-group">
+                    <button onclick="visualizeGreek('delta')" class="btn-primary">Delta</button>
+                    <button onclick="visualizeGreek('gamma')" class="btn-primary">Gamma</button>
+                    <button onclick="visualizeGreek('theta')" class="btn-primary">Theta</button>
+                    <button onclick="visualizeGreek('vega')" class="btn-primary">Vega</button>
+                </div>
+            </div>
+
+            <div id="greekBehaviorChart" class="chart-container"></div>
+            
+            <div class="insight-box">
+                <h3>Key Insights</h3>
+                <div id="greekInsights">
+                    <p>Select a Greek above to see how it changes with spot price and time.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Portfolio Greeks</h2>
+            <p>Analyze the combined Greeks of multiple option positions:</p>
+            
+            <div class="portfolio-builder">
+                <table class="portfolio-table">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Type</th>
+                            <th>Strike</th>
+                            <th>Quantity</th>
+                            <th>Delta</th>
+                            <th>Gamma</th>
+                            <th>Theta</th>
+                            <th>Vega</th>
+                        </tr>
+                    </thead>
+                    <tbody id="portfolioBody">
+                        <tr>
+                            <td>
+                                <select class="position-side">
+                                    <option value="long">Long</option>
+                                    <option value="short">Short</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="position-type">
+                                    <option value="call">Call</option>
+                                    <option value="put">Put</option>
+                                </select>
+                            </td>
+                            <td><input type="number" class="position-strike" value="100" min="50" max="150"></td>
+                            <td><input type="number" class="position-quantity" value="1" min="1" max="100"></td>
+                            <td class="position-delta">0.00</td>
+                            <td class="position-gamma">0.00</td>
+                            <td class="position-theta">0.00</td>
+                            <td class="position-vega">0.00</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="4"><strong>Portfolio Total</strong></td>
+                            <td id="totalDelta"><strong>0.00</strong></td>
+                            <td id="totalGamma"><strong>0.00</strong></td>
+                            <td id="totalTheta"><strong>0.00</strong></td>
+                            <td id="totalVega"><strong>0.00</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <div class="button-group">
+                    <button onclick="addPortfolioPosition()" class="btn-secondary">Add Position</button>
+                    <button onclick="clearPortfolio()" class="btn-secondary">Clear Portfolio</button>
+                    <button onclick="hedgePortfolio()" class="btn-primary">Suggest Delta Hedge</button>
+                </div>
+            </div>
+
+            <div id="hedgeSuggestion" class="suggestion-box" style="display: none;"></div>
+        </div>
+
+        <div class="card">
+            <h2>Greeks Trading Strategies</h2>
+            
+            <div class="scenario-box">
+                <h3>Delta-Neutral Strategies</h3>
+                <p><strong>Goal:</strong> Profit from volatility or time decay while minimizing directional risk</p>
+                <ul>
+                    <li><strong>Straddle/Strangle:</strong> Long gamma, long vega, negative theta</li>
+                    <li><strong>Iron Condor:</strong> Short gamma, short vega, positive theta</li>
+                    <li><strong>Calendar Spread:</strong> Neutral delta, positive theta, long vega</li>
+                </ul>
+            </div>
+            
+            <div class="scenario-box">
+                <h3>Gamma Scalping</h3>
+                <p><strong>Goal:</strong> Profit from realized volatility through dynamic hedging</p>
+                <ul>
+                    <li>Maintain delta-neutral position with long gamma</li>
+                    <li>Rehedge as underlying moves to capture gamma profits</li>
+                    <li>Works best in high volatility environments</li>
+                </ul>
+            </div>
+            
+            <div class="scenario-box">
+                <h3>Theta Harvesting</h3>
+                <p><strong>Goal:</strong> Generate income from time decay</p>
+                <ul>
+                    <li>Sell out-of-the-money options with high theta</li>
+                    <li>Manage risk with stop-losses or protective positions</li>
+                    <li>Works best in low volatility, range-bound markets</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Greeks Reference Guide</h2>
+            
+            <div class="reference-grid">
+                <div class="reference-item">
+                    <h3>Delta (Δ)</h3>
+                    <p><strong>Range:</strong> 0 to 1 for calls, -1 to 0 for puts</p>
+                    <p><strong>ATM:</strong> ~0.5 for calls, ~-0.5 for puts</p>
+                    <p><strong>Uses:</strong> Hedge ratio, probability of expiring ITM</p>
+                </div>
+                
+                <div class="reference-item">
+                    <h3>Gamma (Γ)</h3>
+                    <p><strong>Highest:</strong> At-the-money options</p>
+                    <p><strong>Effect:</strong> Accelerates delta changes</p>
+                    <p><strong>Risk:</strong> Gamma risk highest near expiration</p>
+                </div>
+                
+                <div class="reference-item">
+                    <h3>Theta (Θ)</h3>
+                    <p><strong>Always negative</strong> for long options</p>
+                    <p><strong>Accelerates:</strong> As expiration approaches</p>
+                    <p><strong>Weekend:</strong> 3 days of decay over weekend</p>
+                </div>
+                
+                <div class="reference-item">
+                    <h3>Vega (ν)</h3>
+                    <p><strong>Highest:</strong> At-the-money options</p>
+                    <p><strong>Term structure:</strong> Longer-term options have higher vega</p>
+                    <p><strong>Volatility smile:</strong> Affects OTM options differently</p>
+                </div>
+                
+                <div class="reference-item">
+                    <h3>Rho (ρ)</h3>
+                    <p><strong>Impact:</strong> Greater for longer-term options</p>
+                    <p><strong>Calls:</strong> Positive rho</p>
+                    <p><strong>Puts:</strong> Negative rho</p>
+                </div>
+                
+                <div class="reference-item">
+                    <h3>Minor Greeks</h3>
+                    <p><strong>Vanna:</strong> ∂Delta/∂σ or ∂Vega/∂S</p>
+                    <p><strong>Charm:</strong> ∂Delta/∂t</p>
+                    <p><strong>Vomma:</strong> ∂Vega/∂σ</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Normal distribution functions
+        function normalCDF(x) {
+            const a1 =  0.254829592;
+            const a2 = -0.284496736;
+            const a3 =  1.421413741;
+            const a4 = -1.453152027;
+            const a5 =  1.061405429;
+            const p  =  0.3275911;
+            
+            const sign = x < 0 ? -1 : 1;
+            x = Math.abs(x) / Math.sqrt(2.0);
+            
+            const t = 1.0 / (1.0 + p * x);
+            const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+            
+            return 0.5 * (1.0 + sign * y);
+        }
+
+        function normalPDF(x) {
+            return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+        }
+
+        // Black-Scholes Greeks calculations
+        function calculateGreeks(type, S, K, T, r, sigma) {
+            const sqrtT = Math.sqrt(T);
+            const d1 = (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * sqrtT);
+            const d2 = d1 - sigma * sqrtT;
+            
+            const greeks = {};
+            
+            if (type === 'call') {
+                greeks.delta = normalCDF(d1);
+                greeks.gamma = normalPDF(d1) / (S * sigma * sqrtT);
+                greeks.theta = -(S * normalPDF(d1) * sigma) / (2 * sqrtT) - 
+                              r * K * Math.exp(-r * T) * normalCDF(d2);
+                greeks.vega = S * normalPDF(d1) * sqrtT;
+                greeks.rho = K * T * Math.exp(-r * T) * normalCDF(d2);
+            } else {
+                greeks.delta = normalCDF(d1) - 1;
+                greeks.gamma = normalPDF(d1) / (S * sigma * sqrtT);
+                greeks.theta = -(S * normalPDF(d1) * sigma) / (2 * sqrtT) + 
+                              r * K * Math.exp(-r * T) * normalCDF(-d2);
+                greeks.vega = S * normalPDF(d1) * sqrtT;
+                greeks.rho = -K * T * Math.exp(-r * T) * normalCDF(-d2);
+            }
+            
+            // Convert to per-day theta and per-percent vega/rho
+            greeks.theta = greeks.theta / 365;
+            greeks.vega = greeks.vega / 100;
+            greeks.rho = greeks.rho / 100;
+            
+            return greeks;
+        }
+
+        // Update Greeks display
+        function updateGreeks() {
+            const type = document.getElementById('optionTypeGreeks').value;
+            const S = parseFloat(document.getElementById('spotPrice').value);
+            const K = parseFloat(document.getElementById('strikeGreeks').value);
+            const T = parseFloat(document.getElementById('timeToExpiry').value) / 365;
+            const r = parseFloat(document.getElementById('riskFreeRate').value) / 100;
+            const sigma = parseFloat(document.getElementById('volatility').value) / 100;
+            
+            const greeks = calculateGreeks(type, S, K, T, r, sigma);
+            
+            // Update display
+            document.getElementById('deltaValue').textContent = greeks.delta.toFixed(4);
+            document.getElementById('gammaValue').textContent = greeks.gamma.toFixed(4);
+            document.getElementById('thetaValue').textContent = greeks.theta.toFixed(4);
+            document.getElementById('vegaValue').textContent = greeks.vega.toFixed(4);
+            document.getElementById('rhoValue').textContent = greeks.rho.toFixed(4);
+            
+            // Color code theta (always negative for long options)
+            document.getElementById('thetaValue').style.color = '#ef4444';
+            
+            // Update main chart
+            updateGreeksChart(type, S, K, T, r, sigma);
+            
+            // Update portfolio if exists
+            updatePortfolioGreeks();
+        }
+
+        // Update Greeks chart
+        function updateGreeksChart(type, S, K, T, r, sigma) {
+            const spotRange = [];
+            const deltas = [];
+            const gammas = [];
+            
+            for (let spot = S * 0.7; spot <= S * 1.3; spot += S * 0.01) {
+                spotRange.push(spot);
+                const greeks = calculateGreeks(type, spot, K, T, r, sigma);
+                deltas.push(greeks.delta);
+                gammas.push(greeks.gamma);
+            }
+            
+            const traces = [
+                {
+                    x: spotRange,
+                    y: deltas,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Delta',
+                    line: { color: '#2563eb', width: 2 },
+                    yaxis: 'y'
+                },
+                {
+                    x: spotRange,
+                    y: gammas,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Gamma',
+                    line: { color: '#10b981', width: 2 },
+                    yaxis: 'y2'
+                },
+                {
+                    x: [S, S],
+                    y: [Math.min(...deltas), Math.max(...deltas)],
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Current Spot',
+                    line: { color: '#ef4444', width: 1, dash: 'dash' },
+                    showlegend: false
+                }
+            ];
+            
+            const layout = {
+                title: `${type.charAt(0).toUpperCase() + type.slice(1)} Option Greeks`,
+                xaxis: { title: 'Spot Price ($)' },
+                yaxis: { 
+                    title: 'Delta',
+                    titlefont: { color: '#2563eb' },
+                    tickfont: { color: '#2563eb' }
+                },
+                yaxis2: {
+                    title: 'Gamma',
+                    titlefont: { color: '#10b981' },
+                    tickfont: { color: '#10b981' },
+                    overlaying: 'y',
+                    side: 'right'
+                },
+                hovermode: 'x unified',
+                height: 400
+            };
+            
+            Plotly.newPlot('greeksChart', traces, layout);
+        }
+
+        // Visualize individual Greek behavior
+        function visualizeGreek(greekType) {
+            const type = document.getElementById('optionTypeGreeks').value;
+            const S = parseFloat(document.getElementById('spotPrice').value);
+            const K = parseFloat(document.getElementById('strikeGreeks').value);
+            const T = parseFloat(document.getElementById('timeToExpiry').value) / 365;
+            const r = parseFloat(document.getElementById('riskFreeRate').value) / 100;
+            const sigma = parseFloat(document.getElementById('volatility').value) / 100;
+            
+            const spotRange = [];
+            const timeRange = [30, 20, 10, 5, 1];
+            const traces = [];
+            const colors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+            
+            timeRange.forEach((days, idx) => {
+                const values = [];
+                const T_temp = days / 365;
+                
+                for (let spot = S * 0.7; spot <= S * 1.3; spot += S * 0.01) {
+                    if (idx === 0) spotRange.push(spot);
+                    const greeks = calculateGreeks(type, spot, K, T_temp, r, sigma);
+                    values.push(greeks[greekType]);
+                }
+                
+                traces.push({
+                    x: spotRange,
+                    y: values,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: `${days} days`,
+                    line: { color: colors[idx], width: 2 }
+                });
+            });
+            
+            const layout = {
+                title: `${greekType.charAt(0).toUpperCase() + greekType.slice(1)} vs Spot Price (Time Decay)`,
+                xaxis: { title: 'Spot Price ($)' },
+                yaxis: { title: greekType.charAt(0).toUpperCase() + greekType.slice(1) },
+                hovermode: 'x unified',
+                height: 400
+            };
+            
+            Plotly.newPlot('greekBehaviorChart', traces, layout);
+            
+            // Update insights
+            const insights = {
+                delta: `
+                    <p><strong>Delta Behavior:</strong></p>
+                    <ul>
+                        <li>Approaches 1 (calls) or -1 (puts) as option goes deeper ITM</li>
+                        <li>Approaches 0 as option goes deeper OTM</li>
+                        <li>Changes faster (higher gamma) near the strike price</li>
+                        <li>Becomes more sensitive near expiration</li>
+                    </ul>
+                `,
+                gamma: `
+                    <p><strong>Gamma Behavior:</strong></p>
+                    <ul>
+                        <li>Highest for ATM options</li>
+                        <li>Increases dramatically near expiration for ATM options</li>
+                        <li>Approaches zero for deep ITM/OTM options</li>
+                        <li>Creates "gamma risk" for short options near expiry</li>
+                    </ul>
+                `,
+                theta: `
+                    <p><strong>Theta Behavior:</strong></p>
+                    <ul>
+                        <li>Time decay accelerates as expiration approaches</li>
+                        <li>Highest (most negative) for ATM options</li>
+                        <li>Weekend effect: 3 days of decay Friday to Monday</li>
+                        <li>Non-linear: last week often sees 30-40% of total decay</li>
+                    </ul>
+                `,
+                vega: `
+                    <p><strong>Vega Behavior:</strong></p>
+                    <ul>
+                        <li>Highest for ATM options</li>
+                        <li>Decreases as expiration approaches</li>
+                        <li>Longer-dated options have higher vega</li>
+                        <li>Important for volatility trading strategies</li>
+                    </ul>
+                `
+            };
+            
+            document.getElementById('greekInsights').innerHTML = insights[greekType] || '';
+        }
+
+        // Portfolio functions
+        let portfolioPositions = [];
+
+        function addPortfolioPosition() {
+            const tbody = document.getElementById('portfolioBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <select class="position-side">
+                        <option value="long">Long</option>
+                        <option value="short">Short</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="position-type">
+                        <option value="call">Call</option>
+                        <option value="put">Put</option>
+                    </select>
+                </td>
+                <td><input type="number" class="position-strike" value="100" min="50" max="150"></td>
+                <td><input type="number" class="position-quantity" value="1" min="1" max="100"></td>
+                <td class="position-delta">0.00</td>
+                <td class="position-gamma">0.00</td>
+                <td class="position-theta">0.00</td>
+                <td class="position-vega">0.00</td>
+                <td><button onclick="this.parentElement.parentElement.remove(); updatePortfolioGreeks();" class="btn-remove">×</button></td>
+            `;
+            tbody.appendChild(row);
+            
+            // Add event listeners
+            row.querySelectorAll('select, input').forEach(element => {
+                element.addEventListener('change', updatePortfolioGreeks);
+            });
+            
+            updatePortfolioGreeks();
+        }
+
+        function clearPortfolio() {
+            const tbody = document.getElementById('portfolioBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td>
+                        <select class="position-side">
+                            <option value="long">Long</option>
+                            <option value="short">Short</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="position-type">
+                            <option value="call">Call</option>
+                            <option value="put">Put</option>
+                        </select>
+                    </td>
+                    <td><input type="number" class="position-strike" value="100" min="50" max="150"></td>
+                    <td><input type="number" class="position-quantity" value="1" min="1" max="100"></td>
+                    <td class="position-delta">0.00</td>
+                    <td class="position-gamma">0.00</td>
+                    <td class="position-theta">0.00</td>
+                    <td class="position-vega">0.00</td>
+                </tr>
+            `;
+            updatePortfolioGreeks();
+        }
+
+        function updatePortfolioGreeks() {
+            const S = parseFloat(document.getElementById('spotPrice').value);
+            const T = parseFloat(document.getElementById('timeToExpiry').value) / 365;
+            const r = parseFloat(document.getElementById('riskFreeRate').value) / 100;
+            const sigma = parseFloat(document.getElementById('volatility').value) / 100;
+            
+            const rows = document.querySelectorAll('#portfolioBody tr');
+            let totalDelta = 0, totalGamma = 0, totalTheta = 0, totalVega = 0;
+            
+            rows.forEach(row => {
+                const side = row.querySelector('.position-side').value;
+                const type = row.querySelector('.position-type').value;
+                const strike = parseFloat(row.querySelector('.position-strike').value);
+                const quantity = parseFloat(row.querySelector('.position-quantity').value);
+                
+                const greeks = calculateGreeks(type, S, strike, T, r, sigma);
+                const multiplier = (side === 'short' ? -1 : 1) * quantity;
+                
+                const positionGreeks = {
+                    delta: greeks.delta * multiplier,
+                    gamma: greeks.gamma * multiplier,
+                    theta: greeks.theta * multiplier,
+                    vega: greeks.vega * multiplier
+                };
+                
+                row.querySelector('.position-delta').textContent = positionGreeks.delta.toFixed(3);
+                row.querySelector('.position-gamma').textContent = positionGreeks.gamma.toFixed(3);
+                row.querySelector('.position-theta').textContent = positionGreeks.theta.toFixed(3);
+                row.querySelector('.position-vega').textContent = positionGreeks.vega.toFixed(3);
+                
+                totalDelta += positionGreeks.delta;
+                totalGamma += positionGreeks.gamma;
+                totalTheta += positionGreeks.theta;
+                totalVega += positionGreeks.vega;
+            });
+            
+            document.getElementById('totalDelta').innerHTML = `<strong>${totalDelta.toFixed(3)}</strong>`;
+            document.getElementById('totalGamma').innerHTML = `<strong>${totalGamma.toFixed(3)}</strong>`;
+            document.getElementById('totalTheta').innerHTML = `<strong>${totalTheta.toFixed(3)}</strong>`;
+            document.getElementById('totalVega').innerHTML = `<strong>${totalVega.toFixed(3)}</strong>`;
+            
+            // Color code totals
+            document.getElementById('totalTheta').style.color = totalTheta > 0 ? '#10b981' : '#ef4444';
+        }
+
+        function hedgePortfolio() {
+            const totalDelta = parseFloat(document.getElementById('totalDelta').textContent);
+            const S = parseFloat(document.getElementById('spotPrice').value);
+            
+            const hedgeDiv = document.getElementById('hedgeSuggestion');
+            
+            if (Math.abs(totalDelta) < 0.01) {
+                hedgeDiv.innerHTML = `
+                    <h3>✓ Portfolio is Delta-Neutral</h3>
+                    <p>Your portfolio delta is ${totalDelta.toFixed(3)}, which is effectively neutral.</p>
+                `;
+            } else {
+                const sharesNeeded = -totalDelta;
+                const action = sharesNeeded > 0 ? 'Buy' : 'Sell';
+                const cost = Math.abs(sharesNeeded * S);
+                
+                hedgeDiv.innerHTML = `
+                    <h3>Delta Hedge Suggestion</h3>
+                    <p><strong>Current Portfolio Delta:</strong> ${totalDelta.toFixed(3)}</p>
+                    <p><strong>Action Required:</strong> ${action} ${Math.abs(sharesNeeded).toFixed(2)} shares of underlying</p>
+                    <p><strong>Estimated Cost:</strong> $${cost.toFixed(2)}</p>
+                    <p class="note">This will make your portfolio delta-neutral at current spot price.</p>
+                `;
+            }
+            
+            hedgeDiv.style.display = 'block';
+        }
+
+        // Event listeners
+        document.getElementById('optionTypeGreeks').addEventListener('change', updateGreeks);
+        document.getElementById('spotPrice').addEventListener('input', updateGreeks);
+        document.getElementById('strikeGreeks').addEventListener('input', updateGreeks);
+        document.getElementById('timeToExpiry').addEventListener('input', updateGreeks);
+        document.getElementById('volatility').addEventListener('input', updateGreeks);
+        document.getElementById('riskFreeRate').addEventListener('input', updateGreeks);
+
+        // Add event listeners for initial portfolio row
+        document.querySelectorAll('#portfolioBody select, #portfolioBody input').forEach(element => {
+            element.addEventListener('change', updatePortfolioGreeks);
+        });
+
+        // Initial load
+        updateGreeks();
+        visualizeGreek('delta');
+    </script>
+
+    <style>
+        .greeks-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .greek-card {
+            background: linear-gradient(135deg, var(--gray-50), white);
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .greek-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .greek-symbol {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .greek-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        .greek-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--gray-900);
+            margin: 0.5rem 0;
+        }
+
+        .greek-description {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+
+        .visualization-controls {
+            margin-bottom: 1.5rem;
+        }
+
+        .visualization-controls label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .portfolio-builder {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .portfolio-table {
+            width: 100%;
+            margin-bottom: 1rem;
+            border-collapse: collapse;
+        }
+
+        .portfolio-table th {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .portfolio-table td {
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .portfolio-table select,
+        .portfolio-table input {
+            width: 100%;
+            padding: 0.25rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+        }
+
+        .total-row td {
+            background: var(--gray-100);
+            border-top: 2px solid var(--gray-300);
+            padding: 0.75rem 0.5rem;
+        }
+
+        .btn-remove {
+            background: var(--error);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .suggestion-box {
+            background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .suggestion-box h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .suggestion-box p {
+            margin: 0.5rem 0;
+        }
+
+        .suggestion-box .note {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            font-style: italic;
+        }
+
+        .reference-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .reference-item {
+            background: var(--gray-50);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .reference-item h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .reference-item p {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+
+        .insight-box {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .insight-box h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .insight-box ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .insight-box li {
+            margin: 0.25rem 0;
+        }
+    </style>
+</body>
+</html>

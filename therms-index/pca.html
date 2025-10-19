@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Principal Component Analysis (PCA)</title>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Principal Component Analysis (PCA)</h2>
+
+  <div class="card description">
+    <h3>What is PCA?</h3>
+    <p><strong>Principal Component Analysis (PCA)</strong> is a dimensionality reduction technique that transforms correlated variables into a set of uncorrelated variables called principal components. These components capture the maximum variance in the data, allowing you to represent high-dimensional data in fewer dimensions while retaining most of the information.</p>
+    <p>PCA is widely used in data visualization, noise reduction, feature extraction, and compression.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Key Concepts:</strong></p>
+    <ul>
+      <li><strong>Covariance Matrix:</strong> C = (1/n)X<sup>T</sup>X (after mean-centering)</li>
+      <li><strong>Eigenvalue Equation:</strong> Cv = λv</li>
+      <li><strong>Principal Components:</strong> Eigenvectors of the covariance matrix</li>
+      <li><strong>Variance Explained:</strong> λᵢ / Σλⱼ</li>
+      <li><strong>Transformation:</strong> Y = X · W (W = matrix of eigenvectors)</li>
+    </ul>
+    <p><strong>Where:</strong></p>
+    <ul>
+      <li><strong>X</strong> = mean-centered data matrix (n samples × p features)</li>
+      <li><strong>C</strong> = covariance matrix (p × p)</li>
+      <li><strong>v</strong> = eigenvector (principal component direction)</li>
+      <li><strong>λ</strong> = eigenvalue (variance along that component)</li>
+      <li><strong>Y</strong> = transformed data in PC space</li>
+    </ul>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive 2D PCA Explorer</h3>
+    <p>Generate data with correlation and see how PCA finds the principal components!</p>
+
+    <div class="control">
+      <label for="correlationSlider">Correlation between X and Y: <span id="correlationValue">0.8</span></label>
+      <input type="range" id="correlationSlider" min="0" max="1" step="0.1" value="0.8" />
+    </div>
+
+    <div class="control">
+      <label for="varianceRatioSlider">Variance Ratio (X vs Y): <span id="varianceRatioValue">2.0</span></label>
+      <input type="range" id="varianceRatioSlider" min="0.5" max="5" step="0.5" value="2" />
+    </div>
+
+    <div class="control">
+      <label for="sampleSizeSlider">Number of Samples: <span id="sampleSizeValue">100</span></label>
+      <input type="range" id="sampleSizeSlider" min="50" max="300" step="50" value="100" />
+    </div>
+
+    <button id="generateBtn" class="button">Generate New Data</button>
+  </div>
+
+  <div id="pcaPlot" style="width:100%;height:500px;"></div>
+
+  <div class="highlight">
+    <h3>📊 PCA Results</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>PC1 Variance Explained</h4>
+        <p id="pc1Variance" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">0%</p>
+      </div>
+      <div class="card">
+        <h4>PC2 Variance Explained</h4>
+        <p id="pc2Variance" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">0%</p>
+      </div>
+      <div class="card">
+        <h4>Total Variance</h4>
+        <p id="totalVariance" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">100%</p>
+      </div>
+      <div class="card">
+        <h4>Dimensionality Reduction</h4>
+        <p id="dimensionReduction" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">2D → 1D</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🔍 Principal Component Directions</h3>
+    <div id="eigenvectorInfo" style="font-family: var(--font-mono); background: var(--bg-tertiary); padding: 1rem; border-radius: var(--radius-md);">
+      <p><strong>PC1 Direction:</strong> <span id="pc1Direction">[-, -]</span></p>
+      <p><strong>PC2 Direction:</strong> <span id="pc2Direction">[-, -]</span></p>
+      <p style="margin-top: 1rem; color: var(--text-secondary);"><small>These vectors are orthogonal (perpendicular) to each other</small></p>
+    </div>
+  </div>
+
+  <div id="variancePlot" style="width:100%;height:300px;"></div>
+
+  <div class="scenario" style="background: #f0f9ff; border: 2px solid #3b82f6;">
+    <h3>📈 Financial Engineering Applications</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>📊 Portfolio Risk Management</h4>
+        <p>Identify independent risk factors in multi-asset portfolios. Reduce hundreds of stocks to 5-10 principal factors for risk analysis and hedging.</p>
+      </div>
+      <div class="card">
+        <h4>📉 Yield Curve Modeling</h4>
+        <p>Decompose yield curves into level, slope, and curvature factors. PC1 ≈ parallel shifts, PC2 ≈ steepening/flattening, PC3 ≈ butterfly.</p>
+      </div>
+      <div class="card">
+        <h4>💹 Statistical Arbitrage</h4>
+        <p>Find co-moving stock baskets for pairs trading. Use PCA residuals to identify mean-reversion opportunities in equity markets.</p>
+      </div>
+      <div class="card">
+        <h4>⚡ High-Frequency Trading</h4>
+        <p>Real-time dimensionality reduction of orderbook features. Compress tick data from multiple exchanges for faster signal processing.</p>
+      </div>
+      <div class="card">
+        <h4>🌐 FX Risk Attribution</h4>
+        <p>Decompose currency exposures into regional and commodity factors. Simplify multi-currency portfolio hedging strategies.</p>
+      </div>
+      <div class="card">
+        <h4>📈 Index Construction</h4>
+        <p>Create custom factor indices from large stock universes. Build smart-beta strategies based on principal component exposures.</p>
+      </div>
+      <div class="card">
+        <h4>🔮 Volatility Surface Analysis</h4>
+        <p>Model implied volatility surfaces using principal components. Reduce option pricing model dimensionality for faster calibration.</p>
+      </div>
+      <div class="card">
+        <h4>🎯 Market Regime Detection</h4>
+        <p>Identify shifts in market structure by tracking changes in principal components over time. Detect regime changes for strategy adaptation.</p>
+      </div>
+    </div>
+  </div>
+
+  <button class="collapsible">💡 How PCA Works - Step by Step</button>
+  <div class="content">
+    <div class="solution">
+      <div class="solution-step">
+        <h4>Step 1: Standardize the Data</h4>
+        <p>Center each feature by subtracting its mean:</p>
+        <p style="font-family: var(--font-mono);">X_centered = X - mean(X)</p>
+        <p><small>This ensures all features contribute equally, regardless of scale.</small></p>
+      </div>
+
+      <div class="solution-step">
+        <h4>Step 2: Compute the Covariance Matrix</h4>
+        <p>Calculate how each feature varies with respect to others:</p>
+        <p style="font-family: var(--font-mono);">C = (1/n) X<sup>T</sup>X</p>
+        <p><small>The covariance matrix is symmetric and captures all pairwise relationships.</small></p>
+      </div>
+
+      <div class="solution-step">
+        <h4>Step 3: Calculate Eigenvectors and Eigenvalues</h4>
+        <p>Find the directions of maximum variance:</p>
+        <p style="font-family: var(--font-mono);">Cv = λv</p>
+        <p><small>Eigenvalues (λ) represent variance along each direction, eigenvectors (v) represent the directions.</small></p>
+      </div>
+
+      <div class="solution-step">
+        <h4>Step 4: Sort by Eigenvalue</h4>
+        <p>Order components by the amount of variance they explain:</p>
+        <p style="font-family: var(--font-mono);">λ₁ ≥ λ₂ ≥ ... ≥ λₚ</p>
+        <p><small>The first principal component captures the most variance.</small></p>
+      </div>
+
+      <div class="solution-step">
+        <h4>Step 5: Select Components</h4>
+        <p>Choose top k components that retain desired variance (e.g., 95%):</p>
+        <p style="font-family: var(--font-mono);">Σ(λᵢ for i=1 to k) / Σ(all λⱼ) ≥ 0.95</p>
+        <p><small>This reduces dimensionality while preserving information.</small></p>
+      </div>
+
+      <div class="solution-step">
+        <h4>Step 6: Transform the Data</h4>
+        <p>Project original data onto principal components:</p>
+        <p style="font-family: var(--font-mono);">Y = X · W</p>
+        <p><small>W is the matrix of selected eigenvectors (loadings).</small></p>
+      </div>
+    </div>
+  </div>
+
+  <button class="collapsible">🎓 Example: Portfolio Risk Analysis</button>
+  <div class="content">
+    <div class="solution">
+      <div class="problem">
+        <p>You have daily returns for 10 stocks over 250 trading days. The stocks are highly correlated (tech sector). How many independent risk factors drive the portfolio?</p>
+      </div>
+
+      <div class="solution-step">
+        <h4>Setup</h4>
+        <p><strong>Data:</strong> 250 samples × 10 features (stock returns)</p>
+        <p><strong>Goal:</strong> Identify underlying risk factors</p>
+      </div>
+
+      <div class="solution-step">
+        <h4>Apply PCA</h4>
+        <p>After applying PCA, we might find:</p>
+        <ul>
+          <li>PC1: 65% variance (market factor)</li>
+          <li>PC2: 15% variance (sector momentum)</li>
+          <li>PC3: 8% variance (size factor)</li>
+          <li>PC4-PC10: 12% variance (noise/idiosyncratic)</li>
+        </ul>
+      </div>
+
+      <div class="solution-step">
+        <h4>Interpretation</h4>
+        <p>The first principal component represents the overall market movement affecting all stocks. The second might capture sector-specific trends. The remaining components capture smaller, independent sources of variation.</p>
+      </div>
+
+      <div class="answer">
+        <strong>Result:</strong> Instead of tracking 10 correlated stocks, you can explain 88% of variance with just 3 principal components (risk factors). This simplifies risk management and portfolio hedging.
+      </div>
+    </div>
+  </div>
+
+  <button class="collapsible">⚠️ Limitations and Assumptions</button>
+  <div class="content">
+    <div class="solution">
+      <div class="scenario" style="background: #fff7ed; border: 2px solid #f59e0b;">
+        <h4>Key Assumptions</h4>
+        <ul>
+          <li><strong>Linearity:</strong> PCA assumes linear relationships between variables</li>
+          <li><strong>Large variance = importance:</strong> PCA prioritizes high-variance directions</li>
+          <li><strong>Orthogonality:</strong> Components must be uncorrelated (perpendicular)</li>
+          <li><strong>Gaussian distribution:</strong> Works best with normally distributed data</li>
+        </ul>
+      </div>
+
+      <div class="scenario" style="background: #fef2f2; border: 2px solid #ef4444; margin-top: 1rem;">
+        <h4>Limitations</h4>
+        <ul>
+          <li><strong>Interpretability:</strong> Components are linear combinations; meaning can be unclear</li>
+          <li><strong>Sensitivity to scaling:</strong> Always standardize features first</li>
+          <li><strong>Outliers:</strong> Can heavily influence principal components</li>
+          <li><strong>Information loss:</strong> Dimensionality reduction discards some variance</li>
+          <li><strong>Non-linear patterns:</strong> May miss curved or complex relationships</li>
+        </ul>
+      </div>
+
+      <div class="scenario" style="background: #f0fdf4; border: 2px solid #10b981; margin-top: 1rem;">
+        <h4>When to Use PCA</h4>
+        <ul>
+          <li>High-dimensional data with correlated features</li>
+          <li>Data visualization (reduce to 2D or 3D)</li>
+          <li>Noise reduction and signal extraction</li>
+          <li>Preprocessing before machine learning</li>
+          <li>When interpretability is less critical than compression</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <button class="collapsible">🔧 PCA vs Other Techniques</button>
+  <div class="content">
+    <div class="solution">
+      <table>
+        <thead>
+          <tr>
+            <th>Technique</th>
+            <th>Type</th>
+            <th>Linearity</th>
+            <th>Supervised</th>
+            <th>Best For</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>PCA</strong></td>
+            <td>Dimensionality Reduction</td>
+            <td>Linear</td>
+            <td>No</td>
+            <td>Variance maximization, decorrelation</td>
+          </tr>
+          <tr>
+            <td><strong>t-SNE</strong></td>
+            <td>Dimensionality Reduction</td>
+            <td>Non-linear</td>
+            <td>No</td>
+            <td>Visualization, cluster separation</td>
+          </tr>
+          <tr>
+            <td><strong>LDA</strong></td>
+            <td>Dimensionality Reduction</td>
+            <td>Linear</td>
+            <td>Yes</td>
+            <td>Classification, class separation</td>
+          </tr>
+          <tr>
+            <td><strong>Autoencoders</strong></td>
+            <td>Neural Network</td>
+            <td>Non-linear</td>
+            <td>No</td>
+            <td>Complex patterns, deep learning</td>
+          </tr>
+          <tr>
+            <td><strong>ICA</strong></td>
+            <td>Signal Separation</td>
+            <td>Linear</td>
+            <td>No</td>
+            <td>Independent sources, blind source separation</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50; margin-top: 2rem;">
+    <h3>💡 Key Insights About PCA</h3>
+    <ul style="line-height: 1.8;">
+      <li><strong>Variance Maximization:</strong> PCA finds directions where data varies the most</li>
+      <li><strong>Dimensionality Reduction:</strong> Compress high-dimensional data while retaining information</li>
+      <li><strong>Decorrelation:</strong> Principal components are uncorrelated by construction</li>
+      <li><strong>Orthogonal Transformation:</strong> PCA is a rotation of the coordinate system</li>
+      <li><strong>Reversible:</strong> Can reconstruct original data (with some loss if dimensions reduced)</li>
+      <li><strong>Unsupervised:</strong> No need for labels; discovers structure automatically</li>
+      <li><strong>Computational Efficiency:</strong> Eigendecomposition scales well for many problems</li>
+    </ul>
+  </div>
+
+  <script>
+    const correlationSlider = document.getElementById('correlationSlider');
+    const varianceRatioSlider = document.getElementById('varianceRatioSlider');
+    const sampleSizeSlider = document.getElementById('sampleSizeSlider');
+    const generateBtn = document.getElementById('generateBtn');
+
+    let correlation = 0.8;
+    let varianceRatio = 2.0;
+    let sampleSize = 100;
+
+    function normalRandom(mean = 0, std = 1) {
+      let u1 = Math.random();
+      let u2 = Math.random();
+      let z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+      return mean + std * z0;
+    }
+
+    function generateCorrelatedData(n, corr, varRatio) {
+      const data = [];
+      const stdX = Math.sqrt(varRatio);
+      const stdY = 1.0;
+
+      for (let i = 0; i < n; i++) {
+        const x = normalRandom(0, stdX);
+        const y = corr * x + Math.sqrt(1 - corr * corr) * normalRandom(0, stdY);
+        data.push({x, y});
+      }
+
+      return data;
+    }
+
+    function centerData(data) {
+      const meanX = data.reduce((sum, p) => sum + p.x, 0) / data.length;
+      const meanY = data.reduce((sum, p) => sum + p.y, 0) / data.length;
+
+      return data.map(p => ({
+        x: p.x - meanX,
+        y: p.y - meanY
+      }));
+    }
+
+    function computePCA(data) {
+      const n = data.length;
+
+      let cov_xx = 0, cov_yy = 0, cov_xy = 0;
+      for (let i = 0; i < n; i++) {
+        cov_xx += data[i].x * data[i].x;
+        cov_yy += data[i].y * data[i].y;
+        cov_xy += data[i].x * data[i].y;
+      }
+
+      cov_xx /= n;
+      cov_yy /= n;
+      cov_xy /= n;
+
+      const trace = cov_xx + cov_yy;
+      const det = cov_xx * cov_yy - cov_xy * cov_xy;
+
+      const lambda1 = trace / 2 + Math.sqrt(trace * trace / 4 - det);
+      const lambda2 = trace / 2 - Math.sqrt(trace * trace / 4 - det);
+
+      let v1_x, v1_y, v2_x, v2_y;
+
+      if (Math.abs(cov_xy) > 1e-10) {
+        v1_x = lambda1 - cov_yy;
+        v1_y = cov_xy;
+        const norm1 = Math.sqrt(v1_x * v1_x + v1_y * v1_y);
+        v1_x /= norm1;
+        v1_y /= norm1;
+
+        v2_x = -v1_y;
+        v2_y = v1_x;
+      } else {
+        v1_x = cov_xx > cov_yy ? 1 : 0;
+        v1_y = cov_xx > cov_yy ? 0 : 1;
+        v2_x = -v1_y;
+        v2_y = v1_x;
+      }
+
+      const totalVar = lambda1 + lambda2;
+
+      return {
+        eigenvalues: [lambda1, lambda2],
+        eigenvectors: [
+          {x: v1_x, y: v1_y},
+          {x: v2_x, y: v2_y}
+        ],
+        varianceExplained: [
+          (lambda1 / totalVar) * 100,
+          (lambda2 / totalVar) * 100
+        ]
+      };
+    }
+
+    function projectOnPC(data, eigenvector) {
+      return data.map(p => {
+        const projection = p.x * eigenvector.x + p.y * eigenvector.y;
+        return {
+          x: projection * eigenvector.x,
+          y: projection * eigenvector.y,
+          value: projection
+        };
+      });
+    }
+
+    function updateVisualization() {
+      const rawData = generateCorrelatedData(sampleSize, correlation, varianceRatio);
+      const centeredData = centerData(rawData);
+      const pca = computePCA(centeredData);
+
+      const pc1Projected = projectOnPC(centeredData, pca.eigenvectors[0]);
+      const pc2Projected = projectOnPC(centeredData, pca.eigenvectors[1]);
+
+      const scatterTrace = {
+        x: centeredData.map(p => p.x),
+        y: centeredData.map(p => p.y),
+        type: 'scatter',
+        mode: 'markers',
+        name: 'Data',
+        marker: {
+          size: 6,
+          color: '#94a3b8',
+          opacity: 0.6
+        }
+      };
+
+      const scale = Math.max(
+        Math.max(...centeredData.map(p => Math.abs(p.x))),
+        Math.max(...centeredData.map(p => Math.abs(p.y)))
+      ) * 1.5;
+
+      const pc1Arrow = {
+        x: [0, pca.eigenvectors[0].x * scale],
+        y: [0, pca.eigenvectors[0].y * scale],
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: `PC1 (${pca.varianceExplained[0].toFixed(1)}%)`,
+        line: {
+          color: '#ef4444',
+          width: 4
+        },
+        marker: {
+          size: 10,
+          symbol: 'arrow',
+          angleref: 'previous'
+        }
+      };
+
+      const pc2Arrow = {
+        x: [0, pca.eigenvectors[1].x * scale],
+        y: [0, pca.eigenvectors[1].y * scale],
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: `PC2 (${pca.varianceExplained[1].toFixed(1)}%)`,
+        line: {
+          color: '#10b981',
+          width: 4
+        },
+        marker: {
+          size: 10,
+          symbol: 'arrow',
+          angleref: 'previous'
+        }
+      };
+
+      const layout = {
+        title: 'PCA: Data and Principal Components',
+        xaxis: {
+          title: 'X (centered)',
+          zeroline: true,
+          zerolinewidth: 2,
+          range: [-scale, scale]
+        },
+        yaxis: {
+          title: 'Y (centered)',
+          zeroline: true,
+          zerolinewidth: 2,
+          range: [-scale, scale]
+        },
+        showlegend: true,
+        hovermode: 'closest'
+      };
+
+      Plotly.newPlot('pcaPlot', [scatterTrace, pc1Arrow, pc2Arrow], layout, {responsive: true});
+
+      document.getElementById('pc1Variance').textContent = pca.varianceExplained[0].toFixed(1) + '%';
+      document.getElementById('pc2Variance').textContent = pca.varianceExplained[1].toFixed(1) + '%';
+      document.getElementById('totalVariance').textContent = '100%';
+
+      const threshold90 = pca.varianceExplained[0] >= 90 ? '2D → 1D' : '2D → 2D';
+      document.getElementById('dimensionReduction').textContent = threshold90;
+
+      document.getElementById('pc1Direction').textContent =
+        `[${pca.eigenvectors[0].x.toFixed(3)}, ${pca.eigenvectors[0].y.toFixed(3)}]`;
+      document.getElementById('pc2Direction').textContent =
+        `[${pca.eigenvectors[1].x.toFixed(3)}, ${pca.eigenvectors[1].y.toFixed(3)}]`;
+
+      createScreePlot(pca.varianceExplained);
+    }
+
+    function createScreePlot(varianceExplained) {
+      const cumulative = [varianceExplained[0], varianceExplained[0] + varianceExplained[1]];
+
+      const barTrace = {
+        x: ['PC1', 'PC2'],
+        y: varianceExplained,
+        type: 'bar',
+        name: 'Individual Variance',
+        marker: {
+          color: ['#ef4444', '#10b981']
+        }
+      };
+
+      const lineTrace = {
+        x: ['PC1', 'PC2'],
+        y: cumulative,
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Cumulative Variance',
+        yaxis: 'y2',
+        line: {
+          color: '#3b82f6',
+          width: 3
+        },
+        marker: {
+          size: 10
+        }
+      };
+
+      const layout = {
+        title: 'Scree Plot: Variance Explained by Component',
+        xaxis: {
+          title: 'Principal Component'
+        },
+        yaxis: {
+          title: 'Variance Explained (%)',
+          range: [0, Math.max(...varianceExplained) * 1.1]
+        },
+        yaxis2: {
+          title: 'Cumulative Variance (%)',
+          overlaying: 'y',
+          side: 'right',
+          range: [0, 110]
+        },
+        showlegend: true
+      };
+
+      Plotly.newPlot('variancePlot', [barTrace, lineTrace], layout, {responsive: true});
+    }
+
+    correlationSlider.addEventListener('input', function() {
+      correlation = parseFloat(this.value);
+      document.getElementById('correlationValue').textContent = correlation.toFixed(1);
+    });
+
+    varianceRatioSlider.addEventListener('input', function() {
+      varianceRatio = parseFloat(this.value);
+      document.getElementById('varianceRatioValue').textContent = varianceRatio.toFixed(1);
+    });
+
+    sampleSizeSlider.addEventListener('input', function() {
+      sampleSize = parseInt(this.value);
+      document.getElementById('sampleSizeValue').textContent = sampleSize;
+    });
+
+    generateBtn.addEventListener('click', updateVisualization);
+
+    const collapsibles = document.querySelectorAll('.collapsible');
+    collapsibles.forEach(button => {
+      button.addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        content.classList.toggle('active');
+
+        if (content.classList.contains('active')) {
+          content.style.maxHeight = content.scrollHeight + 'px';
+        } else {
+          content.style.maxHeight = null;
+        }
+      });
+    });
+
+    updateVisualization();
+  </script>
+</body>
+</html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cosine Distance</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Cosine Distance</h2>
+
+  <div class="card description">
+    <h3>What is Cosine Distance?</h3>
+    <p>The <strong>Cosine Distance</strong> measures the angle between two vectors in multi-dimensional space, focusing on their orientation rather than magnitude. It ranges from 0 (identical direction) to 1 (opposite directions).</p>
+    <p>Unlike Euclidean distance, cosine distance is unaffected by vector magnitude, making it ideal for text analysis, recommendation systems, and high-dimensional data where direction matters more than size.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Cosine Similarity:</strong></p>
+    <p><strong>cos(θ) = (A · B) / (||A|| × ||B||) = Σ(A<sub>i</sub> × B<sub>i</sub>) / (√Σ(A<sub>i</sub>²) × √Σ(B<sub>i</sub>²))</strong></p>
+    <p style="margin-top: 1rem;"><strong>Cosine Distance:</strong></p>
+    <p><strong>d(A, B) = 1 - cos(θ)</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>A · B</strong> = Dot product of vectors A and B</li>
+      <li><strong>||A||</strong> = Euclidean norm (magnitude) of vector A</li>
+      <li><strong>θ</strong> = Angle between the vectors</li>
+      <li>Range: [0, 2] where 0 means identical, 1 means perpendicular, 2 means opposite</li>
+    </ul>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive Vector Calculator</h3>
+    <p>Enter vector components to calculate cosine distance:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+      <div class="control">
+        <label for="vectorA">Vector A (comma-separated):</label>
+        <input type="text" id="vectorA" value="3, 4, 0"
+               style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+        <small>Example: 3, 4, 0 or 1, 0, 1, 0</small>
+      </div>
+
+      <div class="control">
+        <label for="vectorB">Vector B (comma-separated):</label>
+        <input type="text" id="vectorB" value="4, 3, 0"
+               style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+        <small>Must have same dimensions as Vector A</small>
+      </div>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <h4>Try These Examples:</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+        <button onclick="loadExample('identical')" style="padding: 0.5rem;">Identical Vectors</button>
+        <button onclick="loadExample('perpendicular')" style="padding: 0.5rem;">Perpendicular (90°)</button>
+        <button onclick="loadExample('opposite')" style="padding: 0.5rem;">Opposite (180°)</button>
+        <button onclick="loadExample('document')" style="padding: 0.5rem;">Document Vectors</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📊 Calculation Results</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Dot Product</h4>
+        <p id="dotProduct" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">24</p>
+      </div>
+      <div class="card">
+        <h4>||A|| (Norm)</h4>
+        <p id="normA" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">5.000</p>
+      </div>
+      <div class="card">
+        <h4>||B|| (Norm)</h4>
+        <p id="normB" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">5.000</p>
+      </div>
+      <div class="card">
+        <h4>Cosine Similarity</h4>
+        <p id="cosineSimilarity" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">0.960</p>
+      </div>
+      <div class="card">
+        <h4>Angle (degrees)</h4>
+        <p id="angle" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">16.26°</p>
+      </div>
+      <div class="card">
+        <h4>Cosine Distance</h4>
+        <p id="cosineDistance" style="font-size: 1.5rem; font-weight: bold; color: var(--error-color);">0.040</p>
+      </div>
+    </div>
+
+    <div class="formula" style="margin-top: 1.5rem;">
+      <p id="calculationBreakdown"><strong>Calculation:</strong> cos(θ) = 24 / (5.000 × 5.000) = 0.960, Distance = 1 - 0.960 = 0.040</p>
+    </div>
+  </div>
+
+  <div id="vectorPlot" style="width:100%;height:500px;margin-top:2rem;"></div>
+
+  <div id="similarityMatrix" style="width:100%;height:400px;margin-top:2rem;"></div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Applications in Machine Learning</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="scenario">
+        <h4>Text Similarity</h4>
+        <p>Compare documents using TF-IDF vectors, where angle matters more than document length</p>
+      </div>
+      <div class="scenario">
+        <h4>Recommendation Systems</h4>
+        <p>Find similar users or items based on preference vectors, ignoring rating scale differences</p>
+      </div>
+      <div class="scenario">
+        <h4>Word Embeddings</h4>
+        <p>Measure semantic similarity between words in high-dimensional vector spaces (Word2Vec, GloVe)</p>
+      </div>
+      <div class="scenario">
+        <h4>Image Recognition</h4>
+        <p>Compare feature vectors from neural networks for similarity matching and retrieval</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <h3>Exercise: Document Similarity</h3>
+    <div class="problem">
+      <p>Two documents are represented by their term frequency vectors:</p>
+      <ul>
+        <li><strong>Doc A:</strong> [2, 1, 0, 1] (words: [machine, learning, deep, algorithm])</li>
+        <li><strong>Doc B:</strong> [1, 2, 1, 1] (same word order)</li>
+      </ul>
+      <p><strong>Question:</strong> Calculate the cosine similarity and distance between these documents.</p>
+    </div>
+
+    <button class="collapsible">Show Solution</button>
+    <div class="content">
+      <div class="solution">
+        <div class="solution-step">
+          <strong>Step 1:</strong> Calculate the dot product A · B
+          <p>A · B = (2×1) + (1×2) + (0×1) + (1×1) = 2 + 2 + 0 + 1 = 5</p>
+        </div>
+        <div class="solution-step">
+          <strong>Step 2:</strong> Calculate the norm of A
+          <p>||A|| = √(2² + 1² + 0² + 1²) = √(4 + 1 + 0 + 1) = √6 ≈ 2.449</p>
+        </div>
+        <div class="solution-step">
+          <strong>Step 3:</strong> Calculate the norm of B
+          <p>||B|| = √(1² + 2² + 1² + 1²) = √(1 + 4 + 1 + 1) = √7 ≈ 2.646</p>
+        </div>
+        <div class="solution-step">
+          <strong>Step 4:</strong> Calculate cosine similarity
+          <p>cos(θ) = 5 / (2.449 × 2.646) = 5 / 6.478 ≈ 0.772</p>
+        </div>
+        <div class="solution-step">
+          <strong>Step 5:</strong> Calculate cosine distance
+          <p>d = 1 - 0.772 = 0.228</p>
+        </div>
+        <div class="answer">
+          <strong>Answer:</strong> The documents have a cosine similarity of 0.772 (77.2% similar) and a cosine distance of 0.228.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Cosine vs Other Distance Metrics</h3>
+    <div style="display: grid; gap: 1rem;">
+      <div class="highlight">
+        <h4>When to Use Cosine Distance:</h4>
+        <ul>
+          <li><strong>High-dimensional data:</strong> Works well in spaces with many dimensions</li>
+          <li><strong>Sparse vectors:</strong> Effective for vectors with many zero values</li>
+          <li><strong>Scale-invariant comparison:</strong> When magnitude doesn't matter</li>
+          <li><strong>Text analysis:</strong> Document similarity regardless of length</li>
+        </ul>
+      </div>
+      <div class="highlight" style="border-left-color: var(--warning-color);">
+        <h4>Limitations:</h4>
+        <ul>
+          <li>Doesn't consider magnitude (sometimes magnitude is important)</li>
+          <li>Undefined for zero vectors</li>
+          <li>Not a proper metric (doesn't satisfy triangle inequality for distance > 1)</li>
+          <li>Less intuitive than Euclidean distance for spatial data</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Related Concepts</h3>
+    <ul>
+      <li><a href="euclidean-distance.html">Euclidean Distance</a> - Straight-line distance in space</li>
+      <li><a href="jaccard-distance.html">Jaccard Distance</a> - Set-based similarity measure</li>
+      <li><strong>Manhattan Distance:</strong> Sum of absolute differences</li>
+      <li><strong>Pearson Correlation:</strong> Linear correlation between vectors</li>
+    </ul>
+  </div>
+
+  <script>
+    // Parse vector input
+    function parseVector(input) {
+      return input.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+    }
+
+    // Calculate dot product
+    function dotProduct(a, b) {
+      if (a.length !== b.length) return null;
+      return a.reduce((sum, val, i) => sum + val * b[i], 0);
+    }
+
+    // Calculate vector norm
+    function norm(vector) {
+      return Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0));
+    }
+
+    // Calculate cosine similarity and distance
+    function calculateCosine() {
+      const vectorA = parseVector(document.getElementById('vectorA').value);
+      const vectorB = parseVector(document.getElementById('vectorB').value);
+
+      if (vectorA.length === 0 || vectorB.length === 0) {
+        alert('Please enter valid vectors');
+        return;
+      }
+
+      if (vectorA.length !== vectorB.length) {
+        alert('Vectors must have the same dimensions');
+        return;
+      }
+
+      // Calculate metrics
+      const dot = dotProduct(vectorA, vectorB);
+      const normA = norm(vectorA);
+      const normB = norm(vectorB);
+
+      let cosineSim = 0;
+      let angle = 90;
+      let cosineDist = 1;
+
+      if (normA > 0 && normB > 0) {
+        cosineSim = dot / (normA * normB);
+        // Clamp to [-1, 1] to handle floating point errors
+        cosineSim = Math.max(-1, Math.min(1, cosineSim));
+        angle = Math.acos(cosineSim) * 180 / Math.PI;
+        cosineDist = 1 - cosineSim;
+      }
+
+      // Update displays
+      document.getElementById('dotProduct').textContent = dot.toFixed(2);
+      document.getElementById('normA').textContent = normA.toFixed(3);
+      document.getElementById('normB').textContent = normB.toFixed(3);
+      document.getElementById('cosineSimilarity').textContent = cosineSim.toFixed(3);
+      document.getElementById('angle').textContent = angle.toFixed(2) + '°';
+      document.getElementById('cosineDistance').textContent = cosineDist.toFixed(3);
+
+      // Update calculation breakdown
+      document.getElementById('calculationBreakdown').innerHTML =
+        `<strong>Calculation:</strong> cos(θ) = ${dot.toFixed(2)} / (${normA.toFixed(3)} × ${normB.toFixed(3)}) = ${cosineSim.toFixed(3)}, Distance = 1 - ${cosineSim.toFixed(3)} = ${cosineDist.toFixed(3)}`;
+
+      // Update visualizations
+      updateVectorPlot(vectorA, vectorB, angle);
+      updateSimilarityMatrix();
+    }
+
+    // Update vector visualization
+    function updateVectorPlot(vectorA, vectorB, angle) {
+      const traces = [];
+
+      if (vectorA.length <= 3) {
+        // 2D or 3D visualization
+        const is3D = vectorA.length === 3;
+
+        if (is3D) {
+          // 3D vectors
+          traces.push({
+            x: [0, vectorA[0]],
+            y: [0, vectorA[1]],
+            z: [0, vectorA[2]],
+            mode: 'lines+markers',
+            type: 'scatter3d',
+            name: 'Vector A',
+            line: { color: '#2563eb', width: 4 },
+            marker: { size: 6 }
+          });
+
+          traces.push({
+            x: [0, vectorB[0]],
+            y: [0, vectorB[1]],
+            z: [0, vectorB[2]],
+            mode: 'lines+markers',
+            type: 'scatter3d',
+            name: 'Vector B',
+            line: { color: '#ef4444', width: 4 },
+            marker: { size: 6 }
+          });
+
+          const layout = {
+            title: `3D Vector Visualization (Angle: ${angle.toFixed(2)}°)`,
+            scene: {
+              xaxis: { title: 'X', gridcolor: '#e2e8f0' },
+              yaxis: { title: 'Y', gridcolor: '#e2e8f0' },
+              zaxis: { title: 'Z', gridcolor: '#e2e8f0' },
+              aspectratio: { x: 1, y: 1, z: 1 }
+            },
+            showlegend: true
+          };
+
+          Plotly.newPlot('vectorPlot', traces, layout, {responsive: true});
+        } else {
+          // 2D vectors
+          const vA = vectorA.length === 2 ? vectorA : [vectorA[0], vectorA[1]];
+          const vB = vectorB.length === 2 ? vectorB : [vectorB[0], vectorB[1]];
+
+          traces.push({
+            x: [0, vA[0]],
+            y: [0, vA[1] || 0],
+            mode: 'lines+markers',
+            name: 'Vector A',
+            line: { color: '#2563eb', width: 3 },
+            marker: { size: 8 }
+          });
+
+          traces.push({
+            x: [0, vB[0]],
+            y: [0, vB[1] || 0],
+            mode: 'lines+markers',
+            name: 'Vector B',
+            line: { color: '#ef4444', width: 3 },
+            marker: { size: 8 }
+          });
+
+          const maxVal = Math.max(...vA.map(Math.abs), ...vB.map(Math.abs), 1);
+          const range = [-maxVal * 1.2, maxVal * 1.2];
+
+          const layout = {
+            title: `2D Vector Visualization (Angle: ${angle.toFixed(2)}°)`,
+            xaxis: {
+              title: 'X',
+              gridcolor: '#e2e8f0',
+              zeroline: true,
+              zerolinecolor: '#94a3b8',
+              range: range
+            },
+            yaxis: {
+              title: 'Y',
+              gridcolor: '#e2e8f0',
+              zeroline: true,
+              zerolinecolor: '#94a3b8',
+              range: range,
+              scaleanchor: 'x'
+            },
+            plot_bgcolor: '#f8fafc',
+            showlegend: true
+          };
+
+          Plotly.newPlot('vectorPlot', traces, layout, {responsive: true});
+        }
+      } else {
+        // High-dimensional visualization using parallel coordinates
+        const dimensions = vectorA.map((val, i) => ({
+          label: `Dim ${i + 1}`,
+          values: [vectorA[i], vectorB[i]],
+          range: [Math.min(vectorA[i], vectorB[i]) - 1, Math.max(vectorA[i], vectorB[i]) + 1]
+        }));
+
+        const trace = {
+          type: 'parcoords',
+          line: {
+            color: [0, 1],
+            colorscale: [[0, '#2563eb'], [1, '#ef4444']],
+            showscale: true,
+            cmin: 0,
+            cmax: 1,
+            colorbar: {
+              title: 'Vector',
+              tickvals: [0, 1],
+              ticktext: ['A', 'B']
+            }
+          },
+          dimensions: dimensions
+        };
+
+        const layout = {
+          title: `High-Dimensional Vectors (${vectorA.length}D, Angle: ${angle.toFixed(2)}°)`,
+          plot_bgcolor: '#f8fafc',
+          paper_bgcolor: 'white'
+        };
+
+        Plotly.newPlot('vectorPlot', [trace], layout, {responsive: true});
+      }
+    }
+
+    // Update similarity matrix
+    function updateSimilarityMatrix() {
+      const examples = [
+        { name: 'Vector A', data: document.getElementById('vectorA').value },
+        { name: 'Vector B', data: document.getElementById('vectorB').value },
+        { name: 'Orthogonal', data: '1, 0, 0' },
+        { name: 'Unit Vector', data: '1, 1, 1' }
+      ];
+
+      const vectors = examples.map(e => parseVector(e.data));
+      const labels = examples.map(e => e.name);
+
+      // Make all vectors same length
+      const maxLen = Math.max(...vectors.map(v => v.length));
+      vectors.forEach(v => {
+        while (v.length < maxLen) v.push(0);
+      });
+
+      // Calculate similarity matrix
+      const matrix = [];
+      for (let i = 0; i < vectors.length; i++) {
+        const row = [];
+        for (let j = 0; j < vectors.length; j++) {
+          const dot = dotProduct(vectors[i], vectors[j]);
+          const normI = norm(vectors[i]);
+          const normJ = norm(vectors[j]);
+
+          let similarity = 0;
+          if (normI > 0 && normJ > 0) {
+            similarity = dot / (normI * normJ);
+            similarity = Math.max(-1, Math.min(1, similarity));
+          }
+          row.push(1 - similarity); // Convert to distance
+        }
+        matrix.push(row);
+      }
+
+      const trace = {
+        z: matrix,
+        x: labels,
+        y: labels,
+        type: 'heatmap',
+        colorscale: [
+          [0, '#10b981'],
+          [0.5, '#f59e0b'],
+          [1, '#ef4444']
+        ],
+        colorbar: {
+          title: 'Distance',
+          titleside: 'right'
+        },
+        hovertemplate: '%{y} vs %{x}<br>Distance: %{z:.3f}<extra></extra>'
+      };
+
+      // Add text annotations
+      const annotations = [];
+      for (let i = 0; i < labels.length; i++) {
+        for (let j = 0; j < labels.length; j++) {
+          annotations.push({
+            x: labels[j],
+            y: labels[i],
+            text: matrix[i][j].toFixed(2),
+            showarrow: false,
+            font: {
+              color: matrix[i][j] > 0.5 ? 'white' : 'black'
+            }
+          });
+        }
+      }
+
+      const layout = {
+        title: 'Cosine Distance Matrix',
+        xaxis: { side: 'bottom' },
+        yaxis: { autorange: 'reversed' },
+        plot_bgcolor: '#f8fafc',
+        annotations: annotations
+      };
+
+      Plotly.newPlot('similarityMatrix', [trace], layout, {responsive: true});
+    }
+
+    // Load example vectors
+    function loadExample(type) {
+      const examples = {
+        identical: {
+          A: '3, 4, 5',
+          B: '3, 4, 5'
+        },
+        perpendicular: {
+          A: '1, 0, 0',
+          B: '0, 1, 0'
+        },
+        opposite: {
+          A: '1, 1, 1',
+          B: '-1, -1, -1'
+        },
+        document: {
+          A: '3, 1, 0, 0, 2, 0, 1, 1',
+          B: '2, 1, 1, 0, 1, 1, 0, 1'
+        }
+      };
+
+      if (examples[type]) {
+        document.getElementById('vectorA').value = examples[type].A;
+        document.getElementById('vectorB').value = examples[type].B;
+        calculateCosine();
+      }
+    }
+
+    // Event listeners
+    document.getElementById('vectorA').addEventListener('input', calculateCosine);
+    document.getElementById('vectorB').addEventListener('input', calculateCosine);
+
+    // Collapsible functionality
+    const collapsibles = document.getElementsByClassName('collapsible');
+    for (let i = 0; i < collapsibles.length; i++) {
+      collapsibles[i].addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+          content.classList.remove('active');
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+          content.classList.add('active');
+        }
+      });
+    }
+
+    // Initial calculation
+    calculateCosine();
+  </script>
+</body>
+</html>

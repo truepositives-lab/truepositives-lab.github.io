@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Central Limit Theorem</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Central Limit Theorem</h2>
+
+  <div class="card description">
+    <h3>What is the Central Limit Theorem?</h3>
+    <p>The <strong>Central Limit Theorem (CLT)</strong> is one of the most important theorems in statistics. It states that regardless of the shape of the original population distribution, the distribution of sample means approaches a normal distribution as the sample size increases. This fundamental principle enables us to make statistical inferences about populations using sample data.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Central Limit Theorem Statement:</strong></p>
+    <p>For a population with mean μ and standard deviation σ, the sampling distribution of sample means:</p>
+    <ul>
+      <li><strong>Mean:</strong> μx̄ = μ (unbiased estimator)</li>
+      <li><strong>Standard Error:</strong> σx̄ = σ / √n</li>
+      <li><strong>Shape:</strong> Approaches normal distribution as n increases</li>
+      <li><strong>Rule of Thumb:</strong> n ≥ 30 for most distributions</li>
+    </ul>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive CLT Demonstration</h3>
+    <p>Choose a population distribution and watch how sample means become normally distributed:</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+      <div class="control">
+        <label for="distributionSelect">Population Distribution:</label>
+        <select id="distributionSelect" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+          <option value="uniform">Uniform (Flat)</option>
+          <option value="exponential">Exponential (Skewed)</option>
+          <option value="bimodal">Bimodal (Two Peaks)</option>
+          <option value="discrete">Discrete (Dice Roll)</option>
+          <option value="normal" selected>Normal (Bell Curve)</option>
+        </select>
+      </div>
+      
+      <div class="control">
+        <label for="sampleSizeSlider">Sample Size (n): <span id="sampleSizeValue">30</span></label>
+        <input type="range" id="sampleSizeSlider" min="1" max="100" step="1" value="30" />
+      </div>
+      
+      <div class="control">
+        <label for="numSamplesSlider">Number of Samples: <span id="numSamplesValue">1000</span></label>
+        <input type="range" id="numSamplesSlider" min="100" max="5000" step="100" value="1000" />
+      </div>
+    </div>
+    
+    <button id="runSimulation" class="button" style="margin-top: 1rem;">Run CLT Simulation</button>
+  </div>
+
+  <div class="highlight">
+    <h3>📊 Simulation Results</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Population Mean (μ)</h4>
+        <p id="populationMean" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">5.0</p>
+      </div>
+      <div class="card">
+        <h4>Sample Means Average</h4>
+        <p id="sampleMeansAverage" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">5.0</p>
+      </div>
+      <div class="card">
+        <h4>Theoretical SE</h4>
+        <p id="theoreticalSE" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">0.32</p>
+      </div>
+      <div class="card">
+        <h4>Actual SE</h4>
+        <p id="actualSE" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">0.31</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="populationChart" style="width:100%;height:300px;"></div>
+  <div id="samplingChart" style="width:100%;height:400px;"></div>
+
+  <div class="card" style="background: #f0f8ff; border: 2px solid #3b82f6;">
+    <h3>📏 Standard Error Deep Dive</h3>
+    <p>The <strong>standard error</strong> measures how much sample means vary around the population mean:</p>
+    
+    <div class="control">
+      <label for="sePopulationSD">Population Standard Deviation (σ): <span id="sePopulationSDValue">2.9</span></label>
+      <input type="range" id="sePopulationSD" min="0.5" max="10" step="0.1" value="2.9" />
+    </div>
+    
+    <div class="control">
+      <label for="seSampleSize">Sample Size (n): <span id="seSampleSizeValue">30</span></label>
+      <input type="range" id="seSampleSize" min="1" max="200" step="1" value="30" />
+    </div>
+    
+    <div style="margin-top: 1rem;">
+      <p><strong>Standard Error = σ / √n = <span id="calculatedSE">0.53</span></strong></p>
+      <p><small>As sample size increases, standard error decreases (more precise estimates)</small></p>
+    </div>
+    
+    <div id="standardErrorChart" style="width:100%;height:300px;"></div>
+  </div>
+
+  <div class="scenario" style="background: #fff8dc; border: 2px solid #ffd700;">
+    <h3>🔍 Sample Size Effect Visualization</h3>
+    <p>See how the shape of the sampling distribution changes with different sample sizes:</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <button class="button" onclick="compareSampleSizes(1)">n = 1</button>
+      <button class="button" onclick="compareSampleSizes(5)">n = 5</button>
+      <button class="button" onclick="compareSampleSizes(15)">n = 15</button>
+      <button class="button" onclick="compareSampleSizes(30)">n = 30</button>
+      <button class="button" onclick="compareSampleSizes(50)">n = 50</button>
+      <button class="button" onclick="compareSampleSizes(100)">n = 100</button>
+    </div>
+    
+    <div id="sampleSizeComparison" style="width:100%;height:400px; margin-top: 1rem;"></div>
+  </div>
+
+  <div class="scenario">
+    <h3>🔄 Real-World Applications</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>📊 Opinion Polling</h4>
+        <button class="button" onclick="loadExample('polling')">Load Example</button>
+        <p><small>How polls can predict election outcomes with sample sizes</small></p>
+      </div>
+      <div class="card">
+        <h4>🏭 Quality Control</h4>
+        <button class="button" onclick="loadExample('quality')">Load Example</button>
+        <p><small>Manufacturing defect rates from sample inspections</small></p>
+      </div>
+      <div class="card">
+        <h4>🧪 Medical Research</h4>
+        <button class="button" onclick="loadExample('medical')">Load Example</button>
+        <p><small>Drug effectiveness from clinical trial samples</small></p>
+      </div>
+      <div class="card">
+        <h4>📈 Financial Markets</h4>
+        <button class="button" onclick="loadExample('finance')">Load Example</button>
+        <p><small>Daily returns approximating normal distribution</small></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🧮 Confidence Intervals and Hypothesis Testing</h3>
+    <p>The CLT enables us to construct confidence intervals and perform hypothesis tests:</p>
+    
+    <div class="control">
+      <label for="confidenceLevel">Confidence Level: <span id="confidenceLevelValue">95</span>%</label>
+      <input type="range" id="confidenceLevel" min="80" max="99" step="1" value="95" />
+    </div>
+    
+    <div style="margin-top: 1rem;">
+      <p><strong>Confidence Interval for Population Mean:</strong></p>
+      <p>x̄ ± z<sub>α/2</sub> × (σ / √n)</p>
+      <p id="confidenceInterval" style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color);">
+        [4.64, 5.36]
+      </p>
+      <p><small>We are <span id="ciConfidence">95</span>% confident the true population mean lies in this interval</small></p>
+    </div>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50;">
+    <h3>🎲 Interactive Dice Rolling Experiment</h3>
+    <p>Roll dice and see the CLT in action with a clearly non-normal population!</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div class="control">
+        <label for="numDice">Dice per Sample: <span id="numDiceValue">5</span></label>
+        <input type="range" id="numDice" min="1" max="20" step="1" value="5" />
+      </div>
+      
+      <div class="control">
+        <label for="diceRolls">Number of Samples: <span id="diceRollsValue">500</span></label>
+        <input type="range" id="diceRolls" min="50" max="2000" step="50" value="500" />
+      </div>
+    </div>
+    
+    <button id="rollDice" class="button" style="margin-top: 1rem;">🎲 Roll Dice Experiment</button>
+    
+    <div id="diceResults" style="margin-top: 1rem; display: none;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+        <div class="card">
+          <h4>Expected Mean</h4>
+          <p id="expectedDiceMean" style="font-size: 1.2rem; font-weight: bold;">3.5</p>
+        </div>
+        <div class="card">
+          <h4>Actual Mean</h4>
+          <p id="actualDiceMean" style="font-size: 1.2rem; font-weight: bold;">3.52</p>
+        </div>
+        <div class="card">
+          <h4>Standard Error</h4>
+          <p id="diceStandardError" style="font-size: 1.2rem; font-weight: bold;">0.65</p>
+        </div>
+      </div>
+      <div id="diceChart" style="width:100%;height:350px; margin-top: 1rem;"></div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background: #fff0f0; border: 2px solid #ff6b6b;">
+    <h3>⚠️ Common Misconceptions</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+      <div>
+        <h4 style="color: var(--error-color);">❌ Wrong Assumptions:</h4>
+        <ul style="line-height: 1.8;">
+          <li>CLT makes the population normal</li>
+          <li>Small samples always work</li>
+          <li>Individual data points become normal</li>
+          <li>Works for any statistic</li>
+          <li>Sample size doesn't matter</li>
+          <li>Works with extreme outliers</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color: var(--success-color);">✅ Correct Understanding:</h4>
+        <ul style="line-height: 1.8;">
+          <li>CLT affects distribution of sample means</li>
+          <li>Need adequate sample size (n ≥ 30)</li>
+          <li>Population can be any shape</li>
+          <li>Specifically applies to sample means</li>
+          <li>Larger samples = better approximation</li>
+          <li>Works best with finite variance</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>📚 Mathematical Foundation</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="scenario">
+        <h4>🔢 Formal Statement</h4>
+        <p>If X₁, X₂, ..., Xₙ are independent random variables with E[Xᵢ] = μ and Var(Xᵢ) = σ², then:</p>
+        <p style="text-align: center; font-family: var(--font-mono);">
+          (X̄ - μ) / (σ/√n) → N(0,1) as n → ∞
+        </p>
+      </div>
+      
+      <div class="scenario">
+        <h4>📐 Key Conditions</h4>
+        <ul>
+          <li><strong>Independence:</strong> Samples must be independent</li>
+          <li><strong>Sample Size:</strong> Generally n ≥ 30</li>
+          <li><strong>Finite Variance:</strong> Population variance must exist</li>
+          <li><strong>Random Sampling:</strong> Representative of population</li>
+        </ul>
+      </div>
+      
+      <div class="scenario">
+        <h4>🌊 Rate of Convergence</h4>
+        <ul>
+          <li><strong>Normal Population:</strong> CLT exact for any n</li>
+          <li><strong>Symmetric:</strong> Good approximation for small n</li>
+          <li><strong>Skewed:</strong> Needs larger n (≥ 30-50)</li>
+          <li><strong>Heavy Tails:</strong> May need n > 100</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Controls
+    const distributionSelect = document.getElementById('distributionSelect');
+    const sampleSizeSlider = document.getElementById('sampleSizeSlider');
+    const numSamplesSlider = document.getElementById('numSamplesSlider');
+    const runSimulationBtn = document.getElementById('runSimulation');
+    const sePopulationSD = document.getElementById('sePopulationSD');
+    const seSampleSize = document.getElementById('seSampleSize');
+    const confidenceLevel = document.getElementById('confidenceLevel');
+    
+    // Example scenarios
+    const examples = {
+      polling: { distribution: 'discrete', sampleSize: 1000, explanation: 'Political polls' },
+      quality: { distribution: 'exponential', sampleSize: 50, explanation: 'Defect rates' },
+      medical: { distribution: 'normal', sampleSize: 100, explanation: 'Clinical trials' },
+      finance: { distribution: 'normal', sampleSize: 252, explanation: 'Daily returns' }
+    };
+
+    let currentPopulationData = [];
+    let currentSampleMeans = [];
+
+    function generatePopulation(type, size = 10000) {
+      const data = [];
+      
+      switch(type) {
+        case 'uniform':
+          for (let i = 0; i < size; i++) {
+            data.push(Math.random() * 10);
+          }
+          break;
+          
+        case 'exponential':
+          for (let i = 0; i < size; i++) {
+            data.push(-Math.log(Math.random()) * 2);
+          }
+          break;
+          
+        case 'bimodal':
+          for (let i = 0; i < size; i++) {
+            if (Math.random() < 0.5) {
+              data.push(normalRandom() * 1.5 + 2);
+            } else {
+              data.push(normalRandom() * 1.5 + 8);
+            }
+          }
+          break;
+          
+        case 'discrete':
+          for (let i = 0; i < size; i++) {
+            data.push(Math.floor(Math.random() * 6) + 1);
+          }
+          break;
+          
+        case 'normal':
+        default:
+          for (let i = 0; i < size; i++) {
+            data.push(normalRandom() * 2 + 5);
+          }
+          break;
+      }
+      
+      return data;
+    }
+
+    function normalRandom() {
+      let u = 0, v = 0;
+      while(u === 0) u = Math.random();
+      while(v === 0) v = Math.random();
+      return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    function calculateMean(array) {
+      return array.reduce((sum, val) => sum + val, 0) / array.length;
+    }
+
+    function calculateStandardDeviation(array) {
+      const mean = calculateMean(array);
+      const squaredDiffs = array.map(val => Math.pow(val - mean, 2));
+      const avgSquaredDiff = calculateMean(squaredDiffs);
+      return Math.sqrt(avgSquaredDiff);
+    }
+
+    function getSampleMeans(population, sampleSize, numSamples) {
+      const sampleMeans = [];
+      
+      for (let i = 0; i < numSamples; i++) {
+        const sample = [];
+        for (let j = 0; j < sampleSize; j++) {
+          const randomIndex = Math.floor(Math.random() * population.length);
+          sample.push(population[randomIndex]);
+        }
+        sampleMeans.push(calculateMean(sample));
+      }
+      
+      return sampleMeans;
+    }
+
+    function runCLTSimulation() {
+      const distributionType = distributionSelect.value;
+      const sampleSize = parseInt(sampleSizeSlider.value);
+      const numSamples = parseInt(numSamplesSlider.value);
+      
+      // Generate population
+      currentPopulationData = generatePopulation(distributionType);
+      
+      // Get sample means
+      currentSampleMeans = getSampleMeans(currentPopulationData, sampleSize, numSamples);
+      
+      // Calculate statistics
+      const populationMean = calculateMean(currentPopulationData);
+      const populationSD = calculateStandardDeviation(currentPopulationData);
+      const sampleMeansAverage = calculateMean(currentSampleMeans);
+      const sampleMeansSD = calculateStandardDeviation(currentSampleMeans);
+      const theoreticalSE = populationSD / Math.sqrt(sampleSize);
+      
+      // Update displays
+      document.getElementById('populationMean').textContent = populationMean.toFixed(2);
+      document.getElementById('sampleMeansAverage').textContent = sampleMeansAverage.toFixed(2);
+      document.getElementById('theoreticalSE').textContent = theoreticalSE.toFixed(2);
+      document.getElementById('actualSE').textContent = sampleMeansSD.toFixed(2);
+      
+      // Update charts
+      updatePopulationChart();
+      updateSamplingChart();
+      updateConfidenceInterval();
+    }
+
+    function updatePopulationChart() {
+      const trace = {
+        x: currentPopulationData,
+        type: 'histogram',
+        name: 'Population Distribution',
+        marker: { color: '#3b82f6', opacity: 0.7 },
+        nbinsx: 50
+      };
+
+      const layout = {
+        title: `Population Distribution (${distributionSelect.value})`,
+        xaxis: { title: 'Value' },
+        yaxis: { title: 'Frequency' },
+        showlegend: false
+      };
+
+      Plotly.newPlot('populationChart', [trace], layout, { responsive: true });
+    }
+
+    function updateSamplingChart() {
+      const sampleMeansTrace = {
+        x: currentSampleMeans,
+        type: 'histogram',
+        name: 'Sample Means',
+        marker: { color: '#ef4444', opacity: 0.7 },
+        nbinsx: 30
+      };
+
+      // Create normal overlay
+      const mean = calculateMean(currentSampleMeans);
+      const sd = calculateStandardDeviation(currentSampleMeans);
+      const xMin = Math.min(...currentSampleMeans);
+      const xMax = Math.max(...currentSampleMeans);
+      const x = [];
+      const y = [];
+      
+      for (let i = 0; i <= 100; i++) {
+        const val = xMin + (xMax - xMin) * i / 100;
+        x.push(val);
+        y.push(normalPDF(val, mean, sd) * currentSampleMeans.length * (xMax - xMin) / 30);
+      }
+
+      const normalTrace = {
+        x: x,
+        y: y,
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Normal Approximation',
+        line: { color: '#10b981', width: 3 }
+      };
+
+      const layout = {
+        title: `Sampling Distribution of Sample Means (n=${sampleSizeSlider.value})`,
+        xaxis: { title: 'Sample Mean' },
+        yaxis: { title: 'Frequency' },
+        showlegend: true
+      };
+
+      Plotly.newPlot('samplingChart', [sampleMeansTrace, normalTrace], layout, { responsive: true });
+    }
+
+    function normalPDF(x, mean, sd) {
+      return (1 / (sd * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / sd, 2));
+    }
+
+    function updateStandardError() {
+      const popSD = parseFloat(sePopulationSD.value);
+      const n = parseInt(seSampleSize.value);
+      const se = popSD / Math.sqrt(n);
+      
+      document.getElementById('sePopulationSDValue').textContent = popSD.toFixed(1);
+      document.getElementById('seSampleSizeValue').textContent = n;
+      document.getElementById('calculatedSE').textContent = se.toFixed(2);
+      
+      // Create chart showing SE vs sample size
+      const sampleSizes = [];
+      const standardErrors = [];
+      
+      for (let size = 1; size <= 200; size++) {
+        sampleSizes.push(size);
+        standardErrors.push(popSD / Math.sqrt(size));
+      }
+      
+      const trace = {
+        x: sampleSizes,
+        y: standardErrors,
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Standard Error',
+        line: { color: '#ef4444', width: 3 }
+      };
+      
+      const currentPoint = {
+        x: [n],
+        y: [se],
+        type: 'scatter',
+        mode: 'markers',
+        name: 'Current',
+        marker: { size: 12, color: '#10b981' }
+      };
+
+      const layout = {
+        title: 'Standard Error vs Sample Size',
+        xaxis: { title: 'Sample Size (n)' },
+        yaxis: { title: 'Standard Error (σ/√n)' },
+        showlegend: true
+      };
+
+      Plotly.newPlot('standardErrorChart', [trace, currentPoint], layout, { responsive: true });
+    }
+
+    function compareSampleSizes(n) {
+      const distributionType = distributionSelect.value;
+      const population = generatePopulation(distributionType, 10000);
+      const sampleMeans = getSampleMeans(population, n, 1000);
+      
+      const trace = {
+        x: sampleMeans,
+        type: 'histogram',
+        name: `n = ${n}`,
+        marker: { opacity: 0.7 },
+        nbinsx: 25
+      };
+
+      const layout = {
+        title: `Distribution of Sample Means for n = ${n}`,
+        xaxis: { title: 'Sample Mean' },
+        yaxis: { title: 'Frequency' },
+        showlegend: false
+      };
+
+      Plotly.newPlot('sampleSizeComparison', [trace], layout, { responsive: true });
+    }
+
+    function updateConfidenceInterval() {
+      if (currentSampleMeans.length === 0) return;
+      
+      const confidencePercent = parseInt(confidenceLevel.value);
+      const sampleMean = calculateMean(currentSampleMeans);
+      const se = calculateStandardDeviation(currentSampleMeans);
+      
+      // Z-scores for common confidence levels
+      const zScores = {
+        80: 1.28, 85: 1.44, 90: 1.645, 95: 1.96, 99: 2.576
+      };
+      
+      const z = zScores[confidencePercent] || 1.96;
+      const margin = z * se;
+      const lower = sampleMean - margin;
+      const upper = sampleMean + margin;
+      
+      document.getElementById('confidenceLevelValue').textContent = confidencePercent;
+      document.getElementById('confidenceInterval').textContent = `[${lower.toFixed(2)}, ${upper.toFixed(2)}]`;
+      document.getElementById('ciConfidence').textContent = confidencePercent;
+    }
+
+    function rollDiceExperiment() {
+      const numDice = parseInt(document.getElementById('numDice').value);
+      const numRolls = parseInt(document.getElementById('diceRolls').value);
+      
+      const sampleMeans = [];
+      
+      for (let i = 0; i < numRolls; i++) {
+        let sum = 0;
+        for (let j = 0; j < numDice; j++) {
+          sum += Math.floor(Math.random() * 6) + 1;
+        }
+        sampleMeans.push(sum / numDice);
+      }
+      
+      const expectedMean = 3.5;
+      const actualMean = calculateMean(sampleMeans);
+      const standardError = calculateStandardDeviation(sampleMeans);
+      
+      document.getElementById('numDiceValue').textContent = numDice;
+      document.getElementById('diceRollsValue').textContent = numRolls;
+      document.getElementById('expectedDiceMean').textContent = expectedMean.toFixed(1);
+      document.getElementById('actualDiceMean').textContent = actualMean.toFixed(2);
+      document.getElementById('diceStandardError').textContent = standardError.toFixed(2);
+      
+      const trace = {
+        x: sampleMeans,
+        type: 'histogram',
+        name: 'Dice Sample Means',
+        marker: { color: '#f59e0b', opacity: 0.7 },
+        nbinsx: 20
+      };
+
+      const layout = {
+        title: `Distribution of Sample Means (${numDice} dice per sample)`,
+        xaxis: { title: 'Sample Mean' },
+        yaxis: { title: 'Frequency' },
+        showlegend: false
+      };
+
+      Plotly.newPlot('diceChart', [trace], layout, { responsive: true });
+      document.getElementById('diceResults').style.display = 'block';
+    }
+
+    function loadExample(type) {
+      const example = examples[type];
+      distributionSelect.value = example.distribution;
+      sampleSizeSlider.value = example.sampleSize;
+      document.getElementById('sampleSizeValue').textContent = example.sampleSize;
+      runCLTSimulation();
+    }
+
+    // Event listeners
+    runSimulationBtn.addEventListener('click', runCLTSimulation);
+    
+    sampleSizeSlider.addEventListener('input', function() {
+      document.getElementById('sampleSizeValue').textContent = this.value;
+    });
+    
+    numSamplesSlider.addEventListener('input', function() {
+      document.getElementById('numSamplesValue').textContent = this.value;
+    });
+    
+    sePopulationSD.addEventListener('input', updateStandardError);
+    seSampleSize.addEventListener('input', updateStandardError);
+    confidenceLevel.addEventListener('input', updateConfidenceInterval);
+    
+    document.getElementById('numDice').addEventListener('input', function() {
+      document.getElementById('numDiceValue').textContent = this.value;
+    });
+    
+    document.getElementById('diceRolls').addEventListener('input', function() {
+      document.getElementById('diceRollsValue').textContent = this.value;
+    });
+    
+    document.getElementById('rollDice').addEventListener('click', rollDiceExperiment);
+    
+    // Initialize
+    updateStandardError();
+    runCLTSimulation();
+  </script>
+</body>
+</html>

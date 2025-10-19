@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option Strategies - Interactive Finance Learning</title>
+    <link rel="stylesheet" href="unified-styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">Finance Learning</a>
+            <div class="nav-links">
+                <a href="index.html">← Back to Articles</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="article-header">
+            <h1>Option Strategies</h1>
+            <p class="article-description">
+                Explore common option trading strategies with interactive payoff diagrams and profit/loss calculations.
+            </p>
+        </header>
+
+        <div class="content-grid">
+            <section class="card">
+                <h2>Strategy Builder</h2>
+                <div class="strategy-builder">
+                    <div class="strategy-tabs">
+                        <button class="tab-button active" onclick="selectStrategy('covered-call')">Covered Call</button>
+                        <button class="tab-button" onclick="selectStrategy('protective-put')">Protective Put</button>
+                        <button class="tab-button" onclick="selectStrategy('straddle')">Straddle</button>
+                        <button class="tab-button" onclick="selectStrategy('strangle')">Strangle</button>
+                        <button class="tab-button" onclick="selectStrategy('iron-condor')">Iron Condor</button>
+                        <button class="tab-button" onclick="selectStrategy('butterfly')">Butterfly</button>
+                        <button class="tab-button" onclick="selectStrategy('collar')">Collar</button>
+                        <button class="tab-button" onclick="selectStrategy('calendar')">Calendar Spread</button>
+                    </div>
+
+                    <div class="strategy-params">
+                        <div class="input-group">
+                            <label for="stockPrice">Current Stock Price:</label>
+                            <input type="number" id="stockPrice" value="100" step="0.01" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label for="shares">Number of Shares (if applicable):</label>
+                            <input type="number" id="shares" value="100" step="1" min="0">
+                        </div>
+                        <div id="dynamicInputs" class="dynamic-inputs">
+                            <!-- Strategy-specific inputs will be added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="strategy-info" id="strategyInfo">
+                    <!-- Strategy description will be added here -->
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Payoff Diagram</h2>
+                <div id="payoffChart" class="chart-container"></div>
+                <div class="chart-controls">
+                    <label>
+                        <input type="checkbox" id="showBreakeven" checked> Show Breakeven Points
+                    </label>
+                    <label>
+                        <input type="checkbox" id="showMaxProfit" checked> Show Max Profit/Loss
+                    </label>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Strategy Analysis</h2>
+                <div class="analysis-grid">
+                    <div class="result-card">
+                        <h3>Maximum Profit</h3>
+                        <div class="metric-value" id="maxProfit">$0</div>
+                        <small id="maxProfitCondition">Condition</small>
+                    </div>
+                    <div class="result-card">
+                        <h3>Maximum Loss</h3>
+                        <div class="metric-value" id="maxLoss">$0</div>
+                        <small id="maxLossCondition">Condition</small>
+                    </div>
+                    <div class="result-card">
+                        <h3>Breakeven Point(s)</h3>
+                        <div class="metric-value" id="breakevenPoints">$0</div>
+                        <small>Stock price at expiration</small>
+                    </div>
+                    <div class="result-card">
+                        <h3>Initial Investment</h3>
+                        <div class="metric-value" id="initialInvestment">$0</div>
+                        <small>Net premium paid/received</small>
+                    </div>
+                </div>
+
+                <div class="risk-metrics">
+                    <h3>Risk Profile</h3>
+                    <div class="risk-grid">
+                        <div class="risk-item">
+                            <span class="risk-label">Market Outlook:</span>
+                            <span class="risk-value" id="marketOutlook">Neutral</span>
+                        </div>
+                        <div class="risk-item">
+                            <span class="risk-label">Volatility Impact:</span>
+                            <span class="risk-value" id="volatilityImpact">Positive</span>
+                        </div>
+                        <div class="risk-item">
+                            <span class="risk-label">Time Decay:</span>
+                            <span class="risk-value" id="timeDecay">Positive</span>
+                        </div>
+                        <div class="risk-item">
+                            <span class="risk-label">Complexity Level:</span>
+                            <span class="risk-value" id="complexityLevel">Beginner</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Greeks Analysis</h2>
+                <div id="greeksChart" class="chart-container"></div>
+                <div class="greeks-summary">
+                    <div class="greek-card">
+                        <h4>Delta (Δ)</h4>
+                        <div class="greek-value" id="deltaSummary">0.00</div>
+                        <small>Price sensitivity</small>
+                    </div>
+                    <div class="greek-card">
+                        <h4>Gamma (Γ)</h4>
+                        <div class="greek-value" id="gammaSummary">0.00</div>
+                        <small>Delta sensitivity</small>
+                    </div>
+                    <div class="greek-card">
+                        <h4>Theta (Θ)</h4>
+                        <div class="greek-value" id="thetaSummary">0.00</div>
+                        <small>Time decay per day</small>
+                    </div>
+                    <div class="greek-card">
+                        <h4>Vega (ν)</h4>
+                        <div class="greek-value" id="vegaSummary">0.00</div>
+                        <small>Volatility sensitivity</small>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Scenario Analysis</h2>
+                <div class="scenario-table">
+                    <table id="scenarioTable">
+                        <thead>
+                            <tr>
+                                <th>Stock Price at Expiration</th>
+                                <th>Strategy P&L</th>
+                                <th>Stock P&L</th>
+                                <th>Total P&L</th>
+                                <th>ROI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Scenarios will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Strategy Comparison Matrix</h2>
+                <div class="comparison-matrix">
+                    <table class="matrix-table">
+                        <thead>
+                            <tr>
+                                <th>Strategy</th>
+                                <th>Market View</th>
+                                <th>Volatility View</th>
+                                <th>Time Decay</th>
+                                <th>Max Risk</th>
+                                <th>Max Reward</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Covered Call</strong></td>
+                                <td>🔺 Slightly Bullish</td>
+                                <td>🔻 Low Vol Preferred</td>
+                                <td>✅ Positive</td>
+                                <td>🔻 Stock Loss</td>
+                                <td>📈 Premium + Stock Gain</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Protective Put</strong></td>
+                                <td>🔺 Bullish</td>
+                                <td>🔺 High Vol Okay</td>
+                                <td>❌ Negative</td>
+                                <td>📉 Strike - Stock - Premium</td>
+                                <td>♾️ Unlimited</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Long Straddle</strong></td>
+                                <td>⚪ Neutral Direction</td>
+                                <td>🔺 High Vol Expected</td>
+                                <td>❌ Negative</td>
+                                <td>💰 Total Premium</td>
+                                <td>♾️ Unlimited</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Iron Condor</strong></td>
+                                <td>⚪ Range-Bound</td>
+                                <td>🔻 Low Vol Preferred</td>
+                                <td>✅ Positive</td>
+                                <td>📉 Spread Width - Premium</td>
+                                <td>💰 Net Premium</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Key Concepts</h2>
+                <div class="concept-grid">
+                    <div class="concept-card">
+                        <h3>📈 Directional Strategies</h3>
+                        <p>Strategies that profit from price movement in a specific direction:</p>
+                        <ul>
+                            <li><strong>Bull Call Spread:</strong> Limited upside, limited downside</li>
+                            <li><strong>Bear Put Spread:</strong> Profit from decline with defined risk</li>
+                            <li><strong>Covered Call:</strong> Income generation on stock holdings</li>
+                        </ul>
+                    </div>
+                    <div class="concept-card">
+                        <h3>⚪ Neutral Strategies</h3>
+                        <p>Strategies that profit from low volatility or range-bound movement:</p>
+                        <ul>
+                            <li><strong>Iron Condor:</strong> Profit from narrow trading range</li>
+                            <li><strong>Butterfly:</strong> Maximum profit at specific price</li>
+                            <li><strong>Calendar Spread:</strong> Profit from time decay differences</li>
+                        </ul>
+                    </div>
+                    <div class="concept-card">
+                        <h3>⚡ Volatility Strategies</h3>
+                        <p>Strategies that profit from large price movements:</p>
+                        <ul>
+                            <li><strong>Long Straddle:</strong> Profit from big moves in either direction</li>
+                            <li><strong>Long Strangle:</strong> Similar to straddle but wider strikes</li>
+                            <li><strong>Short Straddle:</strong> Profit from low volatility (high risk)</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // Strategy configurations
+        const strategies = {
+            'covered-call': {
+                name: 'Covered Call',
+                description: 'Own stock and sell a call option. Generates income but limits upside potential.',
+                outlook: 'Slightly Bullish',
+                volatility: 'Negative',
+                timeDecay: 'Positive',
+                complexity: 'Beginner',
+                inputs: [
+                    {id: 'callStrike', label: 'Call Strike Price', value: 110, type: 'number'},
+                    {id: 'callPremium', label: 'Call Premium Received', value: 2.50, type: 'number'}
+                ]
+            },
+            'protective-put': {
+                name: 'Protective Put',
+                description: 'Own stock and buy a put option. Provides downside protection like insurance.',
+                outlook: 'Bullish',
+                volatility: 'Neutral',
+                timeDecay: 'Negative',
+                complexity: 'Beginner',
+                inputs: [
+                    {id: 'putStrike', label: 'Put Strike Price', value: 95, type: 'number'},
+                    {id: 'putPremium', label: 'Put Premium Paid', value: 3.00, type: 'number'}
+                ]
+            },
+            'straddle': {
+                name: 'Long Straddle',
+                description: 'Buy a call and put with the same strike. Profits from large moves in either direction.',
+                outlook: 'Neutral Direction',
+                volatility: 'Positive',
+                timeDecay: 'Negative',
+                complexity: 'Intermediate',
+                inputs: [
+                    {id: 'strike', label: 'Strike Price (Both Options)', value: 100, type: 'number'},
+                    {id: 'callPremium', label: 'Call Premium Paid', value: 4.00, type: 'number'},
+                    {id: 'putPremium', label: 'Put Premium Paid', value: 4.00, type: 'number'}
+                ]
+            },
+            'strangle': {
+                name: 'Long Strangle',
+                description: 'Buy a call and put with different strikes. Cheaper than straddle but needs larger moves.',
+                outlook: 'Neutral Direction',
+                volatility: 'Positive',
+                timeDecay: 'Negative',
+                complexity: 'Intermediate',
+                inputs: [
+                    {id: 'putStrike', label: 'Put Strike Price', value: 95, type: 'number'},
+                    {id: 'callStrike', label: 'Call Strike Price', value: 105, type: 'number'},
+                    {id: 'putPremium', label: 'Put Premium Paid', value: 2.50, type: 'number'},
+                    {id: 'callPremium', label: 'Call Premium Paid', value: 2.50, type: 'number'}
+                ]
+            },
+            'iron-condor': {
+                name: 'Iron Condor',
+                description: 'Sell a strangle and buy a wider strangle for protection. Profits from low volatility.',
+                outlook: 'Range-Bound',
+                volatility: 'Negative',
+                timeDecay: 'Positive',
+                complexity: 'Advanced',
+                inputs: [
+                    {id: 'shortPutStrike', label: 'Short Put Strike', value: 95, type: 'number'},
+                    {id: 'longPutStrike', label: 'Long Put Strike', value: 90, type: 'number'},
+                    {id: 'shortCallStrike', label: 'Short Call Strike', value: 105, type: 'number'},
+                    {id: 'longCallStrike', label: 'Long Call Strike', value: 110, type: 'number'},
+                    {id: 'netCredit', label: 'Net Credit Received', value: 2.00, type: 'number'}
+                ]
+            },
+            'butterfly': {
+                name: 'Long Butterfly',
+                description: 'Buy low strike, sell 2x middle strike, buy high strike. Profits if stock stays at middle strike.',
+                outlook: 'Neutral',
+                volatility: 'Negative',
+                timeDecay: 'Positive',
+                complexity: 'Advanced',
+                inputs: [
+                    {id: 'lowStrike', label: 'Low Strike', value: 95, type: 'number'},
+                    {id: 'middleStrike', label: 'Middle Strike', value: 100, type: 'number'},
+                    {id: 'highStrike', label: 'High Strike', value: 105, type: 'number'},
+                    {id: 'netDebit', label: 'Net Debit Paid', value: 1.50, type: 'number'}
+                ]
+            },
+            'collar': {
+                name: 'Collar',
+                description: 'Own stock, sell call, buy put. Limits both upside and downside.',
+                outlook: 'Slightly Bullish',
+                volatility: 'Neutral',
+                timeDecay: 'Neutral',
+                complexity: 'Intermediate',
+                inputs: [
+                    {id: 'putStrike', label: 'Put Strike (Protection)', value: 95, type: 'number'},
+                    {id: 'callStrike', label: 'Call Strike (Sold)', value: 110, type: 'number'},
+                    {id: 'putPremium', label: 'Put Premium Paid', value: 2.00, type: 'number'},
+                    {id: 'callPremium', label: 'Call Premium Received', value: 3.00, type: 'number'}
+                ]
+            },
+            'calendar': {
+                name: 'Calendar Spread',
+                description: 'Sell near-term option, buy longer-term option with same strike. Profits from time decay difference.',
+                outlook: 'Neutral',
+                volatility: 'Neutral',
+                timeDecay: 'Positive',
+                complexity: 'Advanced',
+                inputs: [
+                    {id: 'strike', label: 'Strike Price (Both Options)', value: 100, type: 'number'},
+                    {id: 'shortPremium', label: 'Short-Term Premium Received', value: 2.00, type: 'number'},
+                    {id: 'longPremium', label: 'Long-Term Premium Paid', value: 4.00, type: 'number'}
+                ]
+            }
+        };
+
+        let currentStrategy = 'covered-call';
+
+        function selectStrategy(strategyKey) {
+            currentStrategy = strategyKey;
+            
+            // Update tab selection
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update strategy info
+            const strategy = strategies[strategyKey];
+            updateStrategyInfo(strategy);
+            updateDynamicInputs(strategy);
+            updateAnalysis();
+            updateChart();
+        }
+
+        function updateStrategyInfo(strategy) {
+            const infoDiv = document.getElementById('strategyInfo');
+            infoDiv.innerHTML = `
+                <h3>${strategy.name}</h3>
+                <p>${strategy.description}</p>
+            `;
+
+            // Update risk profile
+            document.getElementById('marketOutlook').textContent = strategy.outlook;
+            document.getElementById('volatilityImpact').textContent = strategy.volatility;
+            document.getElementById('timeDecay').textContent = strategy.timeDecay;
+            document.getElementById('complexityLevel').textContent = strategy.complexity;
+        }
+
+        function updateDynamicInputs(strategy) {
+            const dynamicInputs = document.getElementById('dynamicInputs');
+            dynamicInputs.innerHTML = '';
+            
+            strategy.inputs.forEach(input => {
+                const div = document.createElement('div');
+                div.className = 'input-group';
+                div.innerHTML = `
+                    <label for="${input.id}">${input.label}:</label>
+                    <input type="${input.type}" id="${input.id}" value="${input.value}" step="0.01" min="0">
+                `;
+                dynamicInputs.appendChild(div);
+                
+                // Add event listener
+                div.querySelector('input').addEventListener('input', () => {
+                    updateAnalysis();
+                    updateChart();
+                });
+            });
+        }
+
+        function calculateStrategyPayoff(stockPrice) {
+            const strategy = strategies[currentStrategy];
+            const currentStock = parseFloat(document.getElementById('stockPrice').value);
+            const shares = parseFloat(document.getElementById('shares').value);
+            
+            switch(currentStrategy) {
+                case 'covered-call':
+                    const callStrike = parseFloat(document.getElementById('callStrike').value);
+                    const callPremium = parseFloat(document.getElementById('callPremium').value);
+                    const stockPL = (stockPrice - currentStock) * shares;
+                    const callPL = stockPrice > callStrike ? -(stockPrice - callStrike) * shares : 0;
+                    return stockPL + callPL + callPremium * shares;
+                    
+                case 'protective-put':
+                    const putStrike = parseFloat(document.getElementById('putStrike').value);
+                    const putPremium = parseFloat(document.getElementById('putPremium').value);
+                    const stockPL2 = (stockPrice - currentStock) * shares;
+                    const putPL = stockPrice < putStrike ? (putStrike - stockPrice) * shares : 0;
+                    return stockPL2 + putPL - putPremium * shares;
+                    
+                case 'straddle':
+                    const strike = parseFloat(document.getElementById('strike').value);
+                    const callPrem = parseFloat(document.getElementById('callPremium').value);
+                    const putPrem = parseFloat(document.getElementById('putPremium').value);
+                    const callValue = Math.max(0, stockPrice - strike);
+                    const putValue = Math.max(0, strike - stockPrice);
+                    return (callValue + putValue - callPrem - putPrem) * shares;
+                    
+                // Add more strategy calculations...
+                default:
+                    return 0;
+            }
+        }
+
+        function updateAnalysis() {
+            const stockPrices = Array.from({length: 101}, (_, i) => i * 2);
+            const payoffs = stockPrices.map(price => calculateStrategyPayoff(price));
+            
+            const maxProfit = Math.max(...payoffs);
+            const maxLoss = Math.min(...payoffs);
+            
+            document.getElementById('maxProfit').textContent = `$${maxProfit.toFixed(0)}`;
+            document.getElementById('maxLoss').textContent = `$${maxLoss.toFixed(0)}`;
+            
+            // Find breakeven points
+            const breakevens = [];
+            for (let i = 1; i < payoffs.length; i++) {
+                if ((payoffs[i-1] < 0 && payoffs[i] >= 0) || (payoffs[i-1] >= 0 && payoffs[i] < 0)) {
+                    breakevens.push(stockPrices[i]);
+                }
+            }
+            
+            document.getElementById('breakevenPoints').textContent = 
+                breakevens.length > 0 ? breakevens.map(p => `$${p}`).join(', ') : 'None';
+        }
+
+        function updateChart() {
+            const stockPrices = Array.from({length: 101}, (_, i) => i * 2);
+            const payoffs = stockPrices.map(price => calculateStrategyPayoff(price));
+            
+            const trace = {
+                x: stockPrices,
+                y: payoffs,
+                type: 'scatter',
+                mode: 'lines',
+                name: strategies[currentStrategy].name,
+                line: {color: 'var(--color-primary)', width: 3}
+            };
+            
+            const layout = {
+                title: `${strategies[currentStrategy].name} Payoff Diagram`,
+                xaxis: {title: 'Stock Price at Expiration ($)'},
+                yaxis: {title: 'Profit/Loss ($)'},
+                hovermode: 'x unified',
+                shapes: [{
+                    type: 'line',
+                    x0: 0,
+                    x1: 200,
+                    y0: 0,
+                    y1: 0,
+                    line: {color: 'gray', dash: 'dash'}
+                }]
+            };
+            
+            Plotly.newPlot('payoffChart', [trace], layout);
+        }
+
+        // Initialize with first strategy
+        updateStrategyInfo(strategies[currentStrategy]);
+        updateDynamicInputs(strategies[currentStrategy]);
+        updateAnalysis();
+        updateChart();
+
+        // Add event listeners for basic inputs
+        ['stockPrice', 'shares'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                updateAnalysis();
+                updateChart();
+            });
+        });
+    </script>
+</body>
+</html>

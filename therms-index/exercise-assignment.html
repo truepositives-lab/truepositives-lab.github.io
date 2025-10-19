@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option Exercise & Assignment - Interactive Guide</title>
+    <link rel="stylesheet" href="unified-styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Option Exercise & Assignment</h1>
+        
+        <div class="intro-text">
+            <p>Option exercise and assignment are the mechanisms by which option contracts are fulfilled. Understanding when and how options are exercised, and the resulting assignment process, is crucial for both option buyers and sellers.</p>
+        </div>
+
+        <!-- Exercise Decision Calculator -->
+        <div class="card">
+            <h2>Exercise Decision Calculator</h2>
+            
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="optionType">Option Type:</label>
+                    <select id="optionType">
+                        <option value="call">Call Option</option>
+                        <option value="put">Put Option</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="optionStyle">Option Style:</label>
+                    <select id="optionStyle">
+                        <option value="american">American</option>
+                        <option value="european">European</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="spotPrice">Current Stock Price ($):</label>
+                    <input type="number" id="spotPrice" value="105" step="0.01" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="strikePrice">Strike Price ($):</label>
+                    <input type="number" id="strikePrice" value="100" step="0.01" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="optionPremium">Option Premium ($):</label>
+                    <input type="number" id="optionPremium" value="3.50" step="0.01" min="0">
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="daysToExpiry">Days to Expiry:</label>
+                    <input type="number" id="daysToExpiry" value="5" step="1" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="dividendAmount">Upcoming Dividend ($):</label>
+                    <input type="number" id="dividendAmount" value="0" step="0.01" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="dividendDays">Days to Ex-Dividend:</label>
+                    <input type="number" id="dividendDays" value="3" step="1" min="0">
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="analyzeExercise()">Analyze Exercise Decision</button>
+
+            <!-- Exercise Analysis Results -->
+            <div class="analysis-results">
+                <div class="result-card">
+                    <h3>Exercise Decision</h3>
+                    <div class="decision-indicator" id="exerciseDecision">
+                        <span class="decision-text">Do Not Exercise</span>
+                    </div>
+                    <div class="decision-details" id="decisionDetails">
+                        <!-- Details will be populated here -->
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">Intrinsic Value</span>
+                        <span class="metric-value" id="intrinsicValue">$0.00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Time Value</span>
+                        <span class="metric-value" id="timeValue">$0.00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Moneyness</span>
+                        <span class="metric-value" id="moneyness">ATM</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Exercise P&L</span>
+                        <span class="metric-value" id="exercisePL">$0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignment Risk Monitor -->
+        <div class="card">
+            <h2>Assignment Risk Monitor</h2>
+            
+            <div class="risk-levels">
+                <div class="risk-level low" id="riskLow">
+                    <h4>Low Risk</h4>
+                    <p>OTM options far from expiry</p>
+                </div>
+                <div class="risk-level medium" id="riskMedium">
+                    <h4>Medium Risk</h4>
+                    <p>Near ATM or approaching expiry</p>
+                </div>
+                <div class="risk-level high" id="riskHigh">
+                    <h4>High Risk</h4>
+                    <p>Deep ITM or expiry week</p>
+                </div>
+                <div class="risk-level critical" id="riskCritical">
+                    <h4>Critical</h4>
+                    <p>ITM at expiry</p>
+                </div>
+            </div>
+
+            <div id="assignmentChart"></div>
+        </div>
+
+        <!-- Early Exercise Scenarios -->
+        <div class="card">
+            <h2>Early Exercise Scenarios</h2>
+            
+            <div class="scenario-grid">
+                <div class="scenario-card">
+                    <h3>📈 Deep ITM Calls</h3>
+                    <p><strong>When:</strong> Strike << Stock Price</p>
+                    <p><strong>Why:</strong> Minimal time value remaining</p>
+                    <p><strong>Example:</strong> $80 strike, $100 stock</p>
+                </div>
+
+                <div class="scenario-card">
+                    <h3>💰 Dividend Capture</h3>
+                    <p><strong>When:</strong> Before ex-dividend date</p>
+                    <p><strong>Why:</strong> Dividend > Time Value</p>
+                    <p><strong>Example:</strong> $2 dividend, $0.50 time value</p>
+                </div>
+
+                <div class="scenario-card">
+                    <h3>🎯 Interest Rate Arbitrage</h3>
+                    <p><strong>When:</strong> High interest rates</p>
+                    <p><strong>Why:</strong> Cost of carry benefit</p>
+                    <p><strong>Example:</strong> Deep ITM puts</p>
+                </div>
+
+                <div class="scenario-card">
+                    <h3>⚠️ Risk Management</h3>
+                    <p><strong>When:</strong> Volatility concerns</p>
+                    <p><strong>Why:</strong> Lock in profits</p>
+                    <p><strong>Example:</strong> Before earnings</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignment Process Timeline -->
+        <div class="card">
+            <h2>Assignment Process Timeline</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker">1</div>
+                    <div class="timeline-content">
+                        <h4>Exercise Notice</h4>
+                        <p>Long holder submits exercise instructions to broker before cutoff (usually 5:30 PM ET)</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">2</div>
+                    <div class="timeline-content">
+                        <h4>OCC Processing</h4>
+                        <p>Options Clearing Corporation processes exercise notices overnight</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">3</div>
+                    <div class="timeline-content">
+                        <h4>Random Assignment</h4>
+                        <p>OCC randomly assigns to short positions at member firms</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">4</div>
+                    <div class="timeline-content">
+                        <h4>Broker Allocation</h4>
+                        <p>Brokers allocate assignments to client accounts (random or FIFO)</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">5</div>
+                    <div class="timeline-content">
+                        <h4>Settlement</h4>
+                        <p>Stock delivery/receipt occurs (T+1 for regular stocks)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pin Risk Calculator -->
+        <div class="card">
+            <h2>Pin Risk Calculator</h2>
+            
+            <p>Pin risk occurs when the stock price is very close to the strike price at expiration, creating uncertainty about exercise.</p>
+            
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="pinStrike">Strike Price ($):</label>
+                    <input type="number" id="pinStrike" value="100" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="pinSpot">Stock Price at Close ($):</label>
+                    <input type="number" id="pinSpot" value="100.05" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="pinContracts">Number of Contracts:</label>
+                    <input type="number" id="pinContracts" value="10" step="1" min="1">
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="calculatePinRisk()">Calculate Pin Risk</button>
+
+            <div class="pin-risk-results" id="pinRiskResults"></div>
+        </div>
+
+        <!-- Educational Content -->
+        <div class="card">
+            <h2>Key Concepts</h2>
+            
+            <div class="concept-grid">
+                <div class="concept-card">
+                    <h3>Automatic Exercise</h3>
+                    <p>Options that are $0.01 or more ITM at expiration are automatically exercised unless the holder submits contrary instructions.</p>
+                </div>
+
+                <div class="concept-card">
+                    <h3>Cash vs Physical Settlement</h3>
+                    <p>Most equity options involve physical delivery of shares, while index options typically settle in cash.</p>
+                </div>
+
+                <div class="concept-card">
+                    <h3>Assignment Risk Management</h3>
+                    <ul>
+                        <li>Close positions before expiry</li>
+                        <li>Roll to later expiration</li>
+                        <li>Monitor dividend dates</li>
+                        <li>Track time value decay</li>
+                    </ul>
+                </div>
+
+                <div class="concept-card">
+                    <h3>Optimal Exercise Boundary</h3>
+                    <p>For American options, there exists a critical stock price above (calls) or below (puts) which early exercise becomes optimal.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .analysis-results {
+            margin-top: 30px;
+        }
+        
+        .result-card {
+            background: #f7f9fc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .decision-indicator {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .decision-indicator.exercise {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .decision-indicator.no-exercise {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .decision-indicator.neutral {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+        }
+        
+        .decision-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .decision-details {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        
+        .metric-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .metric-label {
+            display: block;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+        
+        .metric-value {
+            display: block;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .risk-levels {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .risk-level {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+        
+        .risk-level.active {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        
+        .risk-level.low {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .risk-level.medium {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        
+        .risk-level.high {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .risk-level.critical {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+        }
+        
+        .risk-level h4 {
+            margin: 0 0 5px 0;
+        }
+        
+        .risk-level p {
+            margin: 0;
+            font-size: 0.875rem;
+        }
+        
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .scenario-card {
+            background: #f7f9fc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .scenario-card h3 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+        
+        .scenario-card p {
+            margin: 10px 0;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 20px;
+            bottom: 20px;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -25px;
+            width: 30px;
+            height: 30px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .timeline-content {
+            background: #f7f9fc;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .timeline-content h4 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+        
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .concept-card {
+            background: #f7f9fc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .concept-card h3 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+        
+        .pin-risk-results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f7f9fc;
+            border-radius: 8px;
+        }
+    </style>
+
+    <script>
+        function analyzeExercise() {
+            const optionType = document.getElementById('optionType').value;
+            const optionStyle = document.getElementById('optionStyle').value;
+            const spot = parseFloat(document.getElementById('spotPrice').value);
+            const strike = parseFloat(document.getElementById('strikePrice').value);
+            const premium = parseFloat(document.getElementById('optionPremium').value);
+            const daysToExpiry = parseInt(document.getElementById('daysToExpiry').value);
+            const dividend = parseFloat(document.getElementById('dividendAmount').value);
+            const dividendDays = parseInt(document.getElementById('dividendDays').value);
+            
+            // Calculate intrinsic value
+            let intrinsicValue = 0;
+            if (optionType === 'call') {
+                intrinsicValue = Math.max(0, spot - strike);
+            } else {
+                intrinsicValue = Math.max(0, strike - spot);
+            }
+            
+            // Calculate time value
+            const timeValue = premium - intrinsicValue;
+            
+            // Determine moneyness
+            let moneyness = '';
+            const moneynessPct = (spot - strike) / strike;
+            if (optionType === 'call') {
+                if (moneynessPct > 0.02) moneyness = 'ITM';
+                else if (moneynessPct < -0.02) moneyness = 'OTM';
+                else moneyness = 'ATM';
+            } else {
+                if (moneynessPct < -0.02) moneyness = 'ITM';
+                else if (moneynessPct > 0.02) moneyness = 'OTM';
+                else moneyness = 'ATM';
+            }
+            
+            // Calculate exercise P&L
+            const exercisePL = (intrinsicValue - premium) * 100;
+            
+            // Exercise decision logic
+            let shouldExercise = false;
+            let exerciseReason = '';
+            const decisionDiv = document.getElementById('exerciseDecision');
+            const detailsDiv = document.getElementById('decisionDetails');
+            
+            // American option early exercise considerations
+            if (optionStyle === 'american') {
+                // Check for dividend capture (calls only)
+                if (optionType === 'call' && dividend > 0 && dividendDays <= daysToExpiry && dividendDays > 0) {
+                    if (dividend > timeValue) {
+                        shouldExercise = true;
+                        exerciseReason = `Dividend capture opportunity: $${dividend.toFixed(2)} dividend exceeds $${timeValue.toFixed(2)} time value`;
+                    }
+                }
+                
+                // Deep ITM with minimal time value
+                if (intrinsicValue > strike * 0.15 && timeValue < intrinsicValue * 0.01) {
+                    shouldExercise = true;
+                    exerciseReason = 'Deep ITM with negligible time value remaining';
+                }
+                
+                // At expiration
+                if (daysToExpiry === 0 && intrinsicValue > 0) {
+                    shouldExercise = true;
+                    exerciseReason = 'Option is ITM at expiration';
+                }
+            } else {
+                // European option - only at expiration
+                if (daysToExpiry === 0 && intrinsicValue > 0) {
+                    shouldExercise = true;
+                    exerciseReason = 'European option ITM at expiration';
+                } else if (daysToExpiry > 0) {
+                    exerciseReason = 'European options can only be exercised at expiration';
+                }
+            }
+            
+            // Default reason if not exercising
+            if (!shouldExercise && !exerciseReason) {
+                if (intrinsicValue === 0) {
+                    exerciseReason = 'Option is out of the money - no intrinsic value';
+                } else if (timeValue > 0) {
+                    exerciseReason = `Time value of $${timeValue.toFixed(2)} would be lost upon exercise`;
+                }
+            }
+            
+            // Update display
+            document.getElementById('intrinsicValue').textContent = `$${intrinsicValue.toFixed(2)}`;
+            document.getElementById('timeValue').textContent = `$${timeValue.toFixed(2)}`;
+            document.getElementById('moneyness').textContent = moneyness;
+            document.getElementById('exercisePL').textContent = `$${exercisePL.toFixed(2)}`;
+            document.getElementById('exercisePL').className = exercisePL >= 0 ? 'metric-value positive' : 'metric-value negative';
+            
+            // Update decision indicator
+            if (shouldExercise) {
+                decisionDiv.className = 'decision-indicator exercise';
+                decisionDiv.innerHTML = '<span class="decision-text">Exercise Recommended</span>';
+            } else {
+                decisionDiv.className = 'decision-indicator no-exercise';
+                decisionDiv.innerHTML = '<span class="decision-text">Do Not Exercise</span>';
+            }
+            
+            // Update details
+            detailsDiv.innerHTML = `
+                <p><strong>Reason:</strong> ${exerciseReason}</p>
+                <p><strong>Analysis:</strong></p>
+                <ul>
+                    <li>Intrinsic value: $${intrinsicValue.toFixed(2)} per share</li>
+                    <li>Time value remaining: $${timeValue.toFixed(2)} per share</li>
+                    <li>Days to expiration: ${daysToExpiry}</li>
+                    ${dividend > 0 ? `<li>Upcoming dividend: $${dividend.toFixed(2)} in ${dividendDays} days</li>` : ''}
+                    <li>Net P&L if exercised: $${exercisePL.toFixed(2)} per contract</li>
+                </ul>
+            `;
+            
+            // Update assignment risk
+            updateAssignmentRisk(moneyness, daysToExpiry, intrinsicValue, strike);
+            
+            // Create assignment probability chart
+            createAssignmentChart(spot, strike, daysToExpiry, optionType);
+        }
+        
+        function updateAssignmentRisk(moneyness, daysToExpiry, intrinsicValue, strike) {
+            // Reset all risk levels
+            document.querySelectorAll('.risk-level').forEach(el => el.classList.remove('active'));
+            
+            let riskLevel = 'low';
+            
+            if (moneyness === 'ITM') {
+                if (daysToExpiry <= 1) {
+                    riskLevel = 'critical';
+                } else if (daysToExpiry <= 7 || intrinsicValue > strike * 0.1) {
+                    riskLevel = 'high';
+                } else {
+                    riskLevel = 'medium';
+                }
+            } else if (moneyness === 'ATM') {
+                if (daysToExpiry <= 7) {
+                    riskLevel = 'high';
+                } else {
+                    riskLevel = 'medium';
+                }
+            } else {
+                if (daysToExpiry <= 1) {
+                    riskLevel = 'medium';
+                } else {
+                    riskLevel = 'low';
+                }
+            }
+            
+            // Activate appropriate risk level
+            if (riskLevel === 'low') document.getElementById('riskLow').classList.add('active');
+            if (riskLevel === 'medium') document.getElementById('riskMedium').classList.add('active');
+            if (riskLevel === 'high') document.getElementById('riskHigh').classList.add('active');
+            if (riskLevel === 'critical') document.getElementById('riskCritical').classList.add('active');
+        }
+        
+        function createAssignmentChart(spot, strike, daysToExpiry, optionType) {
+            const priceRange = [];
+            const assignmentProb = [];
+            
+            const minPrice = strike * 0.8;
+            const maxPrice = strike * 1.2;
+            
+            for (let price = minPrice; price <= maxPrice; price += (maxPrice - minPrice) / 100) {
+                priceRange.push(price);
+                
+                // Simple assignment probability model
+                let prob = 0;
+                if (optionType === 'call') {
+                    if (price > strike) {
+                        prob = Math.min(1, (price - strike) / strike * 10);
+                        if (daysToExpiry === 0) prob = price > strike ? 1 : 0;
+                    }
+                } else {
+                    if (price < strike) {
+                        prob = Math.min(1, (strike - price) / strike * 10);
+                        if (daysToExpiry === 0) prob = price < strike ? 1 : 0;
+                    }
+                }
+                
+                assignmentProb.push(prob * 100);
+            }
+            
+            Plotly.newPlot('assignmentChart', [{
+                x: priceRange,
+                y: assignmentProb,
+                type: 'scatter',
+                mode: 'lines',
+                fill: 'tozeroy',
+                name: 'Assignment Probability',
+                line: { color: '#ef4444', width: 2 }
+            }, {
+                x: [spot, spot],
+                y: [0, 100],
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Current Price',
+                line: { color: '#2563eb', width: 2, dash: 'dash' }
+            }, {
+                x: [strike, strike],
+                y: [0, 100],
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Strike Price',
+                line: { color: '#10b981', width: 2, dash: 'dot' }
+            }], {
+                title: 'Assignment Probability by Stock Price',
+                xaxis: { title: 'Stock Price ($)' },
+                yaxis: { title: 'Assignment Probability (%)', range: [0, 100] },
+                showlegend: true
+            });
+        }
+        
+        function calculatePinRisk() {
+            const strike = parseFloat(document.getElementById('pinStrike').value);
+            const spot = parseFloat(document.getElementById('pinSpot').value);
+            const contracts = parseInt(document.getElementById('pinContracts').value);
+            
+            const difference = Math.abs(spot - strike);
+            const percentDiff = (difference / strike) * 100;
+            const sharesAtRisk = contracts * 100;
+            const dollarExposure = sharesAtRisk * spot;
+            
+            let riskAssessment = '';
+            let recommendations = [];
+            
+            if (percentDiff < 0.5) {
+                riskAssessment = 'HIGH PIN RISK';
+                recommendations = [
+                    'Consider closing position before expiration',
+                    'Prepare for potential assignment uncertainty',
+                    'Have sufficient capital/shares ready',
+                    'Monitor after-hours price movement'
+                ];
+            } else if (percentDiff < 1) {
+                riskAssessment = 'MODERATE PIN RISK';
+                recommendations = [
+                    'Monitor position closely',
+                    'Consider partial position reduction',
+                    'Review assignment procedures with broker'
+                ];
+            } else {
+                riskAssessment = 'LOW PIN RISK';
+                recommendations = [
+                    'Standard monitoring sufficient',
+                    'Assignment outcome relatively certain'
+                ];
+            }
+            
+            document.getElementById('pinRiskResults').innerHTML = `
+                <h3>Pin Risk Analysis</h3>
+                <div class="risk-assessment ${percentDiff < 0.5 ? 'high' : percentDiff < 1 ? 'medium' : 'low'}">
+                    ${riskAssessment}
+                </div>
+                <div class="risk-metrics">
+                    <p><strong>Price Difference:</strong> $${difference.toFixed(2)} (${percentDiff.toFixed(2)}%)</p>
+                    <p><strong>Shares at Risk:</strong> ${sharesAtRisk.toLocaleString()}</p>
+                    <p><strong>Dollar Exposure:</strong> $${dollarExposure.toLocaleString()}</p>
+                    <p><strong>Uncertainty Window:</strong> ±$${(strike * 0.01).toFixed(2)}</p>
+                </div>
+                <div class="recommendations">
+                    <h4>Recommendations:</h4>
+                    <ul>
+                        ${recommendations.map(r => `<li>${r}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+        
+        // Initialize on load
+        analyzeExercise();
+    </script>
+</body>
+</html>

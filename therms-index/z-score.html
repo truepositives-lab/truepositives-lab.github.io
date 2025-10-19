@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Z-Score (Standard Score)</title>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Z-Score (Standard Score)</h2>
+
+  <div class="card description">
+    <h3>What is a Z-Score?</h3>
+    <p>The <strong>Z-score</strong> (or standard score) measures how many standard deviations a data point is from the mean. It standardizes values from different distributions onto a common scale, making them comparable.</p>
+    <p>Z-scores are fundamental in statistics and machine learning for outlier detection, feature normalization, hypothesis testing, and understanding the relative position of values in a distribution.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Z-Score Formula: z = (x - μ) / σ</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>z</strong> = z-score (standard score)</li>
+      <li><strong>x</strong> = individual data point</li>
+      <li><strong>μ</strong> (mu) = population mean</li>
+      <li><strong>σ</strong> (sigma) = population standard deviation</li>
+    </ul>
+    <p style="margin-top: 1rem;"><strong>Sample Z-Score:</strong> z = (x - x̄) / s</p>
+    <p>Where x̄ is sample mean and s is sample standard deviation</p>
+  </div>
+
+  <div class="card" style="background: #f0f9ff; border: 2px solid #0ea5e9;">
+    <h3>📊 Interpreting Z-Scores</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>z = 0</h4>
+        <p>Value equals the mean</p>
+      </div>
+      <div class="card">
+        <h4>z = +1</h4>
+        <p>1 std dev above mean</p>
+      </div>
+      <div class="card">
+        <h4>z = -1</h4>
+        <p>1 std dev below mean</p>
+      </div>
+      <div class="card">
+        <h4>|z| > 2</h4>
+        <p>Unusually far from mean</p>
+      </div>
+      <div class="card">
+        <h4>|z| > 3</h4>
+        <p>Potential outlier</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive Z-Score Calculator</h3>
+    <p>Enter a dataset and see z-scores, outliers, and distribution:</p>
+
+    <div class="control">
+      <label for="dataInput">Enter comma-separated values:</label>
+      <input type="text" id="dataInput" value="10, 12, 14, 15, 16, 18, 20, 50"
+             style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+      <small>Try with outliers: 10, 12, 14, 15, 16, 18, 20, 50 or normal: 10, 12, 14, 15, 16, 18, 20</small>
+    </div>
+
+    <div class="control" style="margin-top: 1rem;">
+      <label for="outlierThreshold">Outlier Threshold (|z|): <span id="outlierThresholdValue">2.5</span></label>
+      <input type="range" id="outlierThreshold" min="1.5" max="4" step="0.1" value="2.5"
+             style="width: 100%;">
+      <small>Values with |z-score| above this threshold are flagged as outliers</small>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📈 Dataset Statistics</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Mean (μ)</h4>
+        <p id="meanValue" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">0.00</p>
+      </div>
+      <div class="card">
+        <h4>Std Dev (σ)</h4>
+        <p id="stdValue" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">0.00</p>
+      </div>
+      <div class="card">
+        <h4>Count</h4>
+        <p id="countValue" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">0</p>
+      </div>
+      <div class="card">
+        <h4>Outliers</h4>
+        <p id="outlierCount" style="font-size: 1.5rem; font-weight: bold; color: var(--error-color);">0</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="distributionPlot" style="width:100%;height:400px;margin: 2rem 0;"></div>
+
+  <div id="zScorePlot" style="width:100%;height:400px;margin: 2rem 0;"></div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>📋 Z-Score Table</h3>
+    <div id="zScoreTable">
+      <p>Enter data above to see z-scores...</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🧮 Step-by-Step Calculation Example</h3>
+    <div id="stepByStep">
+      <p>Enter data above to see calculation steps...</p>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>🔄 Real-World Examples</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>📊 Test Scores</h4>
+        <p><small>Student scores (0-100)</small></p>
+        <button class="button" onclick="loadExample('testScores')">Load Example</button>
+      </div>
+      <div class="card">
+        <h4>💰 Stock Returns</h4>
+        <p><small>Daily returns (%)</small></p>
+        <button class="button" onclick="loadExample('stockReturns')">Load Example</button>
+      </div>
+      <div class="card">
+        <h4>🏥 Blood Pressure</h4>
+        <p><small>Systolic BP (mmHg)</small></p>
+        <button class="button" onclick="loadExample('bloodPressure')">Load Example</button>
+      </div>
+      <div class="card">
+        <h4>🌡️ Temperature</h4>
+        <p><small>Daily temp (°F)</small></p>
+        <button class="button" onclick="loadExample('temperature')">Load Example</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background: #fef3c7; border: 2px solid #f59e0b; margin-top: 2rem;">
+    <h3>⚠️ Important Properties</h3>
+    <ul style="line-height: 1.8;">
+      <li><strong>Mean of Z-Scores:</strong> Always 0</li>
+      <li><strong>Std Dev of Z-Scores:</strong> Always 1</li>
+      <li><strong>68-95-99.7 Rule:</strong> 68% within |z|<1, 95% within |z|<2, 99.7% within |z|<3</li>
+      <li><strong>Outlier Detection:</strong> |z| > 2.5 or 3 commonly used</li>
+      <li><strong>Assumes Normal Distribution:</strong> Interpretation is most accurate for normal data</li>
+    </ul>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50; margin-top: 2rem;">
+    <h3>💡 Common Uses of Z-Scores</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 1rem;">
+      <div>
+        <h4>🎯 Feature Normalization</h4>
+        <p>Standardize features to mean=0, std=1 for ML models</p>
+        <pre style="background: #1e293b; color: #e2e8f0; padding: 0.5rem; border-radius: var(--radius-md); font-size: 0.85rem;">from sklearn.preprocessing
+import StandardScaler
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)</pre>
+      </div>
+      <div>
+        <h4>🔍 Outlier Detection</h4>
+        <p>Flag values with |z| > threshold as anomalies</p>
+        <pre style="background: #1e293b; color: #e2e8f0; padding: 0.5rem; border-radius: var(--radius-md); font-size: 0.85rem;">z_scores = np.abs(
+  (data - data.mean())
+  / data.std()
+)
+outliers = data[z_scores > 3]</pre>
+      </div>
+      <div>
+        <h4>📊 Comparing Distributions</h4>
+        <p>Compare values from different scales</p>
+        <pre style="background: #1e293b; color: #e2e8f0; padding: 0.5rem; border-radius: var(--radius-md); font-size: 0.85rem;"># Compare test scores
+z_math = (85 - 75) / 10 = 1.0
+z_english = (90 - 80) / 5 = 2.0
+# Better in English!</pre>
+      </div>
+      <div>
+        <h4>📈 Hypothesis Testing</h4>
+        <p>Calculate test statistics and p-values</p>
+        <pre style="background: #1e293b; color: #e2e8f0; padding: 0.5rem; border-radius: var(--radius-md); font-size: 0.85rem;">from scipy import stats
+z_stat = (sample_mean - pop_mean)
+         / (pop_std / sqrt(n))
+p_value = stats.norm.sf(
+  abs(z_stat)
+) * 2</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🐍 Python Implementation</h3>
+    <pre style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: var(--radius-md); overflow-x: auto;"><code>import numpy as np
+from scipy import stats
+
+# Example data
+data = np.array([10, 12, 14, 15, 16, 18, 20, 50])
+
+# Method 1: Manual calculation
+mean = np.mean(data)
+std = np.std(data, ddof=1)  # ddof=1 for sample std
+z_scores = (data - mean) / std
+
+print(f"Mean: {mean:.2f}")
+print(f"Std: {std:.2f}")
+print(f"Z-scores: {z_scores}")
+
+# Method 2: Using scipy
+z_scores_scipy = stats.zscore(data)
+print(f"Z-scores (scipy): {z_scores_scipy}")
+
+# Method 3: Using sklearn (for ML)
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+z_scores_sklearn = scaler.fit_transform(data.reshape(-1, 1)).flatten()
+print(f"Z-scores (sklearn): {z_scores_sklearn}")
+
+# Outlier detection
+outlier_threshold = 2.5
+outliers = np.abs(z_scores) > outlier_threshold
+print(f"\nOutliers (|z| > {outlier_threshold}): {data[outliers]}")
+print(f"Outlier indices: {np.where(outliers)[0]}")
+
+# Verify properties
+print(f"\nVerification:")
+print(f"Mean of z-scores: {np.mean(z_scores):.10f}")  # Should be ~0
+print(f"Std of z-scores: {np.std(z_scores, ddof=1):.10f}")  # Should be ~1
+
+# Calculate percentiles from z-scores
+percentiles = stats.norm.cdf(z_scores) * 100
+print(f"\nPercentiles: {percentiles}")
+</code></pre>
+  </div>
+
+  <div class="scenario" style="margin-top: 2rem;">
+    <h3>🎓 Practice Exercise</h3>
+    <button class="collapsible">Click to show exercise</button>
+    <div class="content">
+      <p style="margin-top: 1rem;"><strong>Exercise:</strong> A student scored:</p>
+      <ul>
+        <li>Math: 85 (class mean = 75, std = 10)</li>
+        <li>English: 78 (class mean = 70, std = 5)</li>
+        <li>Science: 92 (class mean = 80, std = 8)</li>
+      </ul>
+      <p><strong>Questions:</strong></p>
+      <ol>
+        <li>Calculate z-scores for each subject</li>
+        <li>In which subject did the student perform best relative to classmates?</li>
+        <li>If a z-score of 2.0 is needed for honors, in which subjects does the student qualify?</li>
+      </ol>
+      <button class="collapsible" style="margin-top: 1rem;">Show solution</button>
+      <div class="content">
+        <p style="margin-top: 1rem;"><strong>Solution:</strong></p>
+        <p>1. Z-scores:</p>
+        <ul>
+          <li>Math: z = (85 - 75) / 10 = 1.0</li>
+          <li>English: z = (78 - 70) / 5 = 1.6</li>
+          <li>Science: z = (92 - 80) / 8 = 1.5</li>
+        </ul>
+        <p>2. <strong>English</strong> - highest z-score (1.6) means best relative performance</p>
+        <p>3. <strong>None</strong> - all z-scores < 2.0, so doesn't qualify for honors in any subject</p>
+        <p><strong>Insight:</strong> Even though the absolute score in Math (85) and Science (92) are higher than English (78), the English score is more impressive relative to the class!</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const dataInput = document.getElementById('dataInput');
+    const outlierThreshold = document.getElementById('outlierThreshold');
+    const outlierThresholdValue = document.getElementById('outlierThresholdValue');
+
+    const examples = {
+      testScores: [72, 85, 68, 90, 78, 82, 88, 65, 95, 76, 84, 70],
+      stockReturns: [0.5, -0.3, 1.2, -0.8, 0.2, 0.7, -0.5, 3.5, 0.1, -0.2],
+      bloodPressure: [120, 125, 118, 130, 122, 128, 115, 160, 125, 119],
+      temperature: [72, 75, 68, 71, 73, 69, 76, 74, 70, 72, 45]
+    };
+
+    function parseData(input) {
+      return input.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+    }
+
+    function calculateZScores(data) {
+      const mean = data.reduce((sum, x) => sum + x, 0) / data.length;
+      const variance = data.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / (data.length - 1);
+      const std = Math.sqrt(variance);
+
+      const zScores = data.map(x => (x - mean) / std);
+
+      return { mean, std, zScores };
+    }
+
+    function updateDisplay() {
+      const data = parseData(dataInput.value);
+      if (data.length === 0) return;
+
+      const threshold = parseFloat(outlierThreshold.value);
+      outlierThresholdValue.textContent = threshold.toFixed(1);
+
+      const { mean, std, zScores } = calculateZScores(data);
+
+      const outliers = zScores.filter(z => Math.abs(z) > threshold).length;
+
+      document.getElementById('meanValue').textContent = mean.toFixed(2);
+      document.getElementById('stdValue').textContent = std.toFixed(2);
+      document.getElementById('countValue').textContent = data.length;
+      document.getElementById('outlierCount').textContent = outliers;
+
+      createDistributionPlot(data, mean, std);
+      createZScorePlot(data, zScores, threshold);
+      createZScoreTable(data, zScores, threshold);
+      updateStepByStep(data, mean, std, zScores);
+    }
+
+    function createDistributionPlot(data, mean, std) {
+      const trace1 = {
+        x: data,
+        type: 'histogram',
+        name: 'Distribution',
+        marker: { color: '#3b82f6', opacity: 0.7 },
+        nbinsx: Math.max(5, Math.ceil(data.length / 3))
+      };
+
+      const meanLine = {
+        x: [mean, mean],
+        y: [0, Math.max(3, data.length / 3)],
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Mean',
+        line: { color: '#ef4444', width: 3, dash: 'dash' }
+      };
+
+      const stdLines = [
+        {
+          x: [mean - std, mean - std],
+          y: [0, Math.max(3, data.length / 3)],
+          type: 'scatter',
+          mode: 'lines',
+          name: '-1σ',
+          line: { color: '#10b981', width: 2, dash: 'dot' }
+        },
+        {
+          x: [mean + std, mean + std],
+          y: [0, Math.max(3, data.length / 3)],
+          type: 'scatter',
+          mode: 'lines',
+          name: '+1σ',
+          line: { color: '#10b981', width: 2, dash: 'dot' }
+        }
+      ];
+
+      const layout = {
+        title: 'Data Distribution with Mean and Standard Deviation',
+        xaxis: { title: 'Value' },
+        yaxis: { title: 'Frequency' },
+        showlegend: true
+      };
+
+      Plotly.newPlot('distributionPlot', [trace1, meanLine, ...stdLines], layout, { responsive: true });
+    }
+
+    function createZScorePlot(data, zScores, threshold) {
+      const indices = Array.from({length: data.length}, (_, i) => i + 1);
+
+      const trace = {
+        x: indices,
+        y: zScores,
+        type: 'scatter',
+        mode: 'markers+lines',
+        name: 'Z-Scores',
+        marker: {
+          size: 12,
+          color: zScores.map(z => Math.abs(z) > threshold ? '#ef4444' : '#3b82f6'),
+          line: { width: 2, color: 'white' }
+        },
+        line: { color: '#3b82f6', width: 2 }
+      };
+
+      const zeroLine = {
+        x: [0, data.length + 1],
+        y: [0, 0],
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Mean (z=0)',
+        line: { color: '#64748b', width: 2, dash: 'dash' }
+      };
+
+      const upperThreshold = {
+        x: [0, data.length + 1],
+        y: [threshold, threshold],
+        type: 'scatter',
+        mode: 'lines',
+        name: `+${threshold} threshold`,
+        line: { color: '#f59e0b', width: 2, dash: 'dot' }
+      };
+
+      const lowerThreshold = {
+        x: [0, data.length + 1],
+        y: [-threshold, -threshold],
+        type: 'scatter',
+        mode: 'lines',
+        name: `-${threshold} threshold`,
+        line: { color: '#f59e0b', width: 2, dash: 'dot' }
+      };
+
+      const layout = {
+        title: 'Z-Scores with Outlier Thresholds',
+        xaxis: { title: 'Data Point Index' },
+        yaxis: { title: 'Z-Score' },
+        showlegend: true,
+        hovermode: 'closest',
+        shapes: [
+          {
+            type: 'rect',
+            x0: 0,
+            x1: data.length + 1,
+            y0: -threshold,
+            y1: threshold,
+            fillcolor: '#10b981',
+            opacity: 0.1,
+            line: { width: 0 }
+          }
+        ]
+      };
+
+      Plotly.newPlot('zScorePlot', [trace, zeroLine, upperThreshold, lowerThreshold], layout, { responsive: true });
+    }
+
+    function createZScoreTable(data, zScores, threshold) {
+      const rows = data.map((value, i) => {
+        const z = zScores[i];
+        const isOutlier = Math.abs(z) > threshold;
+        const interpretation =
+          Math.abs(z) < 1 ? 'Normal' :
+          Math.abs(z) < 2 ? 'Moderate' :
+          Math.abs(z) < 3 ? 'Unusual' : 'Extreme';
+
+        return `
+          <tr style="border-bottom: 1px solid var(--border-color); background: ${isOutlier ? '#fef2f2' : 'transparent'}">
+            <td style="padding: 0.5rem;">${i + 1}</td>
+            <td style="padding: 0.5rem; text-align: right; font-weight: bold;">${value.toFixed(2)}</td>
+            <td style="padding: 0.5rem; text-align: right;">${z.toFixed(3)}</td>
+            <td style="padding: 0.5rem; text-align: center;">
+              <span style="color: ${isOutlier ? 'var(--error-color)' : 'var(--success-color)'};">
+                ${isOutlier ? '⚠️ Outlier' : '✓ Normal'}
+              </span>
+            </td>
+            <td style="padding: 0.5rem; text-align: center;">${interpretation}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const html = `
+        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+          <thead style="background: var(--bg-tertiary);">
+            <tr>
+              <th style="padding: 0.75rem;">#</th>
+              <th style="padding: 0.75rem; text-align: right;">Value</th>
+              <th style="padding: 0.75rem; text-align: right;">Z-Score</th>
+              <th style="padding: 0.75rem; text-align: center;">Status</th>
+              <th style="padding: 0.75rem; text-align: center;">Interpretation</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      `;
+
+      document.getElementById('zScoreTable').innerHTML = html;
+    }
+
+    function updateStepByStep(data, mean, std, zScores) {
+      const exampleIdx = 0;
+      const exampleValue = data[exampleIdx];
+      const exampleZ = zScores[exampleIdx];
+
+      const html = `
+        <div class="solution-step">
+          <h4>Example: Calculate z-score for first value (${exampleValue})</h4>
+        </div>
+
+        <div class="solution-step">
+          <h4>Step 1: Calculate the mean (μ)</h4>
+          <p>μ = Σx / n = (${data.slice(0, 3).join(' + ')} + ...) / ${data.length}</p>
+          <p><strong>μ = ${mean.toFixed(4)}</strong></p>
+        </div>
+
+        <div class="solution-step">
+          <h4>Step 2: Calculate standard deviation (σ)</h4>
+          <p>σ = √[Σ(x - μ)² / (n-1)]</p>
+          <p><strong>σ = ${std.toFixed(4)}</strong></p>
+        </div>
+
+        <div class="solution-step">
+          <h4>Step 3: Apply the z-score formula</h4>
+          <p>z = (x - μ) / σ</p>
+          <p>z = (${exampleValue} - ${mean.toFixed(4)}) / ${std.toFixed(4)}</p>
+          <p>z = ${(exampleValue - mean).toFixed(4)} / ${std.toFixed(4)}</p>
+          <p><strong>z = ${exampleZ.toFixed(4)}</strong></p>
+        </div>
+
+        <div class="solution-step">
+          <h4>Step 4: Interpret the result</h4>
+          <p>A z-score of ${exampleZ.toFixed(2)} means this value is
+             ${Math.abs(exampleZ).toFixed(2)} standard deviations
+             ${exampleZ > 0 ? 'above' : 'below'} the mean.</p>
+          ${Math.abs(exampleZ) > 2.5 ?
+            '<p style="color: var(--error-color);"><strong>This is an outlier!</strong></p>' :
+            '<p style="color: var(--success-color);"><strong>This is within normal range.</strong></p>'
+          }
+        </div>
+      `;
+
+      document.getElementById('stepByStep').innerHTML = html;
+    }
+
+    function loadExample(type) {
+      const data = examples[type];
+      dataInput.value = data.join(', ');
+      updateDisplay();
+    }
+
+    dataInput.addEventListener('input', updateDisplay);
+    outlierThreshold.addEventListener('input', updateDisplay);
+
+    const collapsibles = document.getElementsByClassName('collapsible');
+    for (let i = 0; i < collapsibles.length; i++) {
+      collapsibles[i].addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+        }
+      });
+    }
+
+    updateDisplay();
+  </script>
+</body>
+</html>

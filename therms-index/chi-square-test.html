@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chi-Square Test for Feature Selection</title>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Chi-Square Test for Feature Selection</h2>
+
+  <div class="card description">
+    <h3>What is the Chi-Square Test?</h3>
+    <p>The <strong>Chi-Square (χ²) test</strong> is a statistical method used to determine if there is a significant association between categorical variables. In machine learning, it's commonly used for feature selection to identify which features are most relevant for predicting a target variable.</p>
+    <p>The test measures the difference between observed and expected frequencies, helping identify features that are independent of the target (and thus can be removed) versus those that have predictive power.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Chi-Square Formula: χ² = Σ [(Oᵢ - Eᵢ)² / Eᵢ]</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>χ²</strong> (chi-square) = test statistic</li>
+      <li><strong>Oᵢ</strong> = observed frequency in category i</li>
+      <li><strong>Eᵢ</strong> = expected frequency in category i</li>
+      <li><strong>Σ</strong> = sum over all categories</li>
+    </ul>
+    <p style="margin-top: 1rem;"><strong>Expected Frequency:</strong> Eᵢ = (row total × column total) / grand total</p>
+  </div>
+
+  <div class="card" style="background: #f0f9ff; border: 2px solid #0ea5e9;">
+    <h3>📊 How It Works for Feature Selection</h3>
+    <ol style="line-height: 1.8;">
+      <li>For each feature, create a contingency table with the target variable</li>
+      <li>Calculate the chi-square statistic measuring independence</li>
+      <li>Higher χ² values indicate stronger association (better features)</li>
+      <li>Select top K features with highest χ² scores</li>
+    </ol>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive Chi-Square Calculator</h3>
+    <p>Enter observed frequencies for a 2×2 contingency table to calculate the chi-square statistic and p-value.</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0;">
+      <div>
+        <h4>Feature Present</h4>
+        <div class="control">
+          <label>Class 0 (Observed):</label>
+          <input type="number" id="o11" value="30" min="0" style="width: 100%; padding: 0.5rem;">
+        </div>
+        <div class="control">
+          <label>Class 1 (Observed):</label>
+          <input type="number" id="o12" value="10" min="0" style="width: 100%; padding: 0.5rem;">
+        </div>
+      </div>
+      <div>
+        <h4>Feature Absent</h4>
+        <div class="control">
+          <label>Class 0 (Observed):</label>
+          <input type="number" id="o21" value="20" min="0" style="width: 100%; padding: 0.5rem;">
+        </div>
+        <div class="control">
+          <label>Class 1 (Observed):</label>
+          <input type="number" id="o22" value="40" min="0" style="width: 100%; padding: 0.5rem;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="contingencyTable" style="margin: 2rem 0;"></div>
+
+  <div class="highlight">
+    <h3>📈 Chi-Square Results</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>χ² Statistic</h4>
+        <p id="chiSquareValue" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">0.00</p>
+      </div>
+      <div class="card">
+        <h4>Degrees of Freedom</h4>
+        <p id="dfValue" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">1</p>
+      </div>
+      <div class="card">
+        <h4>P-value</h4>
+        <p id="pValue" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">0.000</p>
+      </div>
+      <div class="card">
+        <h4>Significance</h4>
+        <p id="significance" style="font-size: 1.2rem; font-weight: bold; color: var(--warning-color);">-</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="chiSquareDistribution" style="width:100%;height:400px;margin: 2rem 0;"></div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🧮 Step-by-Step Calculation</h3>
+    <div id="stepByStep">
+      <p>Adjust the values above to see the calculation steps...</p>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>🔄 Feature Selection Examples</h3>
+    <p>Try these real-world scenarios to see how chi-square identifies relevant features:</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>📧 Email Spam Detection</h4>
+        <p><small>Feature: Contains "FREE"</small></p>
+        <button class="button" onclick="loadExample('spam')">Load Example</button>
+      </div>
+      <div class="card">
+        <h4>🏥 Medical Diagnosis</h4>
+        <p><small>Feature: Symptom present</small></p>
+        <button class="button" onclick="loadExample('medical')">Load Example</button>
+      </div>
+      <div class="card">
+        <h4>📈 Stock Movement</h4>
+        <p><small>Feature: Indicator signal</small></p>
+        <button class="button" onclick="loadExample('stock')">Load Example</button>
+      </div>
+      <div class="card">
+        <h4>🔍 No Association</h4>
+        <p><small>Independent feature</small></p>
+        <button class="button" onclick="loadExample('independent')">Load Example</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background: #fef3c7; border: 2px solid #f59e0b; margin-top: 2rem;">
+    <h3>⚠️ Important Considerations</h3>
+    <ul style="line-height: 1.8;">
+      <li><strong>Sample Size:</strong> Requires sufficient samples (expected frequency ≥ 5 in each cell)</li>
+      <li><strong>Categorical Data:</strong> Works only with categorical or binned numerical features</li>
+      <li><strong>Independence:</strong> Assumes observations are independent</li>
+      <li><strong>Non-negative:</strong> All frequencies must be non-negative</li>
+      <li><strong>Significance Level:</strong> Typically use α = 0.05 (5% significance level)</li>
+    </ul>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50; margin-top: 2rem;">
+    <h3>💡 Interpreting Chi-Square for Feature Selection</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+      <div>
+        <h4>High χ² Value</h4>
+        <ul>
+          <li>Strong association with target</li>
+          <li>Feature is informative</li>
+          <li>Should be selected</li>
+          <li>Low p-value (< 0.05)</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Low χ² Value</h4>
+        <ul>
+          <li>Weak or no association</li>
+          <li>Feature is not informative</li>
+          <li>Can be removed</li>
+          <li>High p-value (> 0.05)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🐍 Python Implementation</h3>
+    <pre style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: var(--radius-md); overflow-x: auto;"><code>from sklearn.feature_selection import SelectKBest, chi2
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
+
+# Example data (features must be non-negative)
+X = np.array([[30, 10], [20, 40], [35, 15], [25, 35]])
+y = np.array([0, 1, 0, 1])
+
+# Ensure non-negative values
+X_positive = X - X.min() + 0.001
+
+# Select top 1 feature using chi-square
+selector = SelectKBest(chi2, k=1)
+X_selected = selector.fit_transform(X_positive, y)
+
+# Get chi-square scores
+scores = selector.scores_
+print(f"Chi-square scores: {scores}")
+print(f"Selected features: {selector.get_support()}")
+print(f"P-values: {selector.pvalues_}")
+</code></pre>
+  </div>
+
+  <div class="scenario" style="margin-top: 2rem;">
+    <h3>🎓 Practice Exercise</h3>
+    <button class="collapsible">Click to show exercise</button>
+    <div class="content">
+      <p style="margin-top: 1rem;"><strong>Exercise:</strong> You're building a spam filter and want to determine if the feature "contains number" is useful for classification.</p>
+      <p>Given this contingency table:</p>
+      <ul>
+        <li>Spam emails with numbers: 45</li>
+        <li>Spam emails without numbers: 15</li>
+        <li>Ham emails with numbers: 20</li>
+        <li>Ham emails without numbers: 50</li>
+      </ul>
+      <p><strong>Tasks:</strong></p>
+      <ol>
+        <li>Calculate the chi-square statistic</li>
+        <li>Determine if this feature should be selected (α = 0.05)</li>
+        <li>Interpret the result</li>
+      </ol>
+      <button class="collapsible" style="margin-top: 1rem;">Show solution</button>
+      <div class="content">
+        <p style="margin-top: 1rem;"><strong>Solution:</strong></p>
+        <p>1. Enter values: o11=15, o12=45, o21=50, o22=20</p>
+        <p>2. χ² ≈ 28.17, p-value < 0.001</p>
+        <p>3. Since p-value < 0.05, the feature is highly significant and should be selected!</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const inputs = {
+      o11: document.getElementById('o11'),
+      o12: document.getElementById('o12'),
+      o21: document.getElementById('o21'),
+      o22: document.getElementById('o22')
+    };
+
+    const examples = {
+      spam: { o11: 15, o12: 45, o21: 50, o22: 20 },
+      medical: { o11: 10, o12: 40, o21: 35, o22: 15 },
+      stock: { o11: 25, o12: 35, o21: 30, o22: 10 },
+      independent: { o11: 25, o12: 25, o21: 25, o22: 25 }
+    };
+
+    function chiSquareCDF(x, df = 1) {
+      if (x <= 0) return 0;
+      const k = df / 2;
+      const term1 = Math.pow(x / 2, k);
+      const term2 = Math.exp(-x / 2);
+      const gamma = gammaFunction(k);
+      const incomplete = incompleteGamma(k, x / 2);
+      return incomplete / gamma;
+    }
+
+    function gammaFunction(n) {
+      if (n === 0.5) return Math.sqrt(Math.PI);
+      if (n === 1) return 1;
+      if (n === 1.5) return Math.sqrt(Math.PI) / 2;
+      if (n > 1) return (n - 1) * gammaFunction(n - 1);
+      return Math.PI / (Math.sin(Math.PI * n) * gammaFunction(1 - n));
+    }
+
+    function incompleteGamma(s, x) {
+      if (x === 0) return 0;
+      let sum = 0;
+      let term = 1 / s;
+      for (let n = 0; n < 100; n++) {
+        sum += term;
+        term *= x / (s + n + 1);
+        if (Math.abs(term) < 1e-10) break;
+      }
+      return Math.pow(x, s) * Math.exp(-x) * sum;
+    }
+
+    function calculateChiSquare() {
+      const o11 = parseFloat(inputs.o11.value) || 0;
+      const o12 = parseFloat(inputs.o12.value) || 0;
+      const o21 = parseFloat(inputs.o21.value) || 0;
+      const o22 = parseFloat(inputs.o22.value) || 0;
+
+      const n = o11 + o12 + o21 + o22;
+      if (n === 0) return null;
+
+      const r1 = o11 + o12;
+      const r2 = o21 + o22;
+      const c1 = o11 + o21;
+      const c2 = o12 + o22;
+
+      const e11 = (r1 * c1) / n;
+      const e12 = (r1 * c2) / n;
+      const e21 = (r2 * c1) / n;
+      const e22 = (r2 * c2) / n;
+
+      const chiSquare =
+        Math.pow(o11 - e11, 2) / e11 +
+        Math.pow(o12 - e12, 2) / e12 +
+        Math.pow(o21 - e21, 2) / e21 +
+        Math.pow(o22 - e22, 2) / e22;
+
+      const df = 1;
+      const pValue = 1 - chiSquareCDF(chiSquare, df);
+
+      return {
+        chiSquare,
+        df,
+        pValue,
+        observed: [[o11, o12], [o21, o22]],
+        expected: [[e11, e12], [e21, e22]],
+        totals: { r1, r2, c1, c2, n }
+      };
+    }
+
+    function updateDisplay() {
+      const result = calculateChiSquare();
+      if (!result) return;
+
+      document.getElementById('chiSquareValue').textContent = result.chiSquare.toFixed(4);
+      document.getElementById('dfValue').textContent = result.df;
+      document.getElementById('pValue').textContent = result.pValue.toFixed(6);
+
+      const sigLevel = result.pValue < 0.001 ? 'p < 0.001 ***' :
+                       result.pValue < 0.01 ? 'p < 0.01 **' :
+                       result.pValue < 0.05 ? 'p < 0.05 *' : 'Not Significant';
+      document.getElementById('significance').textContent = sigLevel;
+      document.getElementById('significance').style.color =
+        result.pValue < 0.05 ? 'var(--success-color)' : 'var(--error-color)';
+
+      createContingencyTable(result);
+      createChiSquareDistribution(result);
+      updateStepByStep(result);
+    }
+
+    function createContingencyTable(result) {
+      const { observed, expected, totals } = result;
+
+      const values = [
+        ['', 'Class 0', 'Class 1', 'Total'],
+        ['Feature Present',
+         `${observed[0][0]}<br><span style="color: #64748b;">(${expected[0][0].toFixed(1)})</span>`,
+         `${observed[0][1]}<br><span style="color: #64748b;">(${expected[0][1].toFixed(1)})</span>`,
+         totals.r1],
+        ['Feature Absent',
+         `${observed[1][0]}<br><span style="color: #64748b;">(${expected[1][0].toFixed(1)})</span>`,
+         `${observed[1][1]}<br><span style="color: #64748b;">(${expected[1][1].toFixed(1)})</span>`,
+         totals.r2],
+        ['Total', totals.c1, totals.c2, totals.n]
+      ];
+
+      const trace = {
+        type: 'table',
+        header: {
+          values: values[0],
+          align: 'center',
+          fill: { color: '#2563eb' },
+          font: { color: 'white', size: 14 }
+        },
+        cells: {
+          values: [
+            values.slice(1).map(r => r[0]),
+            values.slice(1).map(r => r[1]),
+            values.slice(1).map(r => r[2]),
+            values.slice(1).map(r => r[3])
+          ],
+          align: 'center',
+          fill: { color: [['#f8fafc', '#f8fafc', '#e2e8f0']] },
+          font: { size: 13 }
+        }
+      };
+
+      const layout = {
+        title: 'Contingency Table (Observed vs Expected)',
+        margin: { t: 50, b: 20 }
+      };
+
+      Plotly.newPlot('contingencyTable', [trace], layout, { responsive: true });
+    }
+
+    function createChiSquareDistribution(result) {
+      const x = [];
+      const y = [];
+      const maxX = Math.max(10, result.chiSquare * 1.5);
+
+      for (let i = 0; i <= maxX; i += 0.1) {
+        x.push(i);
+        const pdf = (i === 0) ? 0 : Math.pow(i, (result.df / 2) - 1) * Math.exp(-i / 2) /
+                    (Math.pow(2, result.df / 2) * gammaFunction(result.df / 2));
+        y.push(pdf);
+      }
+
+      const trace1 = {
+        x: x,
+        y: y,
+        type: 'scatter',
+        mode: 'lines',
+        name: `χ² distribution (df=${result.df})`,
+        line: { color: '#3b82f6', width: 2 },
+        fill: 'tozeroy',
+        fillcolor: 'rgba(59, 130, 246, 0.1)'
+      };
+
+      const trace2 = {
+        x: [result.chiSquare, result.chiSquare],
+        y: [0, Math.max(...y)],
+        type: 'scatter',
+        mode: 'lines',
+        name: `Test statistic (${result.chiSquare.toFixed(2)})`,
+        line: { color: '#ef4444', width: 3, dash: 'dash' }
+      };
+
+      const layout = {
+        title: 'Chi-Square Distribution',
+        xaxis: { title: 'χ² value' },
+        yaxis: { title: 'Probability Density' },
+        showlegend: true
+      };
+
+      Plotly.newPlot('chiSquareDistribution', [trace1, trace2], layout, { responsive: true });
+    }
+
+    function updateStepByStep(result) {
+      const { observed, expected, totals, chiSquare } = result;
+      const [[o11, o12], [o21, o22]] = observed;
+      const [[e11, e12], [e21, e22]] = expected;
+
+      const html = `
+        <div class="solution-step">
+          <h4>Step 1: Calculate row and column totals</h4>
+          <p>Row 1 total: ${o11} + ${o12} = ${totals.r1}</p>
+          <p>Row 2 total: ${o21} + ${o22} = ${totals.r2}</p>
+          <p>Column 1 total: ${o11} + ${o21} = ${totals.c1}</p>
+          <p>Column 2 total: ${o12} + ${o22} = ${totals.c2}</p>
+          <p>Grand total: ${totals.n}</p>
+        </div>
+
+        <div class="solution-step">
+          <h4>Step 2: Calculate expected frequencies</h4>
+          <p>E₁₁ = (${totals.r1} × ${totals.c1}) / ${totals.n} = ${e11.toFixed(2)}</p>
+          <p>E₁₂ = (${totals.r1} × ${totals.c2}) / ${totals.n} = ${e12.toFixed(2)}</p>
+          <p>E₂₁ = (${totals.r2} × ${totals.c1}) / ${totals.n} = ${e21.toFixed(2)}</p>
+          <p>E₂₂ = (${totals.r2} × ${totals.c2}) / ${totals.n} = ${e22.toFixed(2)}</p>
+        </div>
+
+        <div class="solution-step">
+          <h4>Step 3: Calculate chi-square statistic</h4>
+          <p>χ² = Σ[(O - E)² / E]</p>
+          <p>= (${o11} - ${e11.toFixed(2)})² / ${e11.toFixed(2)} +
+             (${o12} - ${e12.toFixed(2)})² / ${e12.toFixed(2)} +</p>
+          <p style="margin-left: 1rem;">
+             (${o21} - ${e21.toFixed(2)})² / ${e21.toFixed(2)} +
+             (${o22} - ${e22.toFixed(2)})² / ${e22.toFixed(2)}</p>
+          <p>= ${((o11-e11)**2/e11).toFixed(4)} + ${((o12-e12)**2/e12).toFixed(4)} +
+             ${((o21-e21)**2/e21).toFixed(4)} + ${((o22-e22)**2/e22).toFixed(4)}</p>
+          <p><strong>χ² = ${chiSquare.toFixed(4)}</strong></p>
+        </div>
+
+        <div class="solution-step">
+          <h4>Step 4: Determine significance</h4>
+          <p>Degrees of freedom = (rows - 1) × (columns - 1) = 1</p>
+          <p>P-value = ${result.pValue.toFixed(6)}</p>
+          <p><strong>Conclusion:</strong> ${result.pValue < 0.05 ?
+            'The feature is <span style="color: var(--success-color);">significantly associated</span> with the target (p < 0.05). Select this feature!' :
+            'The feature is <span style="color: var(--error-color);">not significantly associated</span> with the target (p > 0.05). Consider removing this feature.'
+          }</p>
+        </div>
+      `;
+
+      document.getElementById('stepByStep').innerHTML = html;
+    }
+
+    function loadExample(type) {
+      const example = examples[type];
+      Object.keys(example).forEach(key => {
+        inputs[key].value = example[key];
+      });
+      updateDisplay();
+    }
+
+    Object.values(inputs).forEach(input => {
+      input.addEventListener('input', updateDisplay);
+    });
+
+    const collapsibles = document.getElementsByClassName('collapsible');
+    for (let i = 0; i < collapsibles.length; i++) {
+      collapsibles[i].addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+        }
+      });
+    }
+
+    updateDisplay();
+  </script>
+</body>
+</html>

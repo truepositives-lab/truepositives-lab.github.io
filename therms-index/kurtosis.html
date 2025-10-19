@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kurtosis in Finance</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Kurtosis in Finance</h2>
+
+  <div class="card description">
+    <h3>Understanding Kurtosis in Financial Markets</h3>
+    <p><strong>Kurtosis</strong> measures the "tailedness" of a probability distribution - how much probability mass is in the tails versus the center. In finance, kurtosis is crucial for understanding <strong>tail risk</strong> and the likelihood of extreme market events.</p>
+    <p>High kurtosis indicates "fat tails" - meaning extreme events (market crashes, spikes) are more likely than a normal distribution would predict.</p>
+  </div>
+
+  <div class="formula">
+    <h4>Kurtosis Formula:</h4>
+    <p><strong>Kurtosis = E[(X - μ)⁴] / σ⁴</strong></p>
+    <p><strong>Excess Kurtosis = Kurtosis - 3</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>X</strong> = Random variable (e.g., asset returns)</li>
+      <li><strong>μ</strong> = Mean of the distribution</li>
+      <li><strong>σ</strong> = Standard deviation</li>
+      <li><strong>E[·]</strong> = Expected value</li>
+    </ul>
+    <div class="highlight">
+      <p><strong>Interpretation:</strong></p>
+      <ul>
+        <li><strong>Excess Kurtosis = 0:</strong> Normal distribution (mesokurtic)</li>
+        <li><strong>Excess Kurtosis > 0:</strong> Fat tails, more extreme events (leptokurtic)</li>
+        <li><strong>Excess Kurtosis < 0:</strong> Thin tails, fewer extreme events (platykurtic)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>📊 Interactive Kurtosis Explorer</h3>
+    <p>Experiment with different financial market scenarios to see how kurtosis affects the probability of extreme events. This is crucial for risk management!</p>
+  </div>
+
+  <div class="control">
+    <label for="marketScenario">Choose Financial Market Scenario:</label>
+    <select id="marketScenario" style="padding: 0.5rem; border-radius: 0.375rem; border: 1px solid var(--border-color); margin-bottom: 1rem;">
+      <option value="normal">Normal Market (Gaussian Returns)</option>
+      <option value="volatile">High Volatility Market</option>
+      <option value="crisis">Financial Crisis (Fat Tails)</option>
+      <option value="stable">Stable/Regulated Market</option>
+      <option value="crypto">Cryptocurrency Market</option>
+      <option value="custom">Custom Distribution</option>
+    </select>
+  </div>
+
+  <div id="customControls" style="display: none;">
+    <div class="control">
+      <label for="customKurtosis">Excess Kurtosis: <span id="kurtosisValue">3.0</span></label>
+      <input type="range" id="customKurtosis" min="-1.5" max="15.0" step="0.1" value="3.0" />
+    </div>
+    <div class="control">
+      <label for="customVolatility">Volatility (σ): <span id="volValue">15.0</span>%</label>
+      <input type="range" id="customVolatility" min="5.0" max="50.0" step="0.5" value="15.0" />
+    </div>
+  </div>
+
+  <div class="control">
+    <label for="confidenceLevel">Value-at-Risk Confidence Level: <span id="varLevel">95</span>%</label>
+    <input type="range" id="confidenceLevel" min="90" max="99.9" step="0.1" value="95" />
+  </div>
+
+  <div class="highlight">
+    <h3>📊 Distribution Characteristics</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Excess Kurtosis</h4>
+        <p id="excessKurtosisValue" style="font-size: 1.8rem; font-weight: 600; color: var(--primary-color);">3.0</p>
+        <small id="kurtosisType">Leptokurtic</small>
+      </div>
+      <div class="card">
+        <h4>VaR (Value-at-Risk)</h4>
+        <p id="varValue" style="font-size: 1.8rem; font-weight: 600; color: var(--error-color);">-2.8%</p>
+        <small>Daily loss threshold</small>
+      </div>
+      <div class="card">
+        <h4>Tail Probability</h4>
+        <p id="tailProbValue" style="font-size: 1.8rem; font-weight: 600; color: var(--warning-color);">0.8%</p>
+        <small>P(|return| > 3σ)</small>
+      </div>
+      <div class="card">
+        <h4>Crash Risk</h4>
+        <p id="crashRiskValue" style="font-size: 1.8rem; font-weight: 600; color: var(--error-color);">2.1x</p>
+        <small>vs Normal Distribution</small>
+      </div>
+    </div>
+  </div>
+
+  <div id="distributionPlot" style="width:100%;height:400px;"></div>
+  <div id="tailComparisonPlot" style="width:100%;height:350px;"></div>
+
+  <div class="card">
+    <h3>⚠️ Financial Risk Implications</h3>
+    <div id="riskAnalysis" class="scenario">
+      <h4>Current Market Risk Profile</h4>
+      <p id="riskDescription">Analysis will appear here based on selected parameters.</p>
+      <div id="riskMetrics" style="margin-top: 1rem;"></div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background-color: var(--bg-secondary); border: 2px solid var(--error-color);">
+    <h3>💥 Black Swan Events & Fat Tails</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+      <div>
+        <h4 style="color: var(--error-color);">High Kurtosis (Fat Tails)</h4>
+        <ul>
+          <li>More frequent extreme events</li>
+          <li>Higher crash probability</li>
+          <li>VaR models underestimate risk</li>
+          <li>Need for stress testing</li>
+          <li>Examples: 2008 Crisis, Flash Crashes</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color: var(--success-color);">Normal Kurtosis</h4>
+        <ul>
+          <li>Predictable risk patterns</li>
+          <li>Standard models work well</li>
+          <li>Rare extreme events</li>
+          <li>Traditional VaR is reliable</li>
+          <li>Examples: Stable bond markets</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📈 Real-World Financial Applications</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+      <div class="scenario">
+        <h4>🏦 Risk Management</h4>
+        <p>Banks use kurtosis to assess tail risk in their portfolios. High kurtosis requires higher capital reserves and more sophisticated risk models.</p>
+      </div>
+      <div class="scenario">
+        <h4>📊 Portfolio Optimization</h4>
+        <p>Modern portfolio theory extensions incorporate higher moments like kurtosis to better capture downside risk and optimize asset allocation.</p>
+      </div>
+      <div class="scenario">
+        <h4>🎯 Derivatives Pricing</h4>
+        <p>Option pricing models account for kurtosis to better price tail-risk protection like put options and volatility products.</p>
+      </div>
+      <div class="scenario">
+        <h4>📋 Regulatory Compliance</h4>
+        <p>Basel III and other regulations require banks to consider higher-order moments in their risk assessments and stress testing.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🎲 Historical Market Examples</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+      <div class="scenario" style="border-left: 4px solid var(--error-color);">
+        <h4>2008 Financial Crisis</h4>
+        <p><strong>Excess Kurtosis:</strong> ~8-12</p>
+        <p>Housing market collapse led to extreme negative returns. Models based on normal distributions severely underestimated risk.</p>
+      </div>
+      <div class="scenario" style="border-left: 4px solid var(--warning-color);">
+        <h4>Flash Crash (2010)</h4>
+        <p><strong>Excess Kurtosis:</strong> ~15-20</p>
+        <p>Algorithmic trading caused extreme intraday volatility. Single-day moves that should occur once in millennia happened in minutes.</p>
+      </div>
+      <div class="scenario" style="border-left: 4px solid var(--info-color);">
+        <h4>COVID-19 Market Crash (2020)</h4>
+        <p><strong>Excess Kurtosis:</strong> ~6-10</p>
+        <p>Pandemic-driven uncertainty created fat-tailed distributions in equity and commodity markets.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🔧 Practical Risk Management Tools</h3>
+    <div class="scenario">
+      <h4>Beyond VaR: Advanced Risk Metrics</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+        <div class="card" style="background: var(--bg-tertiary);">
+          <h5>Conditional VaR (CVaR)</h5>
+          <p id="cvarValue">-4.2%</p>
+          <small>Expected loss beyond VaR</small>
+        </div>
+        <div class="card" style="background: var(--bg-tertiary);">
+          <h5>Maximum Drawdown</h5>
+          <p id="maxDrawdownValue">-18.5%</p>
+          <small>Peak-to-trough loss</small>
+        </div>
+        <div class="card" style="background: var(--bg-tertiary);">
+          <h5>Tail Expectation</h5>
+          <p id="tailExpectationValue">-5.1%</p>
+          <small>Average extreme loss</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Financial market scenarios with realistic kurtosis values
+    const marketScenarios = {
+      normal: {
+        kurtosis: 0,
+        volatility: 15,
+        description: "Normal Market Conditions",
+        detail: "Gaussian returns with standard tail behavior. Traditional risk models work well."
+      },
+      volatile: {
+        kurtosis: 2,
+        volatility: 25,
+        description: "High Volatility Market",
+        detail: "Increased market stress with moderate fat tails. Elevated but manageable tail risk."
+      },
+      crisis: {
+        kurtosis: 8,
+        volatility: 35,
+        description: "Financial Crisis",
+        detail: "Severe fat tails with frequent extreme events. Standard VaR models break down."
+      },
+      stable: {
+        kurtosis: -0.5,
+        volatility: 8,
+        description: "Stable/Regulated Market",
+        detail: "Lower than normal tail risk. Heavily regulated or government-backed markets."
+      },
+      crypto: {
+        kurtosis: 12,
+        volatility: 60,
+        description: "Cryptocurrency Market",
+        detail: "Extreme fat tails and high volatility. Frequent large price movements in both directions."
+      }
+    };
+
+    // DOM elements
+    const marketScenario = document.getElementById('marketScenario');
+    const customControls = document.getElementById('customControls');
+    const customKurtosis = document.getElementById('customKurtosis');
+    const customVolatility = document.getElementById('customVolatility');
+    const confidenceLevel = document.getElementById('confidenceLevel');
+
+    // Display elements
+    const kurtosisValue = document.getElementById('kurtosisValue');
+    const volValue = document.getElementById('volValue');
+    const varLevel = document.getElementById('varLevel');
+    const excessKurtosisValue = document.getElementById('excessKurtosisValue');
+    const kurtosisType = document.getElementById('kurtosisType');
+    const varValue = document.getElementById('varValue');
+    const tailProbValue = document.getElementById('tailProbValue');
+    const crashRiskValue = document.getElementById('crashRiskValue');
+    const riskDescription = document.getElementById('riskDescription');
+    const riskMetrics = document.getElementById('riskMetrics');
+
+    // Advanced risk metrics
+    const cvarValue = document.getElementById('cvarValue');
+    const maxDrawdownValue = document.getElementById('maxDrawdownValue');
+    const tailExpectationValue = document.getElementById('tailExpectationValue');
+
+    let currentKurtosis = 3.0;
+    let currentVolatility = 15.0;
+    let currentConfidence = 95.0;
+
+    // Statistical functions
+    function normalCDF(x) {
+      return 0.5 * (1 + erf(x / Math.sqrt(2)));
+    }
+
+    function erf(x) {
+      // Approximation of error function
+      const a1 =  0.254829592;
+      const a2 = -0.284496736;
+      const a3 =  1.421413741;
+      const a4 = -1.453152027;
+      const a5 =  1.061405429;
+      const p  =  0.3275911;
+
+      const sign = x >= 0 ? 1 : -1;
+      x = Math.abs(x);
+
+      const t = 1.0 / (1.0 + p * x);
+      const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+
+      return sign * y;
+    }
+
+    function normalPDF(x) {
+      return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+    }
+
+    // Approximation for distributions with different kurtosis
+    function adjustedTailProbability(z, excessKurtosis) {
+      const normalProb = 2 * (1 - normalCDF(Math.abs(z)));
+      const adjustment = 1 + (excessKurtosis / 24) * (z * z - 1);
+      return Math.max(0, normalProb * Math.max(0.1, adjustment));
+    }
+
+    function calculateVaR(confidence, volatility, excessKurtosis) {
+      const z = -2.33; // Approximate for 99% confidence, will adjust
+      let zScore;
+
+      if (confidence === 95) zScore = -1.645;
+      else if (confidence === 99) zScore = -2.326;
+      else if (confidence === 99.9) zScore = -3.090;
+      else zScore = -1.645; // default
+
+      // Adjust for kurtosis (Cornish-Fisher expansion)
+      const kurtosisAdjustment = (excessKurtosis / 24) * (zScore * zScore * zScore - 3 * zScore);
+      const adjustedZ = zScore + kurtosisAdjustment;
+
+      return adjustedZ * (volatility / 100);
+    }
+
+    function updateParameters() {
+      if (marketScenario.value === 'custom') {
+        currentKurtosis = parseFloat(customKurtosis.value);
+        currentVolatility = parseFloat(customVolatility.value);
+      } else {
+        const scenario = marketScenarios[marketScenario.value];
+        currentKurtosis = scenario.kurtosis;
+        currentVolatility = scenario.volatility;
+      }
+      currentConfidence = parseFloat(confidenceLevel.value);
+    }
+
+    function updateDisplay() {
+      updateParameters();
+
+      // Update input displays
+      kurtosisValue.textContent = currentKurtosis.toFixed(1);
+      volValue.textContent = currentVolatility.toFixed(1);
+      varLevel.textContent = currentConfidence.toFixed(1);
+
+      // Update main metrics
+      excessKurtosisValue.textContent = currentKurtosis.toFixed(1);
+
+      // Kurtosis type
+      if (currentKurtosis > 0.5) {
+        kurtosisType.textContent = "Leptokurtic (Fat Tails)";
+        kurtosisType.style.color = "var(--error-color)";
+      } else if (currentKurtosis < -0.5) {
+        kurtosisType.textContent = "Platykurtic (Thin Tails)";
+        kurtosisType.style.color = "var(--success-color)";
+      } else {
+        kurtosisType.textContent = "Mesokurtic (Normal)";
+        kurtosisType.style.color = "var(--info-color)";
+      }
+
+      // Calculate risk metrics
+      const var95 = calculateVaR(currentConfidence, currentVolatility, currentKurtosis);
+      const tailProb = adjustedTailProbability(3, currentKurtosis) * 100;
+      const normalTailProb = 2 * (1 - normalCDF(3)) * 100;
+      const crashRisk = tailProb / normalTailProb;
+
+      varValue.textContent = (var95 * 100).toFixed(1) + '%';
+      tailProbValue.textContent = tailProb.toFixed(2) + '%';
+      crashRiskValue.textContent = crashRisk.toFixed(1) + 'x';
+
+      // Advanced risk metrics
+      const cvar = var95 * 1.5; // Simplified CVaR approximation
+      const maxDrawdown = var95 * 6; // Approximation based on volatility
+      const tailExpectation = var95 * 1.8;
+
+      cvarValue.textContent = (cvar * 100).toFixed(1) + '%';
+      maxDrawdownValue.textContent = (maxDrawdown * 100).toFixed(1) + '%';
+      tailExpectationValue.textContent = (tailExpectation * 100).toFixed(1) + '%';
+
+      // Update risk analysis
+      updateRiskAnalysis();
+
+      // Update visualizations
+      updateDistributionPlot();
+      updateTailComparisonPlot();
+    }
+
+    function updateRiskAnalysis() {
+      let analysis = '';
+      let riskLevel = '';
+      let recommendations = '';
+
+      if (currentKurtosis > 5) {
+        riskLevel = 'EXTREME RISK';
+        analysis = 'This distribution exhibits severe fat tails, indicating extremely high probability of large losses. Traditional risk models will significantly underestimate actual risk.';
+        recommendations = '• Use stress testing and scenario analysis<br>• Increase capital reserves significantly<br>• Consider tail-risk hedging strategies<br>• Monitor positions more frequently';
+      } else if (currentKurtosis > 2) {
+        riskLevel = 'HIGH RISK';
+        analysis = 'Elevated tail risk present. The probability of extreme events is significantly higher than normal distribution assumptions.';
+        recommendations = '• Supplement VaR with stress tests<br>• Use conditional VaR (CVaR) for better risk measurement<br>• Consider dynamic hedging strategies<br>• Review position sizing';
+      } else if (currentKurtosis > 0.5) {
+        riskLevel = 'MODERATE RISK';
+        analysis = 'Some fat tail characteristics present. Standard risk models may slightly underestimate tail risk.';
+        recommendations = '• Monitor tail risk metrics regularly<br>• Use multiple risk measures<br>• Consider robust optimization methods<br>• Maintain adequate diversification';
+      } else if (currentKurtosis > -0.5) {
+        riskLevel = 'NORMAL RISK';
+        analysis = 'Distribution closely approximates normal behavior. Standard risk management tools should work effectively.';
+        recommendations = '• Traditional VaR models are appropriate<br>• Standard portfolio optimization applies<br>• Regular risk monitoring sufficient<br>• Focus on other risk factors';
+      } else {
+        riskLevel = 'LOW TAIL RISK';
+        analysis = 'Lower than normal tail risk. Extreme events are less likely than Gaussian assumptions predict.';
+        recommendations = '• Standard models may overestimate risk<br>• Consider more aggressive strategies<br>• Monitor for regime changes<br>• Ensure models capture this characteristic';
+      }
+
+      riskDescription.innerHTML = `<strong>Risk Level: ${riskLevel}</strong><br><br>${analysis}`;
+      riskMetrics.innerHTML = `<strong>Risk Management Recommendations:</strong><br>${recommendations}`;
+    }
+
+    function updateDistributionPlot() {
+      // Generate data points for different distributions
+      const x = [];
+      const normalY = [];
+      const fatTailY = [];
+
+      for (let i = -5; i <= 5; i += 0.1) {
+        x.push(i);
+        normalY.push(normalPDF(i));
+
+        // Approximate fat-tailed distribution using adjusted normal
+        const kurtosisEffect = 1 + (currentKurtosis / 10) * Math.exp(-Math.abs(i));
+        const adjustment = Math.exp(-currentKurtosis * Math.abs(i) / 50);
+        fatTailY.push(normalPDF(i) * (Math.abs(i) > 2 ? kurtosisEffect : adjustment));
+      }
+
+      const normalTrace = {
+        x: x,
+        y: normalY,
+        mode: 'lines',
+        name: 'Normal Distribution',
+        line: { color: 'blue', width: 2, dash: 'dash' }
+      };
+
+      const fatTailTrace = {
+        x: x,
+        y: fatTailY,
+        mode: 'lines',
+        name: `Current Distribution (κ=${currentKurtosis.toFixed(1)})`,
+        line: { color: 'red', width: 3 },
+        fill: 'tozeroy',
+        fillcolor: 'rgba(255, 0, 0, 0.1)'
+      };
+
+      // Add VaR lines
+      const varLine = calculateVaR(currentConfidence, 100, currentKurtosis);
+      const varTrace = {
+        x: [varLine, varLine],
+        y: [0, Math.max(...fatTailY) * 1.1],
+        mode: 'lines',
+        name: `${currentConfidence}% VaR`,
+        line: { color: 'orange', width: 3, dash: 'dot' }
+      };
+
+      const layout = {
+        title: 'Return Distribution: Normal vs Fat-Tailed',
+        xaxis: {
+          title: 'Standardized Returns (σ)',
+          range: [-5, 5]
+        },
+        yaxis: { title: 'Probability Density' },
+        annotations: []
+      };
+
+      Plotly.newPlot('distributionPlot', [normalTrace, fatTailTrace], layout, { responsive: true });
+    }
+
+    function updateTailComparisonPlot() {
+      // Compare tail probabilities across different confidence levels
+      const confidenceLevels = [90, 95, 99, 99.5, 99.9];
+      const normalTails = [];
+      const fatTails = [];
+
+      confidenceLevels.forEach(conf => {
+        const zScore = conf === 90 ? 1.645 : conf === 95 ? 1.96 : conf === 99 ? 2.576 : conf === 99.5 ? 2.807 : 3.291;
+
+        const normalProb = (1 - conf/100) * 100;
+        const fatTailProb = adjustedTailProbability(zScore, currentKurtosis) * 50; // Adjust scale
+
+        normalTails.push(normalProb);
+        fatTails.push(fatTailProb);
+      });
+
+      const normalTrace = {
+        x: confidenceLevels,
+        y: normalTails,
+        mode: 'lines+markers',
+        name: 'Normal Distribution',
+        line: { color: 'blue', width: 3 },
+        marker: { size: 8 }
+      };
+
+      const fatTailTrace = {
+        x: confidenceLevels,
+        y: fatTails,
+        mode: 'lines+markers',
+        name: `Fat Tail Distribution (κ=${currentKurtosis.toFixed(1)})`,
+        line: { color: 'red', width: 3 },
+        marker: { size: 8 }
+      };
+
+      const layout = {
+        title: 'Tail Risk Comparison: Normal vs Fat-Tailed Distribution',
+        xaxis: {
+          title: 'Confidence Level (%)',
+          tickformat: '.0f'
+        },
+        yaxis: {
+          title: 'Tail Probability (%)',
+          type: 'log'
+        },
+        annotations: [
+          {
+            x: 99,
+            y: Math.max(...fatTails),
+            text: currentKurtosis > 2 ? 'Significantly Higher<br>Tail Risk!' : 'Moderate Increase<br>in Tail Risk',
+            showarrow: true,
+            arrowhead: 2,
+            arrowcolor: 'red'
+          }
+        ]
+      };
+
+      Plotly.newPlot('tailComparisonPlot', [normalTrace, fatTailTrace], layout, { responsive: true });
+    }
+
+    // Event listeners
+    marketScenario.addEventListener('change', function() {
+      if (this.value === 'custom') {
+        customControls.style.display = 'block';
+      } else {
+        customControls.style.display = 'none';
+        const scenario = marketScenarios[this.value];
+        riskDescription.innerHTML = `<strong>${scenario.description}</strong><br><br>${scenario.detail}`;
+      }
+      updateDisplay();
+    });
+
+    customKurtosis.addEventListener('input', updateDisplay);
+    customVolatility.addEventListener('input', updateDisplay);
+    confidenceLevel.addEventListener('input', updateDisplay);
+
+    // Initialize
+    updateDisplay();
+  </script>
+</body>
+</html>

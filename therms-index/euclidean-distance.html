@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Euclidean Distance</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Euclidean Distance</h2>
+
+  <div class="card description">
+    <h3>What is Euclidean Distance?</h3>
+    <p>The <strong>Euclidean Distance</strong> is the straight-line distance between two points in space. It's the most intuitive distance measure, representing the shortest path between points as if you could draw a straight line between them.</p>
+    <p>Named after the ancient Greek mathematician Euclid, this metric is fundamental in geometry, machine learning clustering algorithms (like K-means), nearest neighbor searches, and any application requiring spatial distance measurements.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>2D Distance Formula:</strong></p>
+    <p><strong>d = √[(x₂ - x₁)² + (y₂ - y₁)²]</strong></p>
+    <p style="margin-top: 1rem;"><strong>N-Dimensional Formula:</strong></p>
+    <p><strong>d(p, q) = √[Σᵢ(pᵢ - qᵢ)²] = ||p - q||₂</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>p, q</strong> = Points in n-dimensional space</li>
+      <li><strong>pᵢ, qᵢ</strong> = The i-th coordinates of points p and q</li>
+      <li><strong>||·||₂</strong> = L2 norm (Euclidean norm)</li>
+      <li><strong>n</strong> = Number of dimensions</li>
+    </ul>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive Distance Calculator</h3>
+    <p>Enter coordinates to calculate Euclidean distance:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+      <div class="control">
+        <label for="point1">Point 1 (comma-separated):</label>
+        <input type="text" id="point1" value="1, 2, 3"
+               style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+        <small>Example: 1, 2 or 1, 2, 3 for 2D/3D</small>
+      </div>
+
+      <div class="control">
+        <label for="point2">Point 2 (comma-separated):</label>
+        <input type="text" id="point2" value="4, 6, 8"
+               style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+        <small>Must have same dimensions as Point 1</small>
+      </div>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <h4>Try These Examples:</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+        <button onclick="loadExample('2d')" style="padding: 0.5rem;">2D Points</button>
+        <button onclick="loadExample('3d')" style="padding: 0.5rem;">3D Points</button>
+        <button onclick="loadExample('origin')" style="padding: 0.5rem;">From Origin</button>
+        <button onclick="loadExample('highDim')" style="padding: 0.5rem;">High Dimensional</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📊 Distance Calculations</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Euclidean Distance</h4>
+        <p id="euclideanDistance" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">7.071</p>
+      </div>
+      <div class="card">
+        <h4>Manhattan Distance</h4>
+        <p id="manhattanDistance" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">12</p>
+      </div>
+      <div class="card">
+        <h4>Chebyshev Distance</h4>
+        <p id="chebyshevDistance" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">5</p>
+      </div>
+      <div class="card">
+        <h4>Dimensions</h4>
+        <p id="dimensions" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">3D</p>
+      </div>
+    </div>
+
+    <div class="formula" style="margin-top: 1.5rem;">
+      <p id="calculationBreakdown"><strong>Calculation:</strong> d = √[(4-1)² + (6-2)² + (8-3)²] = √[9 + 16 + 25] = √50 = 7.071</p>
+    </div>
+
+    <div class="card" style="margin-top: 1rem;">
+      <h4>Component-wise Differences</h4>
+      <div id="componentTable" style="font-family: var(--font-mono); font-size: 0.875rem;">
+        <table style="width: 100%;">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Point 1</th>
+              <th>Point 2</th>
+              <th>Difference</th>
+              <th>Squared</th>
+            </tr>
+          </thead>
+          <tbody id="componentTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="pointPlot" style="width:100%;height:500px;margin-top:2rem;"></div>
+
+  <div id="distanceComparison" style="width:100%;height:400px;margin-top:2rem;"></div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Applications in Data Science</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="scenario">
+        <h4>K-Means Clustering</h4>
+        <p>Groups data points by minimizing within-cluster sum of squared Euclidean distances</p>
+      </div>
+      <div class="scenario">
+        <h4>K-Nearest Neighbors</h4>
+        <p>Classifies points based on the labels of the k closest training examples</p>
+      </div>
+      <div class="scenario">
+        <h4>Anomaly Detection</h4>
+        <p>Identifies outliers as points with large distances from cluster centers</p>
+      </div>
+      <div class="scenario">
+        <h4>Image Processing</h4>
+        <p>Measures pixel color differences for segmentation and edge detection</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <h3>Exercise: 3D Distance Calculation</h3>
+    <div class="problem">
+      <p>A drone at position A(2, 3, 5) needs to fly to position B(8, 7, 12). All coordinates are in meters.</p>
+      <p><strong>Question:</strong> What is the straight-line distance the drone must travel?</p>
+    </div>
+
+    <button class="collapsible">Show Solution</button>
+    <div class="content">
+      <div class="solution">
+        <div class="solution-step">
+          <strong>Step 1:</strong> Identify the coordinates
+          <ul>
+            <li>Point A: (2, 3, 5)</li>
+            <li>Point B: (8, 7, 12)</li>
+          </ul>
+        </div>
+        <div class="solution-step">
+          <strong>Step 2:</strong> Calculate differences for each dimension
+          <ul>
+            <li>Δx = 8 - 2 = 6</li>
+            <li>Δy = 7 - 3 = 4</li>
+            <li>Δz = 12 - 5 = 7</li>
+          </ul>
+        </div>
+        <div class="solution-step">
+          <strong>Step 3:</strong> Square each difference
+          <ul>
+            <li>Δx² = 6² = 36</li>
+            <li>Δy² = 4² = 16</li>
+            <li>Δz² = 7² = 49</li>
+          </ul>
+        </div>
+        <div class="solution-step">
+          <strong>Step 4:</strong> Sum and take square root
+          <p>d = √(36 + 16 + 49) = √101 ≈ 10.05 meters</p>
+        </div>
+        <div class="answer">
+          <strong>Answer:</strong> The drone must travel approximately 10.05 meters.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Distance Metrics Comparison</h3>
+    <div style="display: grid; gap: 1rem;">
+      <div class="highlight">
+        <h4>Euclidean Distance Properties:</h4>
+        <ul>
+          <li><strong>Metric Space:</strong> Satisfies all metric axioms (non-negativity, identity, symmetry, triangle inequality)</li>
+          <li><strong>Rotation Invariant:</strong> Distance unchanged by coordinate rotation</li>
+          <li><strong>Scale Sensitive:</strong> Affected by unit changes (normalize data when needed)</li>
+          <li><strong>Curse of Dimensionality:</strong> Less meaningful in very high dimensions</li>
+        </ul>
+      </div>
+      <div class="highlight" style="border-left-color: var(--warning-color);">
+        <h4>Alternative Distance Metrics:</h4>
+        <ul>
+          <li><strong>Manhattan (L1):</strong> Sum of absolute differences - grid-like movement</li>
+          <li><strong>Chebyshev (L∞):</strong> Maximum difference across dimensions - chessboard distance</li>
+          <li><strong>Minkowski (Lp):</strong> Generalization where p=2 gives Euclidean</li>
+          <li><strong>Mahalanobis:</strong> Accounts for correlation between variables</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Computational Considerations</h3>
+    <p>When working with large datasets:</p>
+    <ul>
+      <li><strong>Squared Distance:</strong> Often sufficient (avoids expensive square root)</li>
+      <li><strong>Early Termination:</strong> Stop calculation if partial distance exceeds threshold</li>
+      <li><strong>Spatial Indexing:</strong> Use KD-trees or Ball trees for efficient nearest neighbor search</li>
+      <li><strong>Dimensionality Reduction:</strong> Consider PCA or t-SNE for high-dimensional data</li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Related Concepts</h3>
+    <ul>
+      <li><a href="cosine-distance.html">Cosine Distance</a> - Angle-based distance measure</li>
+      <li><a href="jaccard-distance.html">Jaccard Distance</a> - Set-based similarity measure</li>
+      <li><strong>Hamming Distance:</strong> Number of positions where values differ</li>
+      <li><strong>Levenshtein Distance:</strong> Minimum edits to transform one string to another</li>
+    </ul>
+  </div>
+
+  <script>
+    // Parse point input
+    function parsePoint(input) {
+      return input.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+    }
+
+    // Calculate Euclidean distance
+    function euclideanDistance(p1, p2) {
+      if (p1.length !== p2.length) return null;
+      const sumSquares = p1.reduce((sum, val, i) => sum + Math.pow(val - p2[i], 2), 0);
+      return Math.sqrt(sumSquares);
+    }
+
+    // Calculate Manhattan distance
+    function manhattanDistance(p1, p2) {
+      if (p1.length !== p2.length) return null;
+      return p1.reduce((sum, val, i) => sum + Math.abs(val - p2[i]), 0);
+    }
+
+    // Calculate Chebyshev distance
+    function chebyshevDistance(p1, p2) {
+      if (p1.length !== p2.length) return null;
+      return Math.max(...p1.map((val, i) => Math.abs(val - p2[i])));
+    }
+
+    // Main calculation function
+    function calculateDistances() {
+      const point1 = parsePoint(document.getElementById('point1').value);
+      const point2 = parsePoint(document.getElementById('point2').value);
+
+      if (point1.length === 0 || point2.length === 0) {
+        alert('Please enter valid points');
+        return;
+      }
+
+      if (point1.length !== point2.length) {
+        alert('Points must have the same number of dimensions');
+        return;
+      }
+
+      // Calculate distances
+      const euclidean = euclideanDistance(point1, point2);
+      const manhattan = manhattanDistance(point1, point2);
+      const chebyshev = chebyshevDistance(point1, point2);
+
+      // Update displays
+      document.getElementById('euclideanDistance').textContent = euclidean.toFixed(3);
+      document.getElementById('manhattanDistance').textContent = manhattan.toFixed(3);
+      document.getElementById('chebyshevDistance').textContent = chebyshev.toFixed(3);
+      document.getElementById('dimensions').textContent = point1.length + 'D';
+
+      // Update calculation breakdown
+      const differences = point1.map((val, i) => ({
+        dim: i + 1,
+        p1: val,
+        p2: point2[i],
+        diff: point2[i] - val,
+        squared: Math.pow(point2[i] - val, 2)
+      }));
+
+      const sumSquares = differences.reduce((sum, d) => sum + d.squared, 0);
+
+      const termsStr = differences.map(d => `(${d.p2}-${d.p1})²`).join(' + ');
+      const valuesStr = differences.map(d => d.squared.toFixed(1)).join(' + ');
+
+      document.getElementById('calculationBreakdown').innerHTML =
+        `<strong>Calculation:</strong> d = √[${termsStr}] = √[${valuesStr}] = √${sumSquares.toFixed(1)} = ${euclidean.toFixed(3)}`;
+
+      // Update component table
+      const tbody = document.getElementById('componentTableBody');
+      tbody.innerHTML = differences.map(d => `
+        <tr>
+          <td>Dim ${d.dim}</td>
+          <td>${d.p1}</td>
+          <td>${d.p2}</td>
+          <td>${d.diff.toFixed(2)}</td>
+          <td>${d.squared.toFixed(2)}</td>
+        </tr>
+      `).join('');
+
+      // Update visualizations
+      updatePointPlot(point1, point2);
+      updateDistanceComparison(euclidean, manhattan, chebyshev);
+    }
+
+    // Update point visualization
+    function updatePointPlot(point1, point2) {
+      const traces = [];
+
+      if (point1.length <= 3) {
+        // 2D or 3D visualization
+        if (point1.length === 2) {
+          // 2D plot
+          traces.push({
+            x: [point1[0], point2[0]],
+            y: [point1[1], point2[1]],
+            mode: 'lines+markers',
+            name: 'Distance Line',
+            line: { color: '#94a3b8', width: 2, dash: 'dash' },
+            marker: { size: 10, color: ['#2563eb', '#ef4444'] }
+          });
+
+          // Add point labels
+          traces.push({
+            x: [point1[0], point2[0]],
+            y: [point1[1], point2[1]],
+            mode: 'markers+text',
+            name: 'Points',
+            text: ['Point 1', 'Point 2'],
+            textposition: 'top center',
+            marker: { size: 12, color: ['#2563eb', '#ef4444'] },
+            showlegend: false
+          });
+
+          const xRange = [
+            Math.min(point1[0], point2[0]) - 1,
+            Math.max(point1[0], point2[0]) + 1
+          ];
+          const yRange = [
+            Math.min(point1[1], point2[1]) - 1,
+            Math.max(point1[1], point2[1]) + 1
+          ];
+
+          const layout = {
+            title: '2D Point Visualization',
+            xaxis: {
+              title: 'X',
+              gridcolor: '#e2e8f0',
+              zeroline: true,
+              zerolinecolor: '#94a3b8',
+              range: xRange,
+              scaleanchor: 'y'
+            },
+            yaxis: {
+              title: 'Y',
+              gridcolor: '#e2e8f0',
+              zeroline: true,
+              zerolinecolor: '#94a3b8',
+              range: yRange
+            },
+            plot_bgcolor: '#f8fafc',
+            showlegend: true
+          };
+
+          Plotly.newPlot('pointPlot', traces, layout, {responsive: true});
+
+        } else if (point1.length === 3) {
+          // 3D plot
+          traces.push({
+            x: [point1[0], point2[0]],
+            y: [point1[1], point2[1]],
+            z: [point1[2], point2[2]],
+            mode: 'lines+markers',
+            type: 'scatter3d',
+            name: 'Distance Line',
+            line: { color: '#94a3b8', width: 4 },
+            marker: { size: 8, color: ['#2563eb', '#ef4444'] }
+          });
+
+          // Add point markers
+          traces.push({
+            x: [point1[0], point2[0]],
+            y: [point1[1], point2[1]],
+            z: [point1[2], point2[2]],
+            mode: 'markers+text',
+            type: 'scatter3d',
+            name: 'Points',
+            text: ['Point 1', 'Point 2'],
+            textposition: 'top center',
+            marker: { size: 10, color: ['#2563eb', '#ef4444'] },
+            showlegend: false
+          });
+
+          const layout = {
+            title: '3D Point Visualization',
+            scene: {
+              xaxis: { title: 'X', gridcolor: '#e2e8f0' },
+              yaxis: { title: 'Y', gridcolor: '#e2e8f0' },
+              zaxis: { title: 'Z', gridcolor: '#e2e8f0' },
+              aspectratio: { x: 1, y: 1, z: 1 }
+            },
+            showlegend: true
+          };
+
+          Plotly.newPlot('pointPlot', traces, layout, {responsive: true});
+        }
+
+      } else {
+        // High-dimensional visualization using parallel coordinates
+        const dimensions = point1.map((val, i) => ({
+          label: `Dim ${i + 1}`,
+          values: [point1[i], point2[i]],
+          range: [
+            Math.min(point1[i], point2[i]) - Math.abs(point1[i] - point2[i]) * 0.2,
+            Math.max(point1[i], point2[i]) + Math.abs(point1[i] - point2[i]) * 0.2
+          ]
+        }));
+
+        const trace = {
+          type: 'parcoords',
+          line: {
+            color: [0, 1],
+            colorscale: [[0, '#2563eb'], [1, '#ef4444']],
+            showscale: true,
+            cmin: 0,
+            cmax: 1,
+            colorbar: {
+              title: 'Point',
+              tickvals: [0, 1],
+              ticktext: ['Point 1', 'Point 2']
+            }
+          },
+          dimensions: dimensions
+        };
+
+        const layout = {
+          title: `${point1.length}D Points Visualization`,
+          plot_bgcolor: '#f8fafc',
+          paper_bgcolor: 'white'
+        };
+
+        Plotly.newPlot('pointPlot', [trace], layout, {responsive: true});
+      }
+    }
+
+    // Update distance comparison chart
+    function updateDistanceComparison(euclidean, manhattan, chebyshev) {
+      const trace = {
+        x: ['Euclidean', 'Manhattan', 'Chebyshev'],
+        y: [euclidean, manhattan, chebyshev],
+        type: 'bar',
+        marker: {
+          color: ['#2563eb', '#f59e0b', '#3b82f6']
+        },
+        text: [euclidean.toFixed(3), manhattan.toFixed(3), chebyshev.toFixed(3)],
+        textposition: 'outside',
+        hovertemplate: '%{x}: %{y:.3f}<extra></extra>'
+      };
+
+      const layout = {
+        title: 'Distance Metrics Comparison',
+        xaxis: {
+          title: 'Distance Metric',
+          gridcolor: '#e2e8f0'
+        },
+        yaxis: {
+          title: 'Distance Value',
+          gridcolor: '#e2e8f0',
+          zeroline: true,
+          zerolinecolor: '#94a3b8'
+        },
+        plot_bgcolor: '#f8fafc',
+        paper_bgcolor: 'white',
+        showlegend: false
+      };
+
+      Plotly.newPlot('distanceComparison', [trace], layout, {responsive: true});
+    }
+
+    // Load example points
+    function loadExample(type) {
+      const examples = {
+        '2d': {
+          p1: '2, 3',
+          p2: '5, 7'
+        },
+        '3d': {
+          p1: '1, 2, 3',
+          p2: '4, 6, 8'
+        },
+        'origin': {
+          p1: '0, 0, 0',
+          p2: '3, 4, 0'
+        },
+        'highDim': {
+          p1: '1, 0, 2, 1, 3, 2, 1',
+          p2: '2, 1, 3, 0, 4, 1, 2'
+        }
+      };
+
+      if (examples[type]) {
+        document.getElementById('point1').value = examples[type].p1;
+        document.getElementById('point2').value = examples[type].p2;
+        calculateDistances();
+      }
+    }
+
+    // Event listeners
+    document.getElementById('point1').addEventListener('input', calculateDistances);
+    document.getElementById('point2').addEventListener('input', calculateDistances);
+
+    // Collapsible functionality
+    const collapsibles = document.getElementsByClassName('collapsible');
+    for (let i = 0; i < collapsibles.length; i++) {
+      collapsibles[i].addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+          content.classList.remove('active');
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+          content.classList.add('active');
+        }
+      });
+    }
+
+    // Initial calculation
+    calculateDistances();
+  </script>
+</body>
+</html>

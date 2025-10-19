@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Principal Feature Analysis</title>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Principal Feature Analysis (PFA)</h2>
+
+  <div class="card description">
+    <h3>What is Principal Feature Analysis?</h3>
+    <p><strong>Principal Feature Analysis (PFA)</strong> is a feature selection technique that identifies the most representative features from the original dataset by analyzing their correlation structure. Unlike PCA which creates new features, PFA selects actual original features that best capture the variance in the data.</p>
+    <p>PFA combines ideas from PCA and clustering to find features that are both representative and minimally redundant, making it excellent for maintaining interpretability while reducing dimensionality.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>PFA Algorithm Steps:</strong></p>
+    <ol style="margin-left: 1.5rem; line-height: 1.8;">
+      <li>Compute correlation matrix C between all features</li>
+      <li>For each principal component PC:
+        <ul style="margin-left: 1.5rem;">
+          <li>Find feature with highest loading |wᵢ|</li>
+          <li>Select that feature</li>
+          <li>Remove correlated features (|corr| > threshold)</li>
+        </ul>
+      </li>
+      <li>Repeat until K features selected</li>
+    </ol>
+    <p style="margin-top: 1rem;"><strong>Feature Score:</strong> score(fᵢ) = Σⱼ |PCⱼ(i)|² × variance(PCⱼ)</p>
+    <p>Where PCⱼ(i) is the loading of feature i on component j</p>
+  </div>
+
+  <div class="card" style="background: #f0f9ff; border: 2px solid #0ea5e9;">
+    <h3>📊 PFA vs PCA Comparison</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+      <div>
+        <h4>PCA (Feature Extraction)</h4>
+        <ul>
+          <li>Creates new features</li>
+          <li>Linear combinations</li>
+          <li>Loses interpretability</li>
+          <li>Optimal variance capture</li>
+          <li>Orthogonal components</li>
+        </ul>
+      </div>
+      <div>
+        <h4>PFA (Feature Selection) ✓</h4>
+        <ul>
+          <li>Selects original features</li>
+          <li>Preserves meaning</li>
+          <li>Maintains interpretability</li>
+          <li>Near-optimal variance</li>
+          <li>Removes redundancy</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive PFA Simulator</h3>
+    <p>Adjust correlation structure to see how PFA selects representative features:</p>
+
+    <div class="control">
+      <label>Number of Features to Select: <span id="kValue">3</span></label>
+      <input type="range" id="kSlider" min="1" max="6" value="3" style="width: 100%;">
+    </div>
+
+    <div class="control" style="margin-top: 1rem;">
+      <label>Correlation Threshold: <span id="corrThresholdValue">0.7</span></label>
+      <input type="range" id="corrThresholdSlider" min="0.3" max="0.95" step="0.05" value="0.7" style="width: 100%;">
+      <small>Features with correlation above this will be considered redundant</small>
+    </div>
+
+    <div style="margin-top: 1rem;">
+      <button class="button" onclick="loadCorrelationStructure('clustered')">Clustered Features</button>
+      <button class="button" onclick="loadCorrelationStructure('independent')">Independent Features</button>
+      <button class="button" onclick="loadCorrelationStructure('hierarchical')">Hierarchical Structure</button>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📈 Selection Results</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Selected Features</h4>
+        <p id="selectedCount" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">0</p>
+      </div>
+      <div class="card">
+        <h4>Variance Captured</h4>
+        <p id="varianceCaptured" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">0%</p>
+      </div>
+      <div class="card">
+        <h4>Redundancy Removed</h4>
+        <p id="redundancyRemoved" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">0%</p>
+      </div>
+      <div class="card">
+        <h4>Avg Correlation</h4>
+        <p id="avgCorrelation" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">0.00</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="correlationMatrix" style="width:100%;height:500px;margin: 2rem 0;"></div>
+
+  <div id="featureLoadings" style="width:100%;height:400px;margin: 2rem 0;"></div>
+
+  <div id="varianceExplained" style="width:100%;height:400px;margin: 2rem 0;"></div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🔍 Selected Features Details</h3>
+    <div id="selectionDetails">
+      <p>Adjust parameters above to see selection details...</p>
+    </div>
+  </div>
+
+  <div class="card" style="background: #fef3c7; border: 2px solid #f59e0b; margin-top: 2rem;">
+    <h3>⚠️ Important Considerations</h3>
+    <ul style="line-height: 1.8;">
+      <li><strong>Feature Scaling:</strong> Must standardize features before applying PFA</li>
+      <li><strong>Correlation Threshold:</strong> Lower threshold = more features selected</li>
+      <li><strong>Linear Relationships:</strong> Only captures linear correlation</li>
+      <li><strong>Sample Size:</strong> Needs n > p for stable correlation estimates</li>
+      <li><strong>Interpretability:</strong> Selected features are actual original features</li>
+    </ul>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50; margin-top: 2rem;">
+    <h3>💡 When to Use PFA</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+      <div>
+        <h4>✅ Good Use Cases</h4>
+        <ul>
+          <li>Highly correlated features</li>
+          <li>Need interpretability</li>
+          <li>Domain expertise required</li>
+          <li>Reducing multicollinearity</li>
+          <li>Feature groups exist</li>
+        </ul>
+      </div>
+      <div>
+        <h4>❌ Not Recommended</h4>
+        <ul>
+          <li>All features independent</li>
+          <li>Non-linear relationships</li>
+          <li>Small sample size (n < p)</li>
+          <li>When PCA is acceptable</li>
+          <li>Target variable needed</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🐍 Python Implementation</h3>
+    <pre style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: var(--radius-md); overflow-x: auto;"><code>import numpy as np
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
+def principal_feature_analysis(X, n_features=5, corr_threshold=0.7):
+    """
+    Select features based on PCA loadings and correlation structure
+
+    Args:
+        X: Feature matrix (samples × features)
+        n_features: Number of features to select
+        corr_threshold: Correlation threshold for redundancy removal
+
+    Returns:
+        selected_indices: Indices of selected features
+    """
+    # Standardize features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Compute PCA
+    pca = PCA()
+    pca.fit(X_scaled)
+
+    # Get loadings (components)
+    loadings = pca.components_.T  # features × components
+
+    # Compute correlation matrix
+    corr_matrix = np.corrcoef(X_scaled.T)
+
+    selected = []
+    available = set(range(X.shape[1]))
+
+    # For each component (in order of variance explained)
+    for comp_idx in range(min(n_features, loadings.shape[1])):
+        if len(selected) >= n_features:
+            break
+
+        # Get loadings for this component
+        comp_loadings = np.abs(loadings[:, comp_idx])
+
+        # Find best available feature for this component
+        best_feature = None
+        best_loading = -1
+
+        for feat_idx in available:
+            if comp_loadings[feat_idx] > best_loading:
+                best_loading = comp_loadings[feat_idx]
+                best_feature = feat_idx
+
+        if best_feature is not None:
+            selected.append(best_feature)
+            available.remove(best_feature)
+
+            # Remove correlated features
+            for feat_idx in list(available):
+                if abs(corr_matrix[best_feature, feat_idx]) > corr_threshold:
+                    available.remove(feat_idx)
+
+    return np.array(selected)
+
+# Example usage
+from sklearn.datasets import make_classification
+
+X, y = make_classification(n_samples=200, n_features=20,
+                           n_informative=5, n_redundant=10,
+                           random_state=42)
+
+# Select 5 features using PFA
+selected_features = principal_feature_analysis(X, n_features=5, corr_threshold=0.7)
+
+print(f"Selected features: {selected_features}")
+print(f"Number selected: {len(selected_features)}")
+
+# Use selected features
+X_selected = X[:, selected_features]
+print(f"Original shape: {X.shape}")
+print(f"Selected shape: {X_selected.shape}")
+
+# Compare with PCA
+pca = PCA(n_components=5)
+X_pca = pca.fit_transform(StandardScaler().fit_transform(X))
+print(f"PCA variance explained: {pca.explained_variance_ratio_.sum():.3f}")
+</code></pre>
+  </div>
+
+  <div class="scenario" style="margin-top: 2rem;">
+    <h3>🎓 Practice Exercise</h3>
+    <button class="collapsible">Click to show exercise</button>
+    <div class="content">
+      <p style="margin-top: 1rem;"><strong>Exercise:</strong> You have 10 features with these characteristics:</p>
+      <ul>
+        <li>Features 1-3 are highly correlated (r > 0.9) - measure same concept</li>
+        <li>Features 4-6 are moderately correlated (r ≈ 0.6)</li>
+        <li>Features 7-10 are independent (r < 0.3)</li>
+        <li>PC1 loads heavily on features 1-3</li>
+        <li>PC2 loads heavily on features 4-6</li>
+        <li>PC3-PC4 load on features 7-10</li>
+      </ul>
+      <p><strong>Questions:</strong></p>
+      <ol>
+        <li>With threshold = 0.7, how many features will PFA select from group 1-3?</li>
+        <li>Why is PFA better than just using all features?</li>
+        <li>When would PCA be better than PFA for this dataset?</li>
+      </ol>
+      <button class="collapsible" style="margin-top: 1rem;">Show solution</button>
+      <div class="content">
+        <p style="margin-top: 1rem;"><strong>Solution:</strong></p>
+        <p>1. PFA will select only 1 feature from group 1-3 (the one with highest PC1 loading), as others will be removed due to high correlation (>0.7)</p>
+        <p>2. PFA removes redundancy: instead of 3 correlated features, we get 1 representative feature with same information but less multicollinearity</p>
+        <p>3. PCA would be better if: (a) interpretability doesn't matter, (b) you need optimal variance capture, or (c) features can be meaningfully combined</p>
+        <p><strong>Expected PFA result:</strong> ~4-5 features total (1 from group 1-3, 1-2 from group 4-6, 2-3 from group 7-10)</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const kSlider = document.getElementById('kSlider');
+    const kValue = document.getElementById('kValue');
+    const corrThresholdSlider = document.getElementById('corrThresholdSlider');
+    const corrThresholdValue = document.getElementById('corrThresholdValue');
+
+    let correlationMatrix = null;
+    let featureLoadings = null;
+
+    function generateCorrelationStructure(type) {
+      const n = 8;
+      const matrix = Array(n).fill(0).map(() => Array(n).fill(0));
+
+      for (let i = 0; i < n; i++) {
+        matrix[i][i] = 1.0;
+      }
+
+      if (type === 'clustered') {
+        const clusters = [[0,1,2], [3,4], [5,6,7]];
+        clusters.forEach(cluster => {
+          cluster.forEach(i => {
+            cluster.forEach(j => {
+              if (i !== j) {
+                matrix[i][j] = 0.8 + Math.random() * 0.15;
+                matrix[j][i] = matrix[i][j];
+              }
+            });
+          });
+        });
+      } else if (type === 'independent') {
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            if (i !== j) {
+              matrix[i][j] = (Math.random() - 0.5) * 0.3;
+              matrix[j][i] = matrix[i][j];
+            }
+          }
+        }
+      } else if (type === 'hierarchical') {
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            if (i !== j) {
+              const distance = Math.abs(i - j);
+              matrix[i][j] = Math.max(0, 0.9 - distance * 0.2);
+              matrix[j][i] = matrix[i][j];
+            }
+          }
+        }
+      }
+
+      return matrix;
+    }
+
+    function generateLoadings(corrMatrix) {
+      const n = corrMatrix.length;
+      const loadings = Array(n).fill(0).map(() => Array(3).fill(0));
+
+      for (let i = 0; i < n; i++) {
+        loadings[i][0] = Math.random() * 0.6 + 0.2;
+        loadings[i][1] = Math.random() * 0.5 + 0.1;
+        loadings[i][2] = Math.random() * 0.4;
+
+        const sum = Math.sqrt(loadings[i].reduce((s, v) => s + v*v, 0));
+        loadings[i] = loadings[i].map(v => v / sum);
+      }
+
+      return loadings;
+    }
+
+    function selectFeaturesPFA(corrMatrix, loadings, k, threshold) {
+      const n = corrMatrix.length;
+      const selected = [];
+      const available = new Set(Array(n).fill(0).map((_, i) => i));
+
+      for (let comp = 0; comp < Math.min(3, k); comp++) {
+        let bestFeature = -1;
+        let bestLoading = -1;
+
+        for (const feat of available) {
+          if (Math.abs(loadings[feat][comp]) > bestLoading) {
+            bestLoading = Math.abs(loadings[feat][comp]);
+            bestFeature = feat;
+          }
+        }
+
+        if (bestFeature >= 0 && selected.length < k) {
+          selected.push(bestFeature);
+          available.delete(bestFeature);
+
+          for (const feat of Array.from(available)) {
+            if (Math.abs(corrMatrix[bestFeature][feat]) > threshold) {
+              available.delete(feat);
+            }
+          }
+        }
+      }
+
+      while (selected.length < k && available.size > 0) {
+        const feat = Array.from(available)[0];
+        selected.push(feat);
+        available.delete(feat);
+      }
+
+      return selected;
+    }
+
+    function updateDisplay() {
+      const k = parseInt(kSlider.value);
+      const threshold = parseFloat(corrThresholdSlider.value);
+
+      kValue.textContent = k;
+      corrThresholdValue.textContent = threshold.toFixed(2);
+
+      if (!correlationMatrix || !featureLoadings) {
+        loadCorrelationStructure('clustered');
+        return;
+      }
+
+      const selected = selectFeaturesPFA(correlationMatrix, featureLoadings, k, threshold);
+
+      const varianceCaptured = selected.reduce((sum, idx) =>
+        sum + featureLoadings[idx].reduce((s, v) => s + v*v, 0), 0) / featureLoadings.length;
+
+      const redundancy = (correlationMatrix.length - selected.length) / correlationMatrix.length * 100;
+
+      const avgCorr = selected.reduce((sum, i) =>
+        sum + selected.reduce((s, j) =>
+          i !== j ? s + Math.abs(correlationMatrix[i][j]) : s, 0), 0) /
+        (selected.length * (selected.length - 1) || 1);
+
+      document.getElementById('selectedCount').textContent = selected.length;
+      document.getElementById('varianceCaptured').textContent = (varianceCaptured * 100).toFixed(1) + '%';
+      document.getElementById('redundancyRemoved').textContent = redundancy.toFixed(0) + '%';
+      document.getElementById('avgCorrelation').textContent = avgCorr.toFixed(3);
+
+      createCorrelationHeatmap(correlationMatrix, selected);
+      createLoadingsPlot(featureLoadings, selected);
+      createVariancePlot(featureLoadings, selected);
+      createSelectionDetails(selected, featureLoadings, correlationMatrix);
+    }
+
+    function createCorrelationHeatmap(matrix, selected) {
+      const n = matrix.length;
+      const labels = Array(n).fill(0).map((_, i) => `F${i+1}`);
+
+      const selectedSet = new Set(selected);
+      const annotations = [];
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          annotations.push({
+            x: j,
+            y: i,
+            text: matrix[i][j].toFixed(2),
+            showarrow: false,
+            font: {
+              color: Math.abs(matrix[i][j]) > 0.5 ? 'white' : 'black',
+              size: 10
+            }
+          });
+        }
+      }
+
+      const trace = {
+        z: matrix,
+        x: labels,
+        y: labels,
+        type: 'heatmap',
+        colorscale: 'RdBu',
+        zmid: 0,
+        colorbar: { title: 'Correlation' }
+      };
+
+      const shapes = selected.map(idx => ({
+        type: 'rect',
+        x0: idx - 0.5,
+        x1: idx + 0.5,
+        y0: -0.5,
+        y1: n - 0.5,
+        line: { color: '#10b981', width: 3 }
+      })).concat(selected.map(idx => ({
+        type: 'rect',
+        x0: -0.5,
+        x1: n - 0.5,
+        y0: idx - 0.5,
+        y1: idx + 0.5,
+        line: { color: '#10b981', width: 3 }
+      })));
+
+      const layout = {
+        title: 'Feature Correlation Matrix (Selected features highlighted)',
+        annotations: annotations,
+        shapes: shapes,
+        xaxis: { side: 'bottom' },
+        yaxis: { autorange: 'reversed' }
+      };
+
+      Plotly.newPlot('correlationMatrix', [trace], layout, { responsive: true });
+    }
+
+    function createLoadingsPlot(loadings, selected) {
+      const features = loadings.map((_, i) => `Feature ${i+1}`);
+      const selectedSet = new Set(selected);
+
+      const trace1 = {
+        x: features,
+        y: loadings.map(l => Math.abs(l[0])),
+        type: 'bar',
+        name: 'PC1',
+        marker: { color: features.map((_, i) => selectedSet.has(i) ? '#3b82f6' : '#cbd5e1') }
+      };
+
+      const trace2 = {
+        x: features,
+        y: loadings.map(l => Math.abs(l[1])),
+        type: 'bar',
+        name: 'PC2',
+        marker: { color: features.map((_, i) => selectedSet.has(i) ? '#10b981' : '#cbd5e1') }
+      };
+
+      const trace3 = {
+        x: features,
+        y: loadings.map(l => Math.abs(l[2])),
+        type: 'bar',
+        name: 'PC3',
+        marker: { color: features.map((_, i) => selectedSet.has(i) ? '#f59e0b' : '#cbd5e1') }
+      };
+
+      const layout = {
+        title: 'Principal Component Loadings (Absolute Values)',
+        xaxis: { title: 'Feature' },
+        yaxis: { title: 'Absolute Loading' },
+        barmode: 'group',
+        showlegend: true
+      };
+
+      Plotly.newPlot('featureLoadings', [trace1, trace2, trace3], layout, { responsive: true });
+    }
+
+    function createVariancePlot(loadings, selected) {
+      const explained = [0.45, 0.25, 0.15];
+      const cumulative = [0.45, 0.70, 0.85];
+
+      const trace1 = {
+        x: ['PC1', 'PC2', 'PC3'],
+        y: explained,
+        type: 'bar',
+        name: 'Variance Explained',
+        marker: { color: '#3b82f6' },
+        yaxis: 'y1'
+      };
+
+      const trace2 = {
+        x: ['PC1', 'PC2', 'PC3'],
+        y: cumulative,
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Cumulative',
+        line: { color: '#ef4444', width: 3 },
+        marker: { size: 10 },
+        yaxis: 'y2'
+      };
+
+      const layout = {
+        title: 'Principal Components Variance Explained',
+        xaxis: { title: 'Component' },
+        yaxis: { title: 'Individual Variance', side: 'left' },
+        yaxis2: { title: 'Cumulative Variance', side: 'right', overlaying: 'y', range: [0, 1] },
+        showlegend: true
+      };
+
+      Plotly.newPlot('varianceExplained', [trace1, trace2], layout, { responsive: true });
+    }
+
+    function createSelectionDetails(selected, loadings, corrMatrix) {
+      const rows = selected.map((idx, order) => {
+        const maxLoading = Math.max(...loadings[idx].map(Math.abs));
+        const pcIdx = loadings[idx].findIndex(l => Math.abs(l) === maxLoading);
+
+        const correlations = selected
+          .filter(i => i !== idx)
+          .map(i => Math.abs(corrMatrix[idx][i]));
+        const avgCorr = correlations.length > 0 ?
+          correlations.reduce((a,b) => a+b, 0) / correlations.length : 0;
+
+        return `
+          <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 0.5rem;">${order + 1}</td>
+            <td style="padding: 0.5rem; font-weight: bold;">Feature ${idx + 1}</td>
+            <td style="padding: 0.5rem;">PC${pcIdx + 1}</td>
+            <td style="padding: 0.5rem; text-align: right;">${maxLoading.toFixed(3)}</td>
+            <td style="padding: 0.5rem; text-align: right;">${avgCorr.toFixed(3)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const html = `
+        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+          <thead style="background: var(--bg-tertiary);">
+            <tr>
+              <th style="padding: 0.75rem;">Order</th>
+              <th style="padding: 0.75rem;">Feature</th>
+              <th style="padding: 0.75rem;">Primary PC</th>
+              <th style="padding: 0.75rem; text-align: right;">Max Loading</th>
+              <th style="padding: 0.75rem; text-align: right;">Avg Corr</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      `;
+
+      document.getElementById('selectionDetails').innerHTML = html;
+    }
+
+    function loadCorrelationStructure(type) {
+      correlationMatrix = generateCorrelationStructure(type);
+      featureLoadings = generateLoadings(correlationMatrix);
+      updateDisplay();
+    }
+
+    kSlider.addEventListener('input', updateDisplay);
+    corrThresholdSlider.addEventListener('input', updateDisplay);
+
+    const collapsibles = document.getElementsByClassName('collapsible');
+    for (let i = 0; i < collapsibles.length; i++) {
+      collapsibles[i].addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+        }
+      });
+    }
+
+    loadCorrelationStructure('clustered');
+  </script>
+</body>
+</html>

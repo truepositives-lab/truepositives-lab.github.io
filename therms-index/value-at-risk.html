@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Value at Risk (VaR)</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Value at Risk (VaR)</h2>
+
+  <div class="card description">
+    <h3>What is Value at Risk (VaR)?</h3>
+    <p><strong>Value at Risk (VaR)</strong> is a statistical measure that quantifies the potential loss in value of a portfolio over a defined period for a given confidence interval. It answers the question: "What is the maximum loss that won't be exceeded with a certain confidence level?"</p>
+    <p>For example, a daily 95% VaR of $1 million means there's a 95% confidence that the portfolio won't lose more than $1 million in a day. Conversely, there's a 5% chance losses will exceed $1 million.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>VaR Formula (Parametric Method):</strong></p>
+    <p><strong>VaR = μ - z<sub>α</sub> × σ × √t</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>μ</strong> = Expected return (often assumed to be 0 for short periods)</li>
+      <li><strong>z<sub>α</sub></strong> = Z-score for confidence level (e.g., 1.645 for 95%, 2.326 for 99%)</li>
+      <li><strong>σ</strong> = Portfolio standard deviation (volatility)</li>
+      <li><strong>t</strong> = Time period</li>
+    </ul>
+    <p style="margin-top: 1rem;"><strong>For a portfolio:</strong> VaR = Portfolio Value × (μ - z<sub>α</sub> × σ × √t)</p>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive VaR Calculator</h3>
+    <p>Adjust the parameters below to calculate VaR using different methods:</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+      <div class="control">
+        <label for="portfolioValue">Portfolio Value ($):</label>
+        <input type="number" id="portfolioValue" value="1000000" step="10000" 
+               style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+      </div>
+      
+      <div class="control">
+        <label for="volatility">Daily Volatility (%):</label>
+        <input type="range" id="volatility" min="0.5" max="5" value="2" step="0.1">
+        <span id="volatilityValue">2.0%</span>
+      </div>
+      
+      <div class="control">
+        <label for="confidenceLevel">Confidence Level:</label>
+        <select id="confidenceLevel" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+          <option value="90">90%</option>
+          <option value="95" selected>95%</option>
+          <option value="99">99%</option>
+        </select>
+      </div>
+      
+      <div class="control">
+        <label for="timePeriod">Time Period (days):</label>
+        <input type="range" id="timePeriod" min="1" max="30" value="1" step="1">
+        <span id="timePeriodValue">1 day</span>
+      </div>
+    </div>
+    
+    <div style="margin-top: 1.5rem;">
+      <label for="historicalReturns">Historical Returns (optional - paste comma-separated daily returns in %):</label>
+      <textarea id="historicalReturns" rows="3" 
+                style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: var(--font-mono);"
+                placeholder="Example: -1.2, 0.5, 1.8, -0.3, 2.1, -1.5, 0.8, 1.2, -0.7, 0.4"></textarea>
+      <small>Enter at least 20 historical daily returns to calculate Historical VaR</small>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📊 VaR Results</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Parametric VaR</h4>
+        <p id="parametricVaR" style="font-size: 1.5rem; font-weight: bold; color: var(--error-color);">-$32,900</p>
+        <small>Assumes normal distribution</small>
+      </div>
+      <div class="card">
+        <h4>Historical VaR</h4>
+        <p id="historicalVaR" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">N/A</p>
+        <small>Based on actual returns</small>
+      </div>
+      <div class="card">
+        <h4>Monte Carlo VaR</h4>
+        <p id="monteCarloVaR" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">-$33,100</p>
+        <small>10,000 simulations</small>
+      </div>
+    </div>
+    
+    <div class="formula" style="margin-top: 1.5rem;">
+      <p id="interpretation"><strong>Interpretation:</strong> With 95% confidence, the maximum loss over 1 day will not exceed $32,900</p>
+    </div>
+  </div>
+
+  <div id="distributionPlot" style="width:100%;height:500px;margin-top:2rem;"></div>
+  
+  <div id="backtestPlot" style="width:100%;height:400px;margin-top:2rem;"></div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>VaR Calculation Methods</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="scenario">
+        <h4>1. Parametric (Variance-Covariance)</h4>
+        <p><strong>Pros:</strong> Fast, simple, good for linear portfolios</p>
+        <p><strong>Cons:</strong> Assumes normal distribution, may underestimate tail risk</p>
+      </div>
+      <div class="scenario">
+        <h4>2. Historical Simulation</h4>
+        <p><strong>Pros:</strong> No distribution assumptions, captures actual market behavior</p>
+        <p><strong>Cons:</strong> Requires extensive historical data, past may not predict future</p>
+      </div>
+      <div class="scenario">
+        <h4>3. Monte Carlo Simulation</h4>
+        <p><strong>Pros:</strong> Flexible, handles complex portfolios and non-linear instruments</p>
+        <p><strong>Cons:</strong> Computationally intensive, model risk</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <h3>Exercise: Calculate Daily VaR</h3>
+    <div class="problem">
+      <p>A portfolio worth $500,000 has a daily standard deviation of 1.5%. Calculate the 99% daily VaR.</p>
+      <p><strong>Given:</strong> For 99% confidence level, z-score = 2.326</p>
+    </div>
+    
+    <button class="collapsible">Show Solution</button>
+    <div class="content">
+      <div class="solution">
+        <div class="solution-step">
+          <strong>Step 1:</strong> Identify the parameters
+          <ul>
+            <li>Portfolio Value = $500,000</li>
+            <li>Daily volatility (σ) = 1.5% = 0.015</li>
+            <li>Confidence level = 99% → z-score = 2.326</li>
+            <li>Time period = 1 day</li>
+          </ul>
+        </div>
+        <div class="solution-step">
+          <strong>Step 2:</strong> Apply the VaR formula
+          <p>VaR = Portfolio Value × z-score × σ × √t</p>
+          <p>VaR = $500,000 × 2.326 × 0.015 × √1</p>
+          <p>VaR = $500,000 × 2.326 × 0.015</p>
+          <p>VaR = $500,000 × 0.03489</p>
+        </div>
+        <div class="answer">
+          <strong>Answer:</strong> The 99% daily VaR is $17,445
+          <p>This means there's a 99% probability that the portfolio won't lose more than $17,445 in a day.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>VaR Limitations and Extensions</h3>
+    <div style="display: grid; gap: 1rem;">
+      <div class="highlight">
+        <h4>Key Limitations:</h4>
+        <ul>
+          <li><strong>Not a coherent risk measure:</strong> VaR is not sub-additive (portfolio VaR can exceed sum of individual VaRs)</li>
+          <li><strong>Ignores tail severity:</strong> Doesn't indicate how bad losses could be beyond VaR threshold</li>
+          <li><strong>Model risk:</strong> Heavily dependent on assumptions and historical data quality</li>
+          <li><strong>Static measure:</strong> Doesn't account for changing market conditions</li>
+        </ul>
+      </div>
+      <div class="highlight" style="border-left-color: var(--success-color);">
+        <h4>Extensions and Alternatives:</h4>
+        <ul>
+          <li><strong>Conditional VaR (CVaR/ES):</strong> Expected Shortfall - average loss beyond VaR</li>
+          <li><strong>Stressed VaR:</strong> VaR calculated using stressed historical periods</li>
+          <li><strong>Incremental VaR:</strong> Change in portfolio VaR from adding a position</li>
+          <li><strong>Marginal VaR:</strong> Contribution of each asset to portfolio VaR</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Regulatory Use of VaR</h3>
+    <p>VaR is widely used in financial regulation and risk management:</p>
+    <ul>
+      <li><strong>Basel III:</strong> Banks must calculate VaR at 99% confidence over 10-day period</li>
+      <li><strong>Market Risk Capital:</strong> Regulatory capital based on VaR and stressed VaR</li>
+      <li><strong>Risk Limits:</strong> Trading desks often have daily VaR limits</li>
+      <li><strong>Backtesting:</strong> Regulators require comparison of VaR predictions vs actual losses</li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Related Concepts</h3>
+    <ul>
+      <li><a href="standard-deviation.html">Standard Deviation</a> - Volatility measure used in VaR calculations</li>
+      <li><a href="probability-density-function.html">Probability Distributions</a> - Foundation for parametric VaR</li>
+      <li><a href="sharpe-ratio.html">Sharpe Ratio</a> - Risk-adjusted performance measure</li>
+    </ul>
+  </div>
+
+  <script>
+    // Initialize controls
+    const portfolioValueInput = document.getElementById('portfolioValue');
+    const volatilitySlider = document.getElementById('volatility');
+    const confidenceLevelSelect = document.getElementById('confidenceLevel');
+    const timePeriodSlider = document.getElementById('timePeriod');
+    const historicalReturnsInput = document.getElementById('historicalReturns');
+    
+    const volatilityValue = document.getElementById('volatilityValue');
+    const timePeriodValue = document.getElementById('timePeriodValue');
+    
+    const parametricVaRDisplay = document.getElementById('parametricVaR');
+    const historicalVaRDisplay = document.getElementById('historicalVaR');
+    const monteCarloVaRDisplay = document.getElementById('monteCarloVaR');
+    const interpretationDisplay = document.getElementById('interpretation');
+    
+    // Z-scores for confidence levels
+    const zScores = {
+      '90': 1.282,
+      '95': 1.645,
+      '99': 2.326
+    };
+    
+    // Monte Carlo simulation function
+    function monteCarloSimulation(portfolioValue, volatility, days, confidence, numSimulations = 10000) {
+      const returns = [];
+      const dailyVol = volatility / 100;
+      const sqrtDays = Math.sqrt(days);
+      
+      for (let i = 0; i < numSimulations; i++) {
+        // Generate random normal return
+        let u1 = Math.random();
+        let u2 = Math.random();
+        let z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        
+        // Calculate portfolio return over time period
+        const periodReturn = z * dailyVol * sqrtDays;
+        const portfolioChange = portfolioValue * periodReturn;
+        returns.push(portfolioChange);
+      }
+      
+      // Sort returns and find VaR at confidence level
+      returns.sort((a, b) => a - b);
+      const varIndex = Math.floor((100 - confidence) / 100 * numSimulations);
+      return returns[varIndex];
+    }
+    
+    // Historical VaR calculation
+    function calculateHistoricalVaR(returns, confidence, portfolioValue, days) {
+      if (!returns || returns.length < 20) return null;
+      
+      // Convert to portfolio values and scale for time period
+      const sqrtDays = Math.sqrt(days);
+      const scaledReturns = returns.map(r => portfolioValue * (r / 100) * sqrtDays);
+      
+      // Sort and find percentile
+      scaledReturns.sort((a, b) => a - b);
+      const varIndex = Math.floor((100 - confidence) / 100 * scaledReturns.length);
+      return scaledReturns[varIndex];
+    }
+    
+    // Update VaR calculations
+    function updateVaR() {
+      const portfolioValue = parseFloat(portfolioValueInput.value) || 1000000;
+      const volatility = parseFloat(volatilitySlider.value);
+      const confidence = parseInt(confidenceLevelSelect.value);
+      const days = parseInt(timePeriodSlider.value);
+      
+      // Update display values
+      volatilityValue.textContent = volatility.toFixed(1) + '%';
+      timePeriodValue.textContent = days === 1 ? '1 day' : `${days} days`;
+      
+      // Calculate Parametric VaR
+      const zScore = zScores[confidence];
+      const dailyVol = volatility / 100;
+      const sqrtDays = Math.sqrt(days);
+      const parametricVaR = -portfolioValue * zScore * dailyVol * sqrtDays;
+      
+      parametricVaRDisplay.textContent = formatCurrency(parametricVaR);
+      
+      // Calculate Historical VaR if data available
+      const historicalReturnsText = historicalReturnsInput.value.trim();
+      if (historicalReturnsText) {
+        const returns = historicalReturnsText.split(',').map(r => parseFloat(r.trim())).filter(r => !isNaN(r));
+        const histVaR = calculateHistoricalVaR(returns, confidence, portfolioValue, days);
+        historicalVaRDisplay.textContent = histVaR ? formatCurrency(histVaR) : 'Insufficient data';
+      } else {
+        historicalVaRDisplay.textContent = 'N/A';
+      }
+      
+      // Calculate Monte Carlo VaR
+      const mcVaR = monteCarloSimulation(portfolioValue, volatility, days, confidence);
+      monteCarloVaRDisplay.textContent = formatCurrency(mcVaR);
+      
+      // Update interpretation
+      const timeText = days === 1 ? '1 day' : `${days} days`;
+      interpretationDisplay.innerHTML = `<strong>Interpretation:</strong> With ${confidence}% confidence, the maximum loss over ${timeText} will not exceed ${formatCurrency(Math.abs(parametricVaR))}`;
+      
+      // Update visualizations
+      updateDistributionPlot(portfolioValue, volatility, days, confidence, parametricVaR);
+      updateBacktestPlot(historicalReturnsText, parametricVaR, portfolioValue);
+    }
+    
+    // Format currency
+    function formatCurrency(value) {
+      const absValue = Math.abs(value);
+      const sign = value < 0 ? '-' : '';
+      return sign + '$' + absValue.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    }
+    
+    // Update distribution plot
+    function updateDistributionPlot(portfolioValue, volatility, days, confidence, varValue) {
+      const dailyVol = volatility / 100;
+      const sqrtDays = Math.sqrt(days);
+      const periodVol = dailyVol * sqrtDays;
+      
+      // Generate distribution data
+      const x = [];
+      const y = [];
+      const mean = 0;
+      const std = portfolioValue * periodVol;
+      
+      for (let i = -4; i <= 4; i += 0.1) {
+        const value = mean + i * std;
+        x.push(value);
+        // Normal distribution PDF
+        const pdf = (1 / (std * Math.sqrt(2 * Math.PI))) * 
+                   Math.exp(-0.5 * Math.pow((value - mean) / std, 2));
+        y.push(pdf);
+      }
+      
+      // Create traces
+      const distributionTrace = {
+        x: x,
+        y: y,
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Portfolio Return Distribution',
+        line: { color: '#2563eb', width: 2 },
+        fill: 'tozeroy',
+        fillcolor: 'rgba(37, 99, 235, 0.1)'
+      };
+      
+      // VaR line
+      const varLine = {
+        x: [varValue, varValue],
+        y: [0, Math.max(...y)],
+        type: 'scatter',
+        mode: 'lines',
+        name: `VaR at ${confidence}%`,
+        line: { color: '#ef4444', width: 2, dash: 'dash' }
+      };
+      
+      // Shaded area for losses beyond VaR
+      const xFill = x.filter(v => v <= varValue);
+      const yFill = xFill.map(v => {
+        const pdf = (1 / (std * Math.sqrt(2 * Math.PI))) * 
+                   Math.exp(-0.5 * Math.pow((v - mean) / std, 2));
+        return pdf;
+      });
+      
+      const lossArea = {
+        x: xFill,
+        y: yFill,
+        type: 'scatter',
+        mode: 'lines',
+        name: `${100 - confidence}% Tail Risk`,
+        line: { color: 'transparent' },
+        fill: 'tozeroy',
+        fillcolor: 'rgba(239, 68, 68, 0.3)',
+        showlegend: true
+      };
+      
+      const layout = {
+        title: 'Portfolio Return Distribution and VaR',
+        xaxis: {
+          title: 'Portfolio Value Change ($)',
+          gridcolor: '#e2e8f0',
+          zeroline: true,
+          zerolinecolor: '#94a3b8',
+          tickformat: ',.0f'
+        },
+        yaxis: {
+          title: 'Probability Density',
+          gridcolor: '#e2e8f0'
+        },
+        hovermode: 'x unified',
+        plot_bgcolor: '#f8fafc',
+        paper_bgcolor: 'white',
+        font: {
+          family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+        },
+        showlegend: true,
+        legend: {
+          x: 0.02,
+          y: 0.98,
+          xanchor: 'left',
+          yanchor: 'top',
+          bgcolor: 'rgba(255,255,255,0.9)',
+          bordercolor: '#e2e8f0',
+          borderwidth: 1
+        }
+      };
+      
+      Plotly.newPlot('distributionPlot', [lossArea, distributionTrace, varLine], layout, {responsive: true});
+    }
+    
+    // Update backtest plot
+    function updateBacktestPlot(historicalReturnsText, varValue, portfolioValue) {
+      if (!historicalReturnsText.trim()) {
+        // Hide the plot if no data
+        document.getElementById('backtestPlot').style.display = 'none';
+        return;
+      }
+      
+      document.getElementById('backtestPlot').style.display = 'block';
+      
+      const returns = historicalReturnsText.split(',').map(r => parseFloat(r.trim())).filter(r => !isNaN(r));
+      if (returns.length < 5) return;
+      
+      // Convert to portfolio values
+      const portfolioChanges = returns.map(r => portfolioValue * (r / 100));
+      const days = Array.from({length: returns.length}, (_, i) => i + 1);
+      
+      // Count VaR breaches
+      const breaches = portfolioChanges.filter(r => r < varValue).length;
+      const breachRate = (breaches / returns.length * 100).toFixed(1);
+      
+      // Create traces
+      const returnsTrace = {
+        x: days,
+        y: portfolioChanges,
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Daily P&L',
+        line: { color: '#2563eb', width: 1 },
+        marker: { size: 4 }
+      };
+      
+      const varLine = {
+        x: days,
+        y: Array(days.length).fill(varValue),
+        type: 'scatter',
+        mode: 'lines',
+        name: 'VaR Limit',
+        line: { color: '#ef4444', width: 2, dash: 'dash' }
+      };
+      
+      // Highlight breaches
+      const breachDays = [];
+      const breachValues = [];
+      portfolioChanges.forEach((val, idx) => {
+        if (val < varValue) {
+          breachDays.push(idx + 1);
+          breachValues.push(val);
+        }
+      });
+      
+      const breachPoints = {
+        x: breachDays,
+        y: breachValues,
+        type: 'scatter',
+        mode: 'markers',
+        name: 'VaR Breaches',
+        marker: { 
+          color: '#ef4444', 
+          size: 8,
+          symbol: 'x'
+        }
+      };
+      
+      const layout = {
+        title: `VaR Backtesting (Breach Rate: ${breachRate}% vs Expected: ${(100 - parseInt(confidenceLevelSelect.value)).toFixed(0)}%)`,
+        xaxis: {
+          title: 'Day',
+          gridcolor: '#e2e8f0'
+        },
+        yaxis: {
+          title: 'Daily P&L ($)',
+          gridcolor: '#e2e8f0',
+          zeroline: true,
+          zerolinecolor: '#94a3b8',
+          tickformat: ',.0f'
+        },
+        hovermode: 'x unified',
+        plot_bgcolor: '#f8fafc',
+        paper_bgcolor: 'white',
+        font: {
+          family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+        },
+        showlegend: true,
+        legend: {
+          x: 0.02,
+          y: 0.98,
+          xanchor: 'left',
+          yanchor: 'top',
+          bgcolor: 'rgba(255,255,255,0.9)',
+          bordercolor: '#e2e8f0',
+          borderwidth: 1
+        }
+      };
+      
+      Plotly.newPlot('backtestPlot', [returnsTrace, varLine, breachPoints], layout, {responsive: true});
+    }
+    
+    // Event listeners
+    portfolioValueInput.addEventListener('input', updateVaR);
+    volatilitySlider.addEventListener('input', updateVaR);
+    confidenceLevelSelect.addEventListener('change', updateVaR);
+    timePeriodSlider.addEventListener('input', updateVaR);
+    historicalReturnsInput.addEventListener('input', updateVaR);
+    
+    // Collapsible functionality
+    const collapsibles = document.getElementsByClassName('collapsible');
+    for (let i = 0; i < collapsibles.length; i++) {
+      collapsibles[i].addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+          content.classList.remove('active');
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+          content.classList.add('active');
+        }
+      });
+    }
+    
+    // Initial calculation
+    updateVaR();
+  </script>
+</body>
+</html>

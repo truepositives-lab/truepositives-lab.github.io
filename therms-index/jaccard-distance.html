@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jaccard Distance</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Jaccard Distance</h2>
+
+  <div class="card description">
+    <h3>What is Jaccard Distance?</h3>
+    <p>The <strong>Jaccard Distance</strong> measures dissimilarity between two sets by comparing their unique elements. It's the complement of the Jaccard Index (similarity coefficient) and ranges from 0 (identical sets) to 1 (completely different sets).</p>
+    <p>This metric is widely used in data science for comparing documents, recommendation systems, clustering analysis, and measuring diversity in portfolios or datasets. It's particularly useful when dealing with binary or categorical data.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Jaccard Index (Similarity):</strong></p>
+    <p><strong>J(A, B) = |A ∩ B| / |A ∪ B|</strong></p>
+    <p style="margin-top: 1rem;"><strong>Jaccard Distance:</strong></p>
+    <p><strong>d(A, B) = 1 - J(A, B) = 1 - |A ∩ B| / |A ∪ B|</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>|A ∩ B|</strong> = Size of intersection (elements in both sets)</li>
+      <li><strong>|A ∪ B|</strong> = Size of union (all unique elements)</li>
+      <li><strong>J(A, B)</strong> = Jaccard Index (similarity)</li>
+      <li><strong>d(A, B)</strong> = Jaccard Distance (dissimilarity)</li>
+    </ul>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive Set Calculator</h3>
+    <p>Enter elements for two sets to calculate their Jaccard Distance:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+      <div class="control">
+        <label for="setA">Set A (comma-separated):</label>
+        <input type="text" id="setA" value="apple, banana, orange, grape"
+               style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+        <small>Example: apple, banana, orange</small>
+      </div>
+
+      <div class="control">
+        <label for="setB">Set B (comma-separated):</label>
+        <input type="text" id="setB" value="banana, orange, mango, kiwi"
+               style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+        <small>Example: banana, mango, kiwi</small>
+      </div>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <h4>Try These Examples:</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+        <button onclick="loadExample('identical')" style="padding: 0.5rem;">Identical Sets</button>
+        <button onclick="loadExample('partial')" style="padding: 0.5rem;">Partial Overlap</button>
+        <button onclick="loadExample('disjoint')" style="padding: 0.5rem;">Completely Different</button>
+        <button onclick="loadExample('subset')" style="padding: 0.5rem;">Subset Relationship</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📊 Set Analysis Results</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Set A Size</h4>
+        <p id="sizeA" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">4</p>
+      </div>
+      <div class="card">
+        <h4>Set B Size</h4>
+        <p id="sizeB" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">4</p>
+      </div>
+      <div class="card">
+        <h4>Intersection</h4>
+        <p id="intersection" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">2</p>
+      </div>
+      <div class="card">
+        <h4>Union</h4>
+        <p id="union" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">6</p>
+      </div>
+      <div class="card">
+        <h4>Jaccard Index</h4>
+        <p id="jaccardIndex" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">0.333</p>
+      </div>
+      <div class="card">
+        <h4>Jaccard Distance</h4>
+        <p id="jaccardDistance" style="font-size: 1.5rem; font-weight: bold; color: var(--error-color);">0.667</p>
+      </div>
+    </div>
+
+    <div class="formula" style="margin-top: 1.5rem;">
+      <p id="calculationBreakdown"><strong>Calculation:</strong> d = 1 - (2 / 6) = 1 - 0.333 = 0.667</p>
+    </div>
+
+    <div class="card" style="margin-top: 1rem;">
+      <h4>Set Elements</h4>
+      <div style="display: grid; gap: 0.5rem; font-family: var(--font-mono); font-size: 0.875rem;">
+        <div><strong>A ∩ B:</strong> <span id="intersectionElements" style="color: var(--success-color);">{banana, orange}</span></div>
+        <div><strong>A ∪ B:</strong> <span id="unionElements" style="color: var(--info-color);">{apple, banana, grape, kiwi, mango, orange}</span></div>
+        <div><strong>A - B:</strong> <span id="differenceAB" style="color: var(--secondary-color);">{apple, grape}</span></div>
+        <div><strong>B - A:</strong> <span id="differenceBA" style="color: var(--secondary-color);">{kiwi, mango}</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="vennDiagram" style="width:100%;height:500px;margin-top:2rem;"></div>
+
+  <div id="distanceMatrix" style="width:100%;height:400px;margin-top:2rem;"></div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Applications in Data Science</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="scenario">
+        <h4>Document Similarity</h4>
+        <p>Compare sets of words or n-grams between documents for plagiarism detection or content recommendation</p>
+      </div>
+      <div class="scenario">
+        <h4>Recommendation Systems</h4>
+        <p>Find users with similar preferences by comparing sets of liked items or purchased products</p>
+      </div>
+      <div class="scenario">
+        <h4>Clustering Analysis</h4>
+        <p>Group similar items based on shared features or attributes in machine learning applications</p>
+      </div>
+      <div class="scenario">
+        <h4>Portfolio Analysis</h4>
+        <p>Measure overlap between investment portfolios or asset allocations for diversification analysis</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <h3>Exercise: Customer Segmentation</h3>
+    <div class="problem">
+      <p>Two customer segments have the following product preferences:</p>
+      <ul>
+        <li><strong>Segment A:</strong> {Laptop, Phone, Tablet, Headphones, Watch}</li>
+        <li><strong>Segment B:</strong> {Phone, Tablet, TV, Speaker, Camera}</li>
+      </ul>
+      <p><strong>Question:</strong> Calculate the Jaccard Distance between these segments.</p>
+    </div>
+
+    <button class="collapsible">Show Solution</button>
+    <div class="content">
+      <div class="solution">
+        <div class="solution-step">
+          <strong>Step 1:</strong> Identify the sets
+          <ul>
+            <li>Set A = {Laptop, Phone, Tablet, Headphones, Watch}</li>
+            <li>Set B = {Phone, Tablet, TV, Speaker, Camera}</li>
+          </ul>
+        </div>
+        <div class="solution-step">
+          <strong>Step 2:</strong> Find the intersection A ∩ B
+          <p>Common elements: {Phone, Tablet}</p>
+          <p>|A ∩ B| = 2</p>
+        </div>
+        <div class="solution-step">
+          <strong>Step 3:</strong> Find the union A ∪ B
+          <p>All unique elements: {Laptop, Phone, Tablet, Headphones, Watch, TV, Speaker, Camera}</p>
+          <p>|A ∪ B| = 8</p>
+        </div>
+        <div class="solution-step">
+          <strong>Step 4:</strong> Calculate Jaccard Index
+          <p>J(A, B) = |A ∩ B| / |A ∪ B| = 2/8 = 0.25</p>
+        </div>
+        <div class="solution-step">
+          <strong>Step 5:</strong> Calculate Jaccard Distance
+          <p>d(A, B) = 1 - J(A, B) = 1 - 0.25 = 0.75</p>
+        </div>
+        <div class="answer">
+          <strong>Answer:</strong> The Jaccard Distance is 0.75, indicating 75% dissimilarity between the customer segments.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Properties of Jaccard Distance</h3>
+    <div style="display: grid; gap: 1rem;">
+      <div class="highlight">
+        <h4>Mathematical Properties:</h4>
+        <ul>
+          <li><strong>Range:</strong> d(A, B) ∈ [0, 1]</li>
+          <li><strong>Identity:</strong> d(A, A) = 0</li>
+          <li><strong>Symmetry:</strong> d(A, B) = d(B, A)</li>
+          <li><strong>Triangle Inequality:</strong> d(A, C) ≤ d(A, B) + d(B, C)</li>
+          <li><strong>Metric Space:</strong> Forms a proper distance metric</li>
+        </ul>
+      </div>
+      <div class="highlight" style="border-left-color: var(--warning-color);">
+        <h4>Limitations:</h4>
+        <ul>
+          <li>Doesn't consider element frequency (treats all as binary)</li>
+          <li>Sensitive to set size differences</li>
+          <li>Not suitable for continuous numerical data</li>
+          <li>Undefined for two empty sets</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Alternative Distance Metrics</h3>
+    <p>Other similarity and distance measures for different use cases:</p>
+    <ul>
+      <li><strong>Cosine Similarity:</strong> Measures angle between vectors, good for text analysis</li>
+      <li><strong>Euclidean Distance:</strong> Straight-line distance, suitable for continuous data</li>
+      <li><strong>Hamming Distance:</strong> Counts differing positions in equal-length sequences</li>
+      <li><strong>Dice Coefficient:</strong> Similar to Jaccard but gives more weight to shared elements</li>
+      <li><strong>Sørensen-Dice:</strong> 2|A ∩ B| / (|A| + |B|)</li>
+    </ul>
+  </div>
+
+  <script>
+    // Parse set input
+    function parseSet(input) {
+      if (!input.trim()) return new Set();
+      return new Set(
+        input.split(',')
+          .map(item => item.trim())
+          .filter(item => item.length > 0)
+      );
+    }
+
+    // Format set for display
+    function formatSet(set) {
+      if (set.size === 0) return '∅';
+      return '{' + Array.from(set).sort().join(', ') + '}';
+    }
+
+    // Calculate Jaccard metrics
+    function calculateJaccard() {
+      const inputA = document.getElementById('setA').value;
+      const inputB = document.getElementById('setB').value;
+
+      const setA = parseSet(inputA);
+      const setB = parseSet(inputB);
+
+      // Calculate intersection
+      const intersection = new Set([...setA].filter(x => setB.has(x)));
+
+      // Calculate union
+      const union = new Set([...setA, ...setB]);
+
+      // Calculate differences
+      const diffAB = new Set([...setA].filter(x => !setB.has(x)));
+      const diffBA = new Set([...setB].filter(x => !setA.has(x)));
+
+      // Calculate Jaccard metrics
+      const jaccardIndex = union.size > 0 ? intersection.size / union.size : 0;
+      const jaccardDistance = 1 - jaccardIndex;
+
+      // Update displays
+      document.getElementById('sizeA').textContent = setA.size;
+      document.getElementById('sizeB').textContent = setB.size;
+      document.getElementById('intersection').textContent = intersection.size;
+      document.getElementById('union').textContent = union.size;
+      document.getElementById('jaccardIndex').textContent = jaccardIndex.toFixed(3);
+      document.getElementById('jaccardDistance').textContent = jaccardDistance.toFixed(3);
+
+      // Update calculation breakdown
+      document.getElementById('calculationBreakdown').innerHTML =
+        `<strong>Calculation:</strong> d = 1 - (${intersection.size} / ${union.size}) = 1 - ${jaccardIndex.toFixed(3)} = ${jaccardDistance.toFixed(3)}`;
+
+      // Update set elements display
+      document.getElementById('intersectionElements').textContent = formatSet(intersection);
+      document.getElementById('unionElements').textContent = formatSet(union);
+      document.getElementById('differenceAB').textContent = formatSet(diffAB);
+      document.getElementById('differenceBA').textContent = formatSet(diffBA);
+
+      // Update visualizations
+      updateVennDiagram(setA, setB, intersection);
+      updateDistanceMatrix();
+    }
+
+    // Update Venn diagram
+    function updateVennDiagram(setA, setB, intersection) {
+      const sizeA = setA.size;
+      const sizeB = setB.size;
+      const sizeIntersection = intersection.size;
+
+      // Calculate positions for Venn diagram simulation
+      const onlyA = sizeA - sizeIntersection;
+      const onlyB = sizeB - sizeIntersection;
+
+      // Create traces for each region
+      const trace1 = {
+        x: ['A only', 'A ∩ B', 'B only'],
+        y: [onlyA, sizeIntersection, onlyB],
+        type: 'bar',
+        name: 'Elements',
+        marker: {
+          color: ['rgba(37, 99, 235, 0.6)', 'rgba(16, 185, 129, 0.6)', 'rgba(245, 158, 11, 0.6)']
+        },
+        text: [
+          `A only: ${onlyA}`,
+          `Intersection: ${sizeIntersection}`,
+          `B only: ${onlyB}`
+        ],
+        textposition: 'outside',
+        hovertemplate: '%{text}<extra></extra>'
+      };
+
+      const layout = {
+        title: 'Set Relationship Visualization',
+        xaxis: {
+          title: 'Set Regions',
+          gridcolor: '#e2e8f0'
+        },
+        yaxis: {
+          title: 'Number of Elements',
+          gridcolor: '#e2e8f0'
+        },
+        showlegend: false,
+        plot_bgcolor: '#f8fafc',
+        paper_bgcolor: 'white',
+        font: {
+          family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+        },
+        annotations: [
+          {
+            x: 1,
+            y: sizeIntersection + 1,
+            text: `Jaccard Index: ${(sizeIntersection / (sizeA + sizeB - sizeIntersection)).toFixed(3)}`,
+            showarrow: false,
+            font: {
+              size: 14,
+              color: '#10b981'
+            }
+          }
+        ]
+      };
+
+      Plotly.newPlot('vennDiagram', [trace1], layout, {responsive: true});
+    }
+
+    // Update distance matrix visualization
+    function updateDistanceMatrix() {
+      // Create sample distance matrix with current sets
+      const examples = [
+        { name: 'Set A', data: document.getElementById('setA').value },
+        { name: 'Set B', data: document.getElementById('setB').value },
+        { name: 'Empty Set', data: '' },
+        { name: 'Universal', data: 'apple,banana,orange,grape,mango,kiwi' }
+      ];
+
+      const sets = examples.map(e => parseSet(e.data));
+      const labels = examples.map(e => e.name);
+
+      // Calculate distance matrix
+      const matrix = [];
+      for (let i = 0; i < sets.length; i++) {
+        const row = [];
+        for (let j = 0; j < sets.length; j++) {
+          if (sets[i].size === 0 && sets[j].size === 0) {
+            row.push(0);
+          } else {
+            const intersection = new Set([...sets[i]].filter(x => sets[j].has(x)));
+            const union = new Set([...sets[i], ...sets[j]]);
+            const distance = union.size > 0 ? 1 - (intersection.size / union.size) : 1;
+            row.push(distance);
+          }
+        }
+        matrix.push(row);
+      }
+
+      const trace = {
+        z: matrix,
+        x: labels,
+        y: labels,
+        type: 'heatmap',
+        colorscale: [
+          [0, '#10b981'],
+          [0.5, '#f59e0b'],
+          [1, '#ef4444']
+        ],
+        colorbar: {
+          title: 'Distance',
+          titleside: 'right'
+        },
+        hovertemplate: '%{y} vs %{x}<br>Distance: %{z:.3f}<extra></extra>'
+      };
+
+      // Add text annotations
+      const annotations = [];
+      for (let i = 0; i < labels.length; i++) {
+        for (let j = 0; j < labels.length; j++) {
+          annotations.push({
+            x: labels[j],
+            y: labels[i],
+            text: matrix[i][j].toFixed(2),
+            showarrow: false,
+            font: {
+              color: matrix[i][j] > 0.5 ? 'white' : 'black'
+            }
+          });
+        }
+      }
+
+      const layout = {
+        title: 'Jaccard Distance Matrix',
+        xaxis: {
+          side: 'bottom',
+          gridcolor: '#e2e8f0'
+        },
+        yaxis: {
+          autorange: 'reversed',
+          gridcolor: '#e2e8f0'
+        },
+        plot_bgcolor: '#f8fafc',
+        paper_bgcolor: 'white',
+        font: {
+          family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+        },
+        annotations: annotations
+      };
+
+      Plotly.newPlot('distanceMatrix', [trace], layout, {responsive: true});
+    }
+
+    // Load example sets
+    function loadExample(type) {
+      const examples = {
+        identical: {
+          A: 'red, blue, green, yellow',
+          B: 'red, blue, green, yellow'
+        },
+        partial: {
+          A: 'cat, dog, bird, fish',
+          B: 'dog, bird, rabbit, hamster'
+        },
+        disjoint: {
+          A: 'Monday, Tuesday, Wednesday',
+          B: 'Thursday, Friday, Saturday'
+        },
+        subset: {
+          A: 'A, B, C, D, E',
+          B: 'B, C, D'
+        }
+      };
+
+      if (examples[type]) {
+        document.getElementById('setA').value = examples[type].A;
+        document.getElementById('setB').value = examples[type].B;
+        calculateJaccard();
+      }
+    }
+
+    // Event listeners
+    document.getElementById('setA').addEventListener('input', calculateJaccard);
+    document.getElementById('setB').addEventListener('input', calculateJaccard);
+
+    // Collapsible functionality
+    const collapsibles = document.getElementsByClassName('collapsible');
+    for (let i = 0; i < collapsibles.length; i++) {
+      collapsibles[i].addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+          content.classList.remove('active');
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+          content.classList.add('active');
+        }
+      });
+    }
+
+    // Initial calculation
+    calculateJaccard();
+  </script>
+</body>
+</html>

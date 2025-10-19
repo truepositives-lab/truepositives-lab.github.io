@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dynamic Time Warping (DTW)</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Dynamic Time Warping (DTW)</h2>
+
+  <div class="card description">
+    <h3>What is Dynamic Time Warping?</h3>
+    <p><strong>Dynamic Time Warping (DTW)</strong> is an algorithm for measuring similarity between two temporal sequences that may vary in speed or timing. Unlike Euclidean distance, DTW can find an optimal alignment between sequences by "warping" time, allowing similar patterns to be matched even when they occur at different speeds.</p>
+    <p>DTW is essential in speech recognition, signature verification, time series analysis, and financial pattern matching. It can recognize that two stock price patterns are similar even if one occurs faster than the other, or that two spoken words are the same despite different speaking speeds.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>DTW Recurrence Relation:</strong></p>
+    <p><strong>D(i,j) = cost(i,j) + min{ D(i-1,j), D(i,j-1), D(i-1,j-1) }</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>D(i,j)</strong> = Cumulative distance at position (i,j) in the cost matrix</li>
+      <li><strong>cost(i,j)</strong> = Local distance between points x[i] and y[j] (typically |x[i] - y[j]|)</li>
+      <li><strong>D(i-1,j)</strong> = Insertion (vertical move)</li>
+      <li><strong>D(i,j-1)</strong> = Deletion (horizontal move)</li>
+      <li><strong>D(i-1,j-1)</strong> = Match (diagonal move)</li>
+    </ul>
+    <p style="margin-top: 1rem;"><strong>Final DTW Distance = D(n,m)</strong> where n and m are sequence lengths</p>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive DTW Calculator</h3>
+    <p>Enter two time series to calculate their DTW distance and see the optimal alignment:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+      <div class="control">
+        <label for="sequence1">Sequence 1 (comma-separated):</label>
+        <input type="text" id="sequence1" value="1, 2, 3, 4, 5, 4, 3, 2, 1"
+               style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+        <small>Example: Stock prices, sensor readings, audio samples</small>
+      </div>
+
+      <div class="control">
+        <label for="sequence2">Sequence 2 (comma-separated):</label>
+        <input type="text" id="sequence2" value="1, 1, 2, 3, 4, 5, 4, 3, 2, 1, 1"
+               style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+        <small>Can be different length from Sequence 1</small>
+      </div>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <h4>Try These Examples:</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+        <button onclick="loadExample('shifted')" style="padding: 0.5rem;">Time Shifted</button>
+        <button onclick="loadExample('stretched')" style="padding: 0.5rem;">Time Stretched</button>
+        <button onclick="loadExample('sine')" style="padding: 0.5rem;">Sine Waves</button>
+        <button onclick="loadExample('stock')" style="padding: 0.5rem;">Stock Patterns</button>
+        <button onclick="loadExample('speech')" style="padding: 0.5rem;">Speech Pattern</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📊 DTW Analysis Results</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>DTW Distance</h4>
+        <p id="dtwDistance" style="font-size: 1.5rem; font-weight: bold; color: var(--error-color);">2.00</p>
+      </div>
+      <div class="card">
+        <h4>Euclidean Distance</h4>
+        <p id="euclideanDistance" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">N/A</p>
+      </div>
+      <div class="card">
+        <h4>Path Length</h4>
+        <p id="pathLength" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">11</p>
+      </div>
+      <div class="card">
+        <h4>Normalized DTW</h4>
+        <p id="normalizedDTW" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">0.182</p>
+      </div>
+    </div>
+
+    <div class="formula" style="margin-top: 1.5rem;">
+      <p id="interpretation"><strong>Interpretation:</strong> The sequences are very similar with minimal time warping needed for alignment.</p>
+    </div>
+  </div>
+
+  <div id="sequencePlot" style="width:100%;height:400px;margin-top:2rem;"></div>
+
+  <div id="alignmentPlot" style="width:100%;height:400px;margin-top:1rem;"></div>
+
+  <div id="costMatrix" style="width:100%;height:500px;margin-top:1rem;"></div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Applications of DTW</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="scenario">
+        <h4>Speech Recognition</h4>
+        <p>Match spoken words despite different speaking speeds, accents, or pronunciations</p>
+      </div>
+      <div class="scenario">
+        <h4>Financial Analysis</h4>
+        <p>Find similar price patterns in stock markets occurring at different time scales</p>
+      </div>
+      <div class="scenario">
+        <h4>Gesture Recognition</h4>
+        <p>Recognize hand gestures or sign language performed at varying speeds</p>
+      </div>
+      <div class="scenario">
+        <h4>Medical Diagnosis</h4>
+        <p>Compare ECG/EEG signals to detect anomalies despite heart rate variations</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <h3>Exercise: Pattern Matching</h3>
+    <div class="problem">
+      <p>Two temperature sensor readings over time:</p>
+      <ul>
+        <li><strong>Sensor A:</strong> [20, 22, 25, 23, 21] (5 time points)</li>
+        <li><strong>Sensor B:</strong> [20, 21, 22, 25, 24, 23, 21] (7 time points)</li>
+      </ul>
+      <p><strong>Question:</strong> Calculate the DTW distance between these sequences.</p>
+    </div>
+
+    <button class="collapsible">Show Solution</button>
+    <div class="content">
+      <div class="solution">
+        <div class="solution-step">
+          <strong>Step 1:</strong> Create the cost matrix
+          <p>Calculate |A[i] - B[j]| for each cell:</p>
+          <pre style="font-family: monospace; background: var(--bg-tertiary); padding: 1rem;">
+        B: 20  21  22  25  24  23  21
+    A:20    0   1   2   5   4   3   1
+      22    2   1   0   3   2   1   1
+      25    5   4   3   0   1   2   4
+      23    3   2   1   2   1   0   2
+      21    1   0   1   4   3   2   0</pre>
+        </div>
+        <div class="solution-step">
+          <strong>Step 2:</strong> Fill cumulative distance matrix
+          <p>D(i,j) = cost(i,j) + min(D(i-1,j), D(i,j-1), D(i-1,j-1))</p>
+          <pre style="font-family: monospace; background: var(--bg-tertiary); padding: 1rem;">
+        B: 20  21  22  25  24  23  21
+    A:20    0   1   3   8  12  15  16
+      22    2   1   1   4   6   7   8
+      25    7   5   4   1   2   4   8
+      23   10   7   5   3   2   2   4
+      21   11   7   6   7   5   4   2</pre>
+        </div>
+        <div class="solution-step">
+          <strong>Step 3:</strong> Trace back optimal path
+          <p>Start from D(5,7) = 2 and trace back to D(1,1) = 0</p>
+          <p>Optimal path: (1,1)→(2,2)→(2,3)→(3,4)→(4,5)→(4,6)→(5,7)</p>
+        </div>
+        <div class="answer">
+          <strong>Answer:</strong> DTW Distance = 2
+          <p>The sequences are very similar, with Sensor B showing the same pattern as Sensor A but with additional intermediate readings.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>DTW Properties and Constraints</h3>
+    <div style="display: grid; gap: 1rem;">
+      <div class="highlight">
+        <h4>Key Properties:</h4>
+        <ul>
+          <li><strong>Non-linear alignment:</strong> Can match one point to multiple points</li>
+          <li><strong>Monotonicity:</strong> Path never goes backwards in time</li>
+          <li><strong>Continuity:</strong> No jumps in the warping path</li>
+          <li><strong>Boundary conditions:</strong> First and last points must match</li>
+          <li><strong>Asymmetric:</strong> DTW(X,Y) may differ slightly from DTW(Y,X)</li>
+        </ul>
+      </div>
+      <div class="highlight" style="border-left-color: var(--warning-color);">
+        <h4>Common Constraints:</h4>
+        <ul>
+          <li><strong>Sakoe-Chiba Band:</strong> Limits warping to a window around diagonal</li>
+          <li><strong>Itakura Parallelogram:</strong> Constrains path slope</li>
+          <li><strong>Step patterns:</strong> Control allowed moves (e.g., no vertical/horizontal)</li>
+          <li><strong>Global constraints:</strong> Limit maximum time shift</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>DTW vs Other Distance Metrics</h3>
+    <table style="width: 100%; margin-top: 1rem;">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Time Alignment</th>
+          <th>Length Requirements</th>
+          <th>Computational Cost</th>
+          <th>Best Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>DTW</strong></td>
+          <td>Flexible</td>
+          <td>Any length</td>
+          <td>O(n×m)</td>
+          <td>Time series with varying speeds</td>
+        </tr>
+        <tr>
+          <td><strong>Euclidean</strong></td>
+          <td>Fixed</td>
+          <td>Same length</td>
+          <td>O(n)</td>
+          <td>Synchronized sequences</td>
+        </tr>
+        <tr>
+          <td><strong>Correlation</strong></td>
+          <td>Sliding window</td>
+          <td>Any length</td>
+          <td>O(n×m)</td>
+          <td>Finding patterns in long series</td>
+        </tr>
+        <tr>
+          <td><strong>Frechet</strong></td>
+          <td>Continuous</td>
+          <td>Any length</td>
+          <td>O(n×m×log(nm))</td>
+          <td>Spatial trajectories</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Related Concepts</h3>
+    <ul>
+      <li><a href="euclidean-distance.html">Euclidean Distance</a> - Simple distance for aligned sequences</li>
+      <li><a href="cosine-distance.html">Cosine Distance</a> - Angular similarity measure</li>
+      <li><strong>Edit Distance:</strong> Similar dynamic programming for strings</li>
+      <li><strong>Longest Common Subsequence:</strong> Finding shared patterns</li>
+      <li><strong>FastDTW:</strong> Approximation algorithm for large datasets</li>
+    </ul>
+  </div>
+
+  <script>
+    // Parse sequence input
+    function parseSequence(input) {
+      return input.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+    }
+
+    // Calculate Euclidean distance (for same-length sequences)
+    function euclideanDistance(seq1, seq2) {
+      if (seq1.length !== seq2.length) return null;
+      let sum = 0;
+      for (let i = 0; i < seq1.length; i++) {
+        sum += Math.pow(seq1[i] - seq2[i], 2);
+      }
+      return Math.sqrt(sum);
+    }
+
+    // Calculate DTW distance
+    function calculateDTW(seq1, seq2) {
+      const n = seq1.length;
+      const m = seq2.length;
+
+      // Initialize cost matrix
+      const costMatrix = Array(n + 1).fill(null).map(() => Array(m + 1).fill(Infinity));
+      costMatrix[0][0] = 0;
+
+      // Fill cost matrix
+      for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= m; j++) {
+          const cost = Math.abs(seq1[i - 1] - seq2[j - 1]);
+          costMatrix[i][j] = cost + Math.min(
+            costMatrix[i - 1][j],     // insertion
+            costMatrix[i][j - 1],     // deletion
+            costMatrix[i - 1][j - 1]  // match
+          );
+        }
+      }
+
+      // Trace back the optimal path
+      const path = [];
+      let i = n, j = m;
+      path.push([i - 1, j - 1]);
+
+      while (i > 1 || j > 1) {
+        if (i === 1) {
+          j--;
+        } else if (j === 1) {
+          i--;
+        } else {
+          const values = [
+            costMatrix[i - 1][j - 1],
+            costMatrix[i - 1][j],
+            costMatrix[i][j - 1]
+          ];
+          const minIdx = values.indexOf(Math.min(...values));
+
+          if (minIdx === 0) {
+            i--;
+            j--;
+          } else if (minIdx === 1) {
+            i--;
+          } else {
+            j--;
+          }
+        }
+        path.push([i - 1, j - 1]);
+      }
+
+      path.reverse();
+
+      return {
+        distance: costMatrix[n][m],
+        matrix: costMatrix.slice(1).map(row => row.slice(1)),
+        path: path
+      };
+    }
+
+    // Main calculation function
+    function calculateAndVisualize() {
+      const seq1 = parseSequence(document.getElementById('sequence1').value);
+      const seq2 = parseSequence(document.getElementById('sequence2').value);
+
+      if (seq1.length === 0 || seq2.length === 0) {
+        alert('Please enter valid sequences');
+        return;
+      }
+
+      // Calculate DTW
+      const dtw = calculateDTW(seq1, seq2);
+
+      // Calculate Euclidean for comparison (if same length)
+      const euclidean = euclideanDistance(seq1, seq2);
+
+      // Update displays
+      document.getElementById('dtwDistance').textContent = dtw.distance.toFixed(2);
+      document.getElementById('euclideanDistance').textContent =
+        euclidean !== null ? euclidean.toFixed(2) : 'N/A (different lengths)';
+      document.getElementById('pathLength').textContent = dtw.path.length;
+      document.getElementById('normalizedDTW').textContent =
+        (dtw.distance / dtw.path.length).toFixed(3);
+
+      // Update interpretation
+      const normalized = dtw.distance / dtw.path.length;
+      let interpretation = '';
+      if (normalized < 0.5) {
+        interpretation = 'The sequences are very similar with minimal time warping needed for alignment.';
+      } else if (normalized < 1.5) {
+        interpretation = 'The sequences show moderate similarity with some time warping required.';
+      } else if (normalized < 3) {
+        interpretation = 'The sequences have noticeable differences but share some patterns.';
+      } else {
+        interpretation = 'The sequences are quite different, requiring significant warping to align.';
+      }
+      document.getElementById('interpretation').innerHTML =
+        `<strong>Interpretation:</strong> ${interpretation}`;
+
+      // Update visualizations
+      plotSequences(seq1, seq2);
+      plotAlignment(seq1, seq2, dtw.path);
+      plotCostMatrix(dtw.matrix, dtw.path, seq1.length, seq2.length);
+    }
+
+    // Plot original sequences
+    function plotSequences(seq1, seq2) {
+      const trace1 = {
+        x: Array.from({length: seq1.length}, (_, i) => i),
+        y: seq1,
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Sequence 1',
+        line: { color: '#2563eb', width: 2 },
+        marker: { size: 6 }
+      };
+
+      const trace2 = {
+        x: Array.from({length: seq2.length}, (_, i) => i),
+        y: seq2,
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Sequence 2',
+        line: { color: '#ef4444', width: 2 },
+        marker: { size: 6 }
+      };
+
+      const layout = {
+        title: 'Original Time Series',
+        xaxis: {
+          title: 'Time',
+          gridcolor: '#e2e8f0'
+        },
+        yaxis: {
+          title: 'Value',
+          gridcolor: '#e2e8f0'
+        },
+        plot_bgcolor: '#f8fafc',
+        showlegend: true
+      };
+
+      Plotly.newPlot('sequencePlot', [trace1, trace2], layout, {responsive: true});
+    }
+
+    // Plot aligned sequences
+    function plotAlignment(seq1, seq2, path) {
+      // Create alignment connections
+      const shapes = path.map(([i, j]) => ({
+        type: 'line',
+        x0: i,
+        y0: seq1[i],
+        x1: j + 0.1,
+        y1: seq2[j] - 0.1,
+        line: {
+          color: 'rgba(16, 185, 129, 0.3)',
+          width: 1
+        }
+      }));
+
+      const trace1 = {
+        x: Array.from({length: seq1.length}, (_, i) => i),
+        y: seq1,
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Sequence 1',
+        line: { color: '#2563eb', width: 2 },
+        marker: { size: 6 }
+      };
+
+      const trace2 = {
+        x: Array.from({length: seq2.length}, (_, i) => i + 0.1),
+        y: seq2.map(v => v - 0.1),
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Sequence 2 (offset)',
+        line: { color: '#ef4444', width: 2 },
+        marker: { size: 6 }
+      };
+
+      const layout = {
+        title: 'DTW Alignment Visualization',
+        xaxis: {
+          title: 'Time Index',
+          gridcolor: '#e2e8f0'
+        },
+        yaxis: {
+          title: 'Value',
+          gridcolor: '#e2e8f0'
+        },
+        plot_bgcolor: '#f8fafc',
+        shapes: shapes,
+        showlegend: true,
+        annotations: [{
+          x: 0.5,
+          y: 1.05,
+          xref: 'paper',
+          yref: 'paper',
+          text: 'Green lines show DTW alignment between sequences',
+          showarrow: false,
+          font: { size: 12, color: '#64748b' }
+        }]
+      };
+
+      Plotly.newPlot('alignmentPlot', [trace1, trace2], layout, {responsive: true});
+    }
+
+    // Plot cost matrix with warping path
+    function plotCostMatrix(matrix, path, n, m) {
+      // Create path matrix for overlay
+      const pathMatrix = Array(n).fill(null).map(() => Array(m).fill(0));
+      path.forEach(([i, j]) => {
+        if (i < n && j < m) {
+          pathMatrix[i][j] = 1;
+        }
+      });
+
+      const trace1 = {
+        z: matrix,
+        type: 'heatmap',
+        colorscale: 'Viridis',
+        showscale: true,
+        colorbar: {
+          title: 'Cumulative<br>Distance',
+          titleside: 'right'
+        },
+        hovertemplate: 'Seq1[%{y}] vs Seq2[%{x}]<br>Distance: %{z:.2f}<extra></extra>'
+      };
+
+      // Add path as scatter plot overlay
+      const trace2 = {
+        x: path.map(p => p[1]),
+        y: path.map(p => p[0]),
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Optimal Path',
+        line: { color: '#ef4444', width: 3 },
+        marker: { size: 6, color: '#ef4444' },
+        hovertemplate: 'Path: (%{y}, %{x})<extra></extra>'
+      };
+
+      const layout = {
+        title: 'DTW Cost Matrix and Optimal Warping Path',
+        xaxis: {
+          title: 'Sequence 2 Index',
+          gridcolor: '#e2e8f0'
+        },
+        yaxis: {
+          title: 'Sequence 1 Index',
+          gridcolor: '#e2e8f0',
+          autorange: 'reversed'
+        },
+        plot_bgcolor: '#f8fafc',
+        showlegend: true
+      };
+
+      Plotly.newPlot('costMatrix', [trace1, trace2], layout, {responsive: true});
+    }
+
+    // Load example sequences
+    function loadExample(type) {
+      const examples = {
+        shifted: {
+          seq1: '1, 2, 3, 4, 5, 4, 3, 2, 1',
+          seq2: '0, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1'
+        },
+        stretched: {
+          seq1: '1, 2, 3, 4, 5',
+          seq2: '1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5'
+        },
+        sine: {
+          seq1: '0, 0.71, 1, 0.71, 0, -0.71, -1, -0.71, 0',
+          seq2: '0, 0.5, 0.87, 1, 0.87, 0.5, 0, -0.5, -0.87, -1, -0.87, -0.5, 0'
+        },
+        stock: {
+          seq1: '100, 102, 105, 103, 107, 110, 108, 105, 103',
+          seq2: '100, 101, 102, 104, 105, 103, 106, 109, 110, 108, 106, 104, 103'
+        },
+        speech: {
+          seq1: '0.1, 0.3, 0.5, 0.8, 1.0, 0.9, 0.7, 0.4, 0.2, 0.1',
+          seq2: '0.1, 0.2, 0.4, 0.6, 0.9, 1.0, 1.0, 0.8, 0.5, 0.3, 0.1, 0.05'
+        }
+      };
+
+      if (examples[type]) {
+        document.getElementById('sequence1').value = examples[type].seq1;
+        document.getElementById('sequence2').value = examples[type].seq2;
+        calculateAndVisualize();
+      }
+    }
+
+    // Event listeners
+    document.getElementById('sequence1').addEventListener('input', calculateAndVisualize);
+    document.getElementById('sequence2').addEventListener('input', calculateAndVisualize);
+
+    // Collapsible functionality
+    const collapsibles = document.getElementsByClassName('collapsible');
+    for (let i = 0; i < collapsibles.length; i++) {
+      collapsibles[i].addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+          content.classList.remove('active');
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+          content.classList.add('active');
+        }
+      });
+    }
+
+    // Initial calculation
+    calculateAndVisualize();
+  </script>
+</body>
+</html>

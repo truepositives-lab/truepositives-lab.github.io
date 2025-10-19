@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Probability Density Functions in Finance</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Probability Density Functions in Finance</h2>
+
+  <div class="card description">
+    <h3>What is a Probability Density Function?</h3>
+    <p>A <strong>Probability Density Function (PDF)</strong> describes the likelihood of a continuous random variable taking on different values. In finance, PDFs are crucial for modeling asset returns, risk assessment, option pricing, and portfolio optimization. Unlike discrete probabilities, PDFs represent probability density - the area under the curve between two points gives the probability of the variable falling in that range.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Key Properties of PDFs:</strong></p>
+    <ul>
+      <li><strong>Non-negative:</strong> f(x) ≥ 0 for all x</li>
+      <li><strong>Total area = 1:</strong> ∫f(x)dx = 1 (certainty)</li>
+      <li><strong>Probability over interval:</strong> P(a ≤ X ≤ b) = ∫[a to b] f(x)dx</li>
+      <li><strong>Point probability = 0:</strong> P(X = x) = 0 for continuous variables</li>
+    </ul>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive Distribution Explorer</h3>
+    <p>Explore different probability distributions commonly used in financial modeling:</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+      <div class="control">
+        <label for="distributionSelect">Distribution Type:</label>
+        <select id="distributionSelect" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+          <option value="normal">Normal (Gaussian)</option>
+          <option value="lognormal">Log-Normal</option>
+          <option value="student-t">Student's t-Distribution</option>
+          <option value="exponential">Exponential</option>
+          <option value="uniform">Uniform</option>
+          <option value="beta">Beta Distribution</option>
+        </select>
+      </div>
+      
+      <div class="control">
+        <label for="param1Slider">Parameter 1: <span id="param1Value">0</span></label>
+        <input type="range" id="param1Slider" min="-5" max="5" step="0.1" value="0" />
+        <small id="param1Label">Mean (μ)</small>
+      </div>
+      
+      <div class="control">
+        <label for="param2Slider">Parameter 2: <span id="param2Value">1</span></label>
+        <input type="range" id="param2Slider" min="0.1" max="5" step="0.1" value="1" />
+        <small id="param2Label">Standard Deviation (σ)</small>
+      </div>
+    </div>
+  </div>
+
+  <div id="pdfChart" style="width:100%;height:400px;"></div>
+
+  <div class="highlight">
+    <h3>📊 Distribution Properties</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Mean</h4>
+        <p id="distributionMean" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">0.00</p>
+      </div>
+      <div class="card">
+        <h4>Variance</h4>
+        <p id="distributionVariance" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">1.00</p>
+      </div>
+      <div class="card">
+        <h4>Skewness</h4>
+        <p id="distributionSkewness" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">0.00</p>
+      </div>
+      <div class="card">
+        <h4>Kurtosis</h4>
+        <p id="distributionKurtosis" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">3.00</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background: #f0f8ff; border: 2px solid #3b82f6;">
+    <h3>💹 Financial Applications of PDFs</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="scenario">
+        <h4>📈 Asset Returns Modeling</h4>
+        <ul>
+          <li><strong>Normal Distribution:</strong> Traditional assumption for daily returns</li>
+          <li><strong>Student's t:</strong> Better captures fat tails and extreme events</li>
+          <li><strong>Log-Normal:</strong> Stock prices (can't go negative)</li>
+          <li><strong>Skewed Distributions:</strong> More realistic for many assets</li>
+        </ul>
+      </div>
+      
+      <div class="scenario">
+        <h4>🎯 Risk Management</h4>
+        <ul>
+          <li><strong>Value at Risk (VaR):</strong> Tail probabilities</li>
+          <li><strong>Expected Shortfall:</strong> Conditional tail expectations</li>
+          <li><strong>Stress Testing:</strong> Extreme value distributions</li>
+          <li><strong>Correlation Modeling:</strong> Copula functions</li>
+        </ul>
+      </div>
+      
+      <div class="scenario">
+        <h4>⚡ Option Pricing</h4>
+        <ul>
+          <li><strong>Black-Scholes:</strong> Log-normal stock prices</li>
+          <li><strong>Volatility Smile:</strong> Non-constant volatility</li>
+          <li><strong>Jump Diffusion:</strong> Sudden price movements</li>
+          <li><strong>Stochastic Vol:</strong> Heston model variations</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>📊 Real Market Data Analysis</h3>
+    <p>Analyze the distribution of actual financial returns and compare with theoretical models:</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>📈 S&P 500 Returns</h4>
+        <button class="button" onclick="loadMarketData('sp500')">Load Data</button>
+        <p><small>Daily returns showing fat tails and skewness</small></p>
+      </div>
+      <div class="card">
+        <h4>💱 EUR/USD Exchange Rate</h4>
+        <button class="button" onclick="loadMarketData('forex')">Load Data</button>
+        <p><small>Currency returns with different characteristics</small></p>
+      </div>
+      <div class="card">
+        <h4>🏅 Gold Prices</h4>
+        <button class="button" onclick="loadMarketData('gold')">Load Data</button>
+        <p><small>Commodity returns and safe haven behavior</small></p>
+      </div>
+      <div class="card">
+        <h4>🚀 Tech Stock (High Vol)</h4>
+        <button class="button" onclick="loadMarketData('tech')">Load Data</button>
+        <p><small>Higher volatility with extreme movements</small></p>
+      </div>
+    </div>
+    
+    <div id="marketDataChart" style="width:100%;height:400px; margin-top: 1rem;"></div>
+  </div>
+
+  <div class="scenario" style="background: #fff8dc; border: 2px solid #ffd700;">
+    <h3>🎲 Monte Carlo Risk Simulation</h3>
+    <p>Use different PDFs to simulate portfolio returns and calculate risk metrics:</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div class="control">
+        <label for="portfolioReturn">Expected Return (%): <span id="portfolioReturnValue">8</span></label>
+        <input type="range" id="portfolioReturn" min="0" max="20" step="0.5" value="8" />
+      </div>
+      
+      <div class="control">
+        <label for="portfolioVol">Volatility (%): <span id="portfolioVolValue">15</span></label>
+        <input type="range" id="portfolioVol" min="5" max="50" step="1" value="15" />
+      </div>
+      
+      <div class="control">
+        <label for="simulationDist">Simulation Distribution:</label>
+        <select id="simulationDist" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+          <option value="normal">Normal</option>
+          <option value="student-t">Student's t (df=5)</option>
+          <option value="skewed">Skewed Normal</option>
+        </select>
+      </div>
+    </div>
+    
+    <button id="runMonteCarlo" class="button" style="margin-top: 1rem;">🎲 Run 10,000 Simulations</button>
+    
+    <div id="monteCarloResults" style="margin-top: 1rem; display: none;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+        <div class="card">
+          <h4>95% VaR</h4>
+          <p id="var95" style="font-size: 1.5rem; font-weight: bold; color: var(--error-color);">-2.8%</p>
+        </div>
+        <div class="card">
+          <h4>99% VaR</h4>
+          <p id="var99" style="font-size: 1.5rem; font-weight: bold; color: var(--error-color);">-4.1%</p>
+        </div>
+        <div class="card">
+          <h4>Expected Shortfall</h4>
+          <p id="expectedShortfall" style="font-size: 1.5rem; font-weight: bold; color: var(--error-color);">-5.2%</p>
+        </div>
+        <div class="card">
+          <h4>Max Drawdown</h4>
+          <p id="maxDrawdown" style="font-size: 1.5rem; font-weight: bold; color: var(--error-color);">-12.5%</p>
+        </div>
+      </div>
+      <div id="monteCarloChart" style="width:100%;height:400px; margin-top: 1rem;"></div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>📐 Option Pricing with Different Assumptions</h3>
+    <p>See how different PDFs affect option values using Black-Scholes variations:</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div class="control">
+        <label for="stockPrice">Stock Price ($): <span id="stockPriceValue">100</span></label>
+        <input type="range" id="stockPrice" min="50" max="200" step="1" value="100" />
+      </div>
+      
+      <div class="control">
+        <label for="strikePrice">Strike Price ($): <span id="strikePriceValue">100</span></label>
+        <input type="range" id="strikePrice" min="50" max="200" step="1" value="100" />
+      </div>
+      
+      <div class="control">
+        <label for="timeToExpiry">Time to Expiry (days): <span id="timeToExpiryValue">30</span></label>
+        <input type="range" id="timeToExpiry" min="1" max="365" step="1" value="30" />
+      </div>
+      
+      <div class="control">
+        <label for="volatility">Volatility (%): <span id="volatilityValue">20</span></label>
+        <input type="range" id="volatility" min="5" max="100" step="1" value="20" />
+      </div>
+    </div>
+    
+    <div style="margin-top: 1rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div class="card">
+          <h4>Black-Scholes (Normal)</h4>
+          <p id="bsPrice" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">$5.85</p>
+        </div>
+        <div class="card">
+          <h4>Student's t Model</h4>
+          <p id="tPrice" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">$6.12</p>
+        </div>
+        <div class="card">
+          <h4>Jump Diffusion</h4>
+          <p id="jumpPrice" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">$6.45</p>
+        </div>
+      </div>
+    </div>
+    
+    <div id="optionPayoffChart" style="width:100%;height:350px; margin-top: 1rem;"></div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🧮 PDF Calculator</h3>
+    <p>Calculate probabilities and quantiles for financial applications:</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+      <div class="control">
+        <label for="calcValue">Value (x): <span id="calcValueDisplay">0</span></label>
+        <input type="range" id="calcValue" min="-5" max="5" step="0.1" value="0" />
+      </div>
+      
+      <div class="control">
+        <label for="lowerBound">Lower Bound: <span id="lowerBoundDisplay">-1</span></label>
+        <input type="range" id="lowerBound" min="-5" max="5" step="0.1" value="-1" />
+      </div>
+      
+      <div class="control">
+        <label for="upperBound">Upper Bound: <span id="upperBoundDisplay">1</span></label>
+        <input type="range" id="upperBound" min="-5" max="5" step="0.1" value="1" />
+      </div>
+    </div>
+    
+    <div style="margin-top: 1rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div class="card">
+          <h4>PDF at x</h4>
+          <p id="pdfValue" style="font-size: 1.5rem; font-weight: bold;">0.399</p>
+        </div>
+        <div class="card">
+          <h4>CDF at x</h4>
+          <p id="cdfValue" style="font-size: 1.5rem; font-weight: bold;">0.500</p>
+        </div>
+        <div class="card">
+          <h4>P(L ≤ X ≤ U)</h4>
+          <p id="intervalProb" style="font-size: 1.5rem; font-weight: bold;">0.683</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50; margin-top: 2rem;">
+    <h3>💡 Key Financial Insights</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+      <div>
+        <h4 style="color: var(--success-color);">🎯 Why PDFs Matter in Finance:</h4>
+        <ul style="line-height: 1.8;">
+          <li><strong>Risk Quantification:</strong> VaR and tail risk measurement</li>
+          <li><strong>Option Pricing:</strong> Payoff probability calculations</li>
+          <li><strong>Portfolio Optimization:</strong> Return distribution modeling</li>
+          <li><strong>Stress Testing:</strong> Extreme scenario probabilities</li>
+          <li><strong>Regulatory Capital:</strong> Basel III risk requirements</li>
+          <li><strong>Backtesting:</strong> Model validation and performance</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color: var(--primary-color);">📈 Distribution Selection Guide:</h4>
+        <ul style="line-height: 1.8;">
+          <li><strong>Normal:</strong> Simplified models, academic theory</li>
+          <li><strong>Student's t:</strong> Fat tails, crisis periods</li>
+          <li><strong>Log-Normal:</strong> Asset prices, positive values</li>
+          <li><strong>Skewed:</strong> Asymmetric return patterns</li>
+          <li><strong>Mixed:</strong> Regime-switching models</li>
+          <li><strong>Empirical:</strong> Historical data-driven models</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>📚 Advanced Concepts</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="scenario">
+        <h4>🌊 Fat Tails and Black Swans</h4>
+        <ul>
+          <li>Normal distribution underestimates extreme events</li>
+          <li>Student's t-distribution has heavier tails</li>
+          <li>Kurtosis measures tail thickness</li>
+          <li>Critical for risk management</li>
+        </ul>
+      </div>
+      
+      <div class="scenario">
+        <h4>🔗 Copulas and Dependence</h4>
+        <ul>
+          <li>Model correlation structure separately</li>
+          <li>Gaussian vs t-copula for tail dependence</li>
+          <li>Portfolio risk aggregation</li>
+          <li>Credit risk modeling</li>
+        </ul>
+      </div>
+      
+      <div class="scenario">
+        <h4>⚡ Volatility Clustering</h4>
+        <ul>
+          <li>Conditional heteroskedasticity</li>
+          <li>GARCH model PDFs</li>
+          <li>Time-varying distributions</li>
+          <li>High-frequency trading applications</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Controls
+    const distributionSelect = document.getElementById('distributionSelect');
+    const param1Slider = document.getElementById('param1Slider');
+    const param2Slider = document.getElementById('param2Slider');
+    
+    // Monte Carlo controls
+    const portfolioReturn = document.getElementById('portfolioReturn');
+    const portfolioVol = document.getElementById('portfolioVol');
+    const simulationDist = document.getElementById('simulationDist');
+    
+    // Option pricing controls
+    const stockPrice = document.getElementById('stockPrice');
+    const strikePrice = document.getElementById('strikePrice');
+    const timeToExpiry = document.getElementById('timeToExpiry');
+    const volatility = document.getElementById('volatility');
+    
+    // Calculator controls
+    const calcValue = document.getElementById('calcValue');
+    const lowerBound = document.getElementById('lowerBound');
+    const upperBound = document.getElementById('upperBound');
+
+    // Market data examples
+    const marketData = {
+      sp500: {
+        name: 'S&P 500 Daily Returns',
+        data: generateReturns(-0.0002, 0.012, 2500, 'normal'),
+        description: 'Large-cap US equity index'
+      },
+      forex: {
+        name: 'EUR/USD Daily Returns',
+        data: generateReturns(0.0001, 0.008, 2500, 'normal'),
+        description: 'Major currency pair'
+      },
+      gold: {
+        name: 'Gold Daily Returns',
+        data: generateReturns(0.0003, 0.015, 2500, 'student-t'),
+        description: 'Precious metals commodity'
+      },
+      tech: {
+        name: 'Tech Stock Daily Returns',
+        data: generateReturns(0.0008, 0.025, 2500, 'skewed'),
+        description: 'High-growth technology stock'
+      }
+    };
+
+    function generateReturns(mean, vol, count, type) {
+      const returns = [];
+      for (let i = 0; i < count; i++) {
+        let value;
+        switch(type) {
+          case 'student-t':
+            value = studentT(5) * vol + mean;
+            break;
+          case 'skewed':
+            value = (normalRandom() + Math.abs(normalRandom()) * 0.3) * vol + mean;
+            break;
+          default:
+            value = normalRandom() * vol + mean;
+        }
+        returns.push(value);
+      }
+      return returns;
+    }
+
+    function normalRandom() {
+      let u = 0, v = 0;
+      while(u === 0) u = Math.random();
+      while(v === 0) v = Math.random();
+      return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    function studentT(df) {
+      // Simplified Student's t using normal approximation for demo
+      const z = normalRandom();
+      const chi2 = Math.pow(normalRandom(), 2);
+      return z / Math.sqrt(chi2 / df);
+    }
+
+    function updateDistribution() {
+      const distType = distributionSelect.value;
+      const param1 = parseFloat(param1Slider.value);
+      const param2 = parseFloat(param2Slider.value);
+      
+      document.getElementById('param1Value').textContent = param1.toFixed(1);
+      document.getElementById('param2Value').textContent = param2.toFixed(1);
+      
+      // Update parameter labels
+      updateParameterLabels(distType);
+      
+      // Generate PDF data
+      const x = [];
+      const y = [];
+      
+      const xMin = distType === 'lognormal' ? 0.1 : -5;
+      const xMax = distType === 'uniform' ? param2 : 5;
+      
+      for (let i = 0; i <= 200; i++) {
+        const val = xMin + (xMax - xMin) * i / 200;
+        x.push(val);
+        y.push(calculatePDF(val, distType, param1, param2));
+      }
+      
+      // Create chart
+      const trace = {
+        x: x,
+        y: y,
+        type: 'scatter',
+        mode: 'lines',
+        name: `${distType} PDF`,
+        line: { color: '#3b82f6', width: 3 }
+      };
+      
+      const layout = {
+        title: `${distType.charAt(0).toUpperCase() + distType.slice(1)} Distribution`,
+        xaxis: { title: 'Value' },
+        yaxis: { title: 'Probability Density' },
+        showlegend: false
+      };
+      
+      Plotly.newPlot('pdfChart', [trace], layout, { responsive: true });
+      
+      // Update statistics
+      updateDistributionStats(distType, param1, param2);
+      updateCalculator();
+    }
+
+    function updateParameterLabels(distType) {
+      const labels = {
+        normal: ['Mean (μ)', 'Std Dev (σ)'],
+        lognormal: ['Log Mean (μ)', 'Log Std Dev (σ)'],
+        'student-t': ['Degrees of Freedom', 'Scale'],
+        exponential: ['Rate (λ)', 'Unused'],
+        uniform: ['Lower Bound (a)', 'Upper Bound (b)'],
+        beta: ['Alpha (α)', 'Beta (β)']
+      };
+      
+      document.getElementById('param1Label').textContent = labels[distType][0];
+      document.getElementById('param2Label').textContent = labels[distType][1];
+    }
+
+    function calculatePDF(x, distType, param1, param2) {
+      switch(distType) {
+        case 'normal':
+          return normalPDF(x, param1, param2);
+        case 'lognormal':
+          return x > 0 ? (1/(x * param2 * Math.sqrt(2 * Math.PI))) * Math.exp(-Math.pow(Math.log(x) - param1, 2) / (2 * param2 * param2)) : 0;
+        case 'student-t':
+          return studentTPDF(x, param1);
+        case 'exponential':
+          return x >= 0 ? param1 * Math.exp(-param1 * x) : 0;
+        case 'uniform':
+          return (x >= param1 && x <= param2) ? 1 / (param2 - param1) : 0;
+        case 'beta':
+          return (x >= 0 && x <= 1) ? betaPDF(x, param1, param2) : 0;
+        default:
+          return 0;
+      }
+    }
+
+    function normalPDF(x, mean, stdDev) {
+      return (1 / (stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2));
+    }
+
+    function studentTPDF(x, df) {
+      // Simplified Student's t PDF
+      const gamma1 = Math.exp(logGamma((df + 1) / 2));
+      const gamma2 = Math.exp(logGamma(df / 2));
+      return gamma1 / (Math.sqrt(df * Math.PI) * gamma2) * Math.pow(1 + x * x / df, -(df + 1) / 2);
+    }
+
+    function logGamma(x) {
+      // Simplified log-gamma approximation
+      return (x - 0.5) * Math.log(x) - x + 0.5 * Math.log(2 * Math.PI);
+    }
+
+    function betaPDF(x, alpha, beta) {
+      // Simplified beta PDF
+      return Math.pow(x, alpha - 1) * Math.pow(1 - x, beta - 1);
+    }
+
+    function updateDistributionStats(distType, param1, param2) {
+      let mean, variance, skewness, kurtosis;
+      
+      switch(distType) {
+        case 'normal':
+          mean = param1;
+          variance = param2 * param2;
+          skewness = 0;
+          kurtosis = 3;
+          break;
+        case 'lognormal':
+          mean = Math.exp(param1 + param2 * param2 / 2);
+          variance = (Math.exp(param2 * param2) - 1) * Math.exp(2 * param1 + param2 * param2);
+          skewness = (Math.exp(param2 * param2) + 2) * Math.sqrt(Math.exp(param2 * param2) - 1);
+          kurtosis = Math.exp(4 * param2 * param2) + 2 * Math.exp(3 * param2 * param2) + 3 * Math.exp(2 * param2 * param2) - 6;
+          break;
+        case 'student-t':
+          mean = 0;
+          variance = param1 > 2 ? param1 / (param1 - 2) : Infinity;
+          skewness = 0;
+          kurtosis = param1 > 4 ? 6 / (param1 - 4) + 3 : Infinity;
+          break;
+        case 'exponential':
+          mean = 1 / param1;
+          variance = 1 / (param1 * param1);
+          skewness = 2;
+          kurtosis = 9;
+          break;
+        case 'uniform':
+          mean = (param1 + param2) / 2;
+          variance = Math.pow(param2 - param1, 2) / 12;
+          skewness = 0;
+          kurtosis = 1.8;
+          break;
+        default:
+          mean = variance = skewness = kurtosis = 0;
+      }
+      
+      document.getElementById('distributionMean').textContent = mean.toFixed(2);
+      document.getElementById('distributionVariance').textContent = variance.toFixed(2);
+      document.getElementById('distributionSkewness').textContent = skewness.toFixed(2);
+      document.getElementById('distributionKurtosis').textContent = kurtosis.toFixed(2);
+    }
+
+    function loadMarketData(type) {
+      const data = marketData[type];
+      
+      const trace = {
+        x: data.data,
+        type: 'histogram',
+        name: data.name,
+        marker: { color: '#ef4444', opacity: 0.7 },
+        nbinsx: 50
+      };
+      
+      // Overlay normal distribution
+      const mean = data.data.reduce((sum, val) => sum + val, 0) / data.data.length;
+      const variance = data.data.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / data.data.length;
+      const stdDev = Math.sqrt(variance);
+      
+      const x = [];
+      const y = [];
+      const xMin = Math.min(...data.data);
+      const xMax = Math.max(...data.data);
+      
+      for (let i = 0; i <= 100; i++) {
+        const val = xMin + (xMax - xMin) * i / 100;
+        x.push(val);
+        y.push(normalPDF(val, mean, stdDev) * data.data.length * (xMax - xMin) / 50);
+      }
+      
+      const normalTrace = {
+        x: x,
+        y: y,
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Normal Fit',
+        line: { color: '#10b981', width: 3 }
+      };
+      
+      const layout = {
+        title: `${data.name} Distribution Analysis`,
+        xaxis: { title: 'Daily Return' },
+        yaxis: { title: 'Frequency' },
+        showlegend: true
+      };
+      
+      Plotly.newPlot('marketDataChart', [trace, normalTrace], layout, { responsive: true });
+    }
+
+    function runMonteCarloSimulation() {
+      const expectedReturn = parseFloat(portfolioReturn.value) / 100;
+      const vol = parseFloat(portfolioVol.value) / 100;
+      const dist = simulationDist.value;
+      
+      document.getElementById('portfolioReturnValue').textContent = portfolioReturn.value;
+      document.getElementById('portfolioVolValue').textContent = portfolioVol.value;
+      
+      const simulations = [];
+      for (let i = 0; i < 10000; i++) {
+        let randomValue;
+        switch(dist) {
+          case 'student-t':
+            randomValue = studentT(5) * vol + expectedReturn;
+            break;
+          case 'skewed':
+            randomValue = (normalRandom() + Math.abs(normalRandom()) * 0.3) * vol + expectedReturn;
+            break;
+          default:
+            randomValue = normalRandom() * vol + expectedReturn;
+        }
+        simulations.push(randomValue * 100); // Convert to percentage
+      }
+      
+      simulations.sort((a, b) => a - b);
+      
+      const var95 = -simulations[Math.floor(simulations.length * 0.05)];
+      const var99 = -simulations[Math.floor(simulations.length * 0.01)];
+      const expectedShortfall = -simulations.slice(0, Math.floor(simulations.length * 0.05)).reduce((sum, val) => sum + val, 0) / Math.floor(simulations.length * 0.05);
+      const maxDrawdown = -Math.min(...simulations);
+      
+      document.getElementById('var95').textContent = var95.toFixed(1) + '%';
+      document.getElementById('var99').textContent = var99.toFixed(1) + '%';
+      document.getElementById('expectedShortfall').textContent = expectedShortfall.toFixed(1) + '%';
+      document.getElementById('maxDrawdown').textContent = maxDrawdown.toFixed(1) + '%';
+      
+      const trace = {
+        x: simulations,
+        type: 'histogram',
+        name: 'Portfolio Returns',
+        marker: { color: '#3b82f6', opacity: 0.7 },
+        nbinsx: 50
+      };
+      
+      const layout = {
+        title: `Monte Carlo Simulation: ${dist} Distribution`,
+        xaxis: { title: 'Return (%)' },
+        yaxis: { title: 'Frequency' },
+        showlegend: false
+      };
+      
+      Plotly.newPlot('monteCarloChart', [trace], layout, { responsive: true });
+      document.getElementById('monteCarloResults').style.display = 'block';
+    }
+
+    function updateOptionPricing() {
+      const S = parseFloat(stockPrice.value);
+      const K = parseFloat(strikePrice.value);
+      const T = parseFloat(timeToExpiry.value) / 365;
+      const vol = parseFloat(volatility.value) / 100;
+      const r = 0.05; // Risk-free rate
+      
+      document.getElementById('stockPriceValue').textContent = S;
+      document.getElementById('strikePriceValue').textContent = K;
+      document.getElementById('timeToExpiryValue').textContent = timeToExpiry.value;
+      document.getElementById('volatilityValue').textContent = volatility.value;
+      
+      // Black-Scholes
+      const bsPrice = blackScholes(S, K, T, r, vol);
+      
+      // Student's t model (simplified - just add premium)
+      const tPrice = bsPrice * 1.05;
+      
+      // Jump diffusion (simplified - add jump premium)
+      const jumpPrice = bsPrice * 1.1;
+      
+      document.getElementById('bsPrice').textContent = '$' + bsPrice.toFixed(2);
+      document.getElementById('tPrice').textContent = '$' + tPrice.toFixed(2);
+      document.getElementById('jumpPrice').textContent = '$' + jumpPrice.toFixed(2);
+      
+      // Create payoff diagram
+      createPayoffDiagram(K, bsPrice);
+    }
+
+    function blackScholes(S, K, T, r, vol) {
+      const d1 = (Math.log(S / K) + (r + 0.5 * vol * vol) * T) / (vol * Math.sqrt(T));
+      const d2 = d1 - vol * Math.sqrt(T);
+      
+      const callPrice = S * normalCDF(d1) - K * Math.exp(-r * T) * normalCDF(d2);
+      return Math.max(0, callPrice);
+    }
+
+    function normalCDF(x) {
+      return 0.5 * (1 + erf(x / Math.sqrt(2)));
+    }
+
+    function erf(x) {
+      // Simplified error function approximation
+      const a1 =  0.254829592;
+      const a2 = -0.284496736;
+      const a3 =  1.421413741;
+      const a4 = -1.453152027;
+      const a5 =  1.061405429;
+      const p  =  0.3275911;
+      
+      const sign = x >= 0 ? 1 : -1;
+      x = Math.abs(x);
+      
+      const t = 1.0 / (1.0 + p * x);
+      const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+      
+      return sign * y;
+    }
+
+    function createPayoffDiagram(strike, premium) {
+      const spotPrices = [];
+      const payoffs = [];
+      
+      for (let S = strike * 0.5; S <= strike * 1.5; S += strike * 0.01) {
+        spotPrices.push(S);
+        payoffs.push(Math.max(S - strike, 0) - premium);
+      }
+      
+      const trace = {
+        x: spotPrices,
+        y: payoffs,
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Call Option Payoff',
+        line: { color: '#ef4444', width: 3 }
+      };
+      
+      const breakeven = {
+        x: [strike + premium, strike + premium],
+        y: [Math.min(...payoffs), Math.max(...payoffs)],
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Breakeven',
+        line: { color: '#10b981', width: 2, dash: 'dash' }
+      };
+      
+      const layout = {
+        title: 'Call Option Payoff Diagram',
+        xaxis: { title: 'Stock Price at Expiry ($)' },
+        yaxis: { title: 'Profit/Loss ($)' },
+        showlegend: true
+      };
+      
+      Plotly.newPlot('optionPayoffChart', [trace, breakeven], layout, { responsive: true });
+    }
+
+    function updateCalculator() {
+      const distType = distributionSelect.value;
+      const param1 = parseFloat(param1Slider.value);
+      const param2 = parseFloat(param2Slider.value);
+      const x = parseFloat(calcValue.value);
+      const lower = parseFloat(lowerBound.value);
+      const upper = parseFloat(upperBound.value);
+      
+      document.getElementById('calcValueDisplay').textContent = x.toFixed(1);
+      document.getElementById('lowerBoundDisplay').textContent = lower.toFixed(1);
+      document.getElementById('upperBoundDisplay').textContent = upper.toFixed(1);
+      
+      const pdfVal = calculatePDF(x, distType, param1, param2);
+      const cdfVal = calculateCDF(x, distType, param1, param2);
+      const intervalProb = calculateCDF(upper, distType, param1, param2) - calculateCDF(lower, distType, param1, param2);
+      
+      document.getElementById('pdfValue').textContent = pdfVal.toFixed(3);
+      document.getElementById('cdfValue').textContent = cdfVal.toFixed(3);
+      document.getElementById('intervalProb').textContent = intervalProb.toFixed(3);
+    }
+
+    function calculateCDF(x, distType, param1, param2) {
+      // Simplified CDF calculations for demo
+      switch(distType) {
+        case 'normal':
+          return normalCDF((x - param1) / param2);
+        case 'uniform':
+          if (x < param1) return 0;
+          if (x > param2) return 1;
+          return (x - param1) / (param2 - param1);
+        default:
+          return 0.5; // Simplified
+      }
+    }
+
+    // Event listeners
+    distributionSelect.addEventListener('change', updateDistribution);
+    param1Slider.addEventListener('input', updateDistribution);
+    param2Slider.addEventListener('input', updateDistribution);
+    
+    portfolioReturn.addEventListener('input', function() {
+      document.getElementById('portfolioReturnValue').textContent = this.value;
+    });
+    portfolioVol.addEventListener('input', function() {
+      document.getElementById('portfolioVolValue').textContent = this.value;
+    });
+    
+    document.getElementById('runMonteCarlo').addEventListener('click', runMonteCarloSimulation);
+    
+    stockPrice.addEventListener('input', updateOptionPricing);
+    strikePrice.addEventListener('input', updateOptionPricing);
+    timeToExpiry.addEventListener('input', updateOptionPricing);
+    volatility.addEventListener('input', updateOptionPricing);
+    
+    calcValue.addEventListener('input', updateCalculator);
+    lowerBound.addEventListener('input', updateCalculator);
+    upperBound.addEventListener('input', updateCalculator);
+    
+    // Initialize
+    updateDistribution();
+    updateOptionPricing();
+  </script>
+</body>
+</html>

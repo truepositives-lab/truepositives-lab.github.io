@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futures vs Forwards - Interactive Finance</title>
+    <link rel="stylesheet" href="unified-styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <nav>
+        <a href="index.html">← Back to Directory</a>
+    </nav>
+
+    <header>
+        <h1>Futures vs Forwards</h1>
+        <p class="subtitle">Understanding standardized vs customized derivative contracts</p>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2>What are Futures and Forwards?</h2>
+            <p>Both futures and forwards are derivative contracts that obligate parties to buy or sell an asset at a predetermined price on a future date. The key difference lies in standardization and where they trade.</p>
+            
+            <div class="formula-box">
+                <h3>Contract Value Formulas</h3>
+                <div class="formula">
+                    <strong>Forward Value:</strong> V = S₀ × e^(r×T) - K<br>
+                    <strong>Futures MTM:</strong> Daily P&L = (F_t - F_{t-1}) × Contract Size<br>
+                    <strong>Cost of Carry:</strong> F = S × e^((r-q)×T)
+                </div>
+                <p class="formula-note">S = Spot price, K = Strike, r = Risk-free rate, q = Dividend yield, T = Time to maturity</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Interactive Comparison</h2>
+            
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th class="futures-col">Futures</th>
+                            <th class="forwards-col">Forwards</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Trading Venue</strong></td>
+                            <td class="futures-col">Exchange-traded (CME, ICE)</td>
+                            <td class="forwards-col">Over-the-counter (OTC)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Standardization</strong></td>
+                            <td class="futures-col">Standardized contracts</td>
+                            <td class="forwards-col">Customizable terms</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Counterparty Risk</strong></td>
+                            <td class="futures-col">Clearinghouse guarantee</td>
+                            <td class="forwards-col">Direct counterparty risk</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Margin Requirements</strong></td>
+                            <td class="futures-col">Initial & variation margin</td>
+                            <td class="forwards-col">Negotiable collateral</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Settlement</strong></td>
+                            <td class="futures-col">Daily mark-to-market</td>
+                            <td class="forwards-col">At maturity only</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Liquidity</strong></td>
+                            <td class="futures-col">High liquidity</td>
+                            <td class="forwards-col">Lower liquidity</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Early Exit</strong></td>
+                            <td class="futures-col">Easy to close position</td>
+                            <td class="forwards-col">Difficult to exit</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Futures Margin Calculator</h2>
+            
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="contractValue">Contract Value ($):</label>
+                    <input type="number" id="contractValue" value="100000" min="10000" max="1000000" step="1000">
+                </div>
+                
+                <div class="control-group">
+                    <label for="initialMargin">Initial Margin (%):</label>
+                    <input type="number" id="initialMargin" value="10" min="1" max="30" step="1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="maintenanceMargin">Maintenance Margin (%):</label>
+                    <input type="number" id="maintenanceMargin" value="7" min="1" max="20" step="1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="priceMove">Price Move (%):</label>
+                    <input type="number" id="priceMove" value="-5" min="-20" max="20" step="0.5">
+                </div>
+            </div>
+
+            <div class="margin-display">
+                <div class="margin-card">
+                    <h3>Initial Margin Required</h3>
+                    <div class="margin-value" id="initialMarginValue">$0</div>
+                </div>
+                <div class="margin-card">
+                    <h3>Maintenance Level</h3>
+                    <div class="margin-value" id="maintenanceValue">$0</div>
+                </div>
+                <div class="margin-card">
+                    <h3>Current P&L</h3>
+                    <div class="margin-value" id="currentPnL">$0</div>
+                </div>
+                <div class="margin-card">
+                    <h3>Margin Call?</h3>
+                    <div class="margin-value" id="marginCallStatus">No</div>
+                </div>
+            </div>
+
+            <div id="marginChart" class="chart-container"></div>
+        </div>
+
+        <div class="card">
+            <h2>Cost of Carry Model</h2>
+            
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="spotPrice">Spot Price ($):</label>
+                    <input type="number" id="spotPrice" value="100" min="50" max="200" step="1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="riskFreeRate">Risk-Free Rate (%):</label>
+                    <input type="number" id="riskFreeRate" value="5" min="0" max="10" step="0.5">
+                </div>
+                
+                <div class="control-group">
+                    <label for="dividendYield">Dividend Yield (%):</label>
+                    <input type="number" id="dividendYield" value="2" min="0" max="10" step="0.5">
+                </div>
+                
+                <div class="control-group">
+                    <label for="timeToMaturity">Time to Maturity (months):</label>
+                    <input type="number" id="timeToMaturity" value="3" min="1" max="12" step="1">
+                </div>
+            </div>
+
+            <div id="carryChart" class="chart-container"></div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Fair Forward Price</h3>
+                    <div id="fairPrice" class="highlight-value">$0.00</div>
+                </div>
+                <div class="info-card">
+                    <h3>Cost of Carry</h3>
+                    <div id="costOfCarry" class="highlight-value">$0.00</div>
+                </div>
+                <div class="info-card">
+                    <h3>Basis</h3>
+                    <div id="basis" class="highlight-value">$0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Common Strategies</h2>
+            
+            <div class="strategy-grid">
+                <div class="strategy-box">
+                    <h3>Hedging with Futures</h3>
+                    <p><strong>Advantages:</strong></p>
+                    <ul>
+                        <li>Standardized contracts</li>
+                        <li>High liquidity</li>
+                        <li>No counterparty risk</li>
+                        <li>Easy to adjust position</li>
+                    </ul>
+                    <p><strong>Example:</strong> Airline hedging fuel costs with crude oil futures</p>
+                </div>
+                
+                <div class="strategy-box">
+                    <h3>Hedging with Forwards</h3>
+                    <p><strong>Advantages:</strong></p>
+                    <ul>
+                        <li>Perfect hedge possible</li>
+                        <li>Custom dates and amounts</li>
+                        <li>No daily margin calls</li>
+                        <li>Privacy of position</li>
+                    </ul>
+                    <p><strong>Example:</strong> Corporation hedging specific FX exposure</p>
+                </div>
+                
+                <div class="strategy-box">
+                    <h3>Speculation</h3>
+                    <p><strong>Futures Preferred:</strong></p>
+                    <ul>
+                        <li>Leverage through margin</li>
+                        <li>Liquid secondary market</li>
+                        <li>Transparent pricing</li>
+                        <li>Multiple expiries available</li>
+                    </ul>
+                    <p><strong>Risk:</strong> Daily margin calls can force position closure</p>
+                </div>
+                
+                <div class="strategy-box">
+                    <h3>Arbitrage</h3>
+                    <p><strong>Cash-and-Carry:</strong></p>
+                    <ul>
+                        <li>Buy spot, sell futures</li>
+                        <li>Profit = F - S × e^(r×T)</li>
+                        <li>Risk-free if properly executed</li>
+                        <li>Limited by transaction costs</li>
+                    </ul>
+                    <p><strong>Reverse:</strong> Short spot, buy futures when F < theoretical</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Convergence at Expiration</h2>
+            <p>Explore how futures prices converge to spot prices as expiration approaches:</p>
+            
+            <div id="convergenceChart" class="chart-container"></div>
+            
+            <div class="insight-box">
+                <h3>Key Insights</h3>
+                <ul>
+                    <li><strong>Basis Risk:</strong> The difference between spot and futures prices</li>
+                    <li><strong>Convergence:</strong> Futures price equals spot price at expiration</li>
+                    <li><strong>Contango:</strong> Futures price > Spot price (positive carry market)</li>
+                    <li><strong>Backwardation:</strong> Futures price < Spot price (negative carry market)</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Calculate margin requirements
+        function updateMarginCalculator() {
+            const contractValue = parseFloat(document.getElementById('contractValue').value);
+            const initialMarginPct = parseFloat(document.getElementById('initialMargin').value) / 100;
+            const maintenanceMarginPct = parseFloat(document.getElementById('maintenanceMargin').value) / 100;
+            const priceMovePct = parseFloat(document.getElementById('priceMove').value) / 100;
+            
+            const initialMargin = contractValue * initialMarginPct;
+            const maintenanceMargin = contractValue * maintenanceMarginPct;
+            const pnl = contractValue * priceMovePct;
+            const accountBalance = initialMargin + pnl;
+            const marginCall = accountBalance < maintenanceMargin;
+            
+            // Update display
+            document.getElementById('initialMarginValue').textContent = `$${initialMargin.toFixed(0)}`;
+            document.getElementById('maintenanceValue').textContent = `$${maintenanceMargin.toFixed(0)}`;
+            document.getElementById('currentPnL').textContent = `$${pnl.toFixed(0)}`;
+            document.getElementById('currentPnL').style.color = pnl >= 0 ? '#10b981' : '#ef4444';
+            
+            const marginCallElement = document.getElementById('marginCallStatus');
+            marginCallElement.textContent = marginCall ? 'YES - Add Funds!' : 'No';
+            marginCallElement.style.color = marginCall ? '#ef4444' : '#10b981';
+            
+            // Create margin chart
+            updateMarginChart(contractValue, initialMargin, maintenanceMargin);
+        }
+
+        function updateMarginChart(contractValue, initialMargin, maintenanceMargin) {
+            const priceChanges = [];
+            const accountBalances = [];
+            const initialMarginLine = [];
+            const maintenanceMarginLine = [];
+            
+            for (let change = -20; change <= 20; change += 0.5) {
+                priceChanges.push(change);
+                const pnl = contractValue * (change / 100);
+                accountBalances.push(initialMargin + pnl);
+                initialMarginLine.push(initialMargin);
+                maintenanceMarginLine.push(maintenanceMargin);
+            }
+            
+            const traces = [
+                {
+                    x: priceChanges,
+                    y: accountBalances,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Account Balance',
+                    line: { color: '#2563eb', width: 3 },
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(37, 99, 235, 0.1)'
+                },
+                {
+                    x: priceChanges,
+                    y: initialMarginLine,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Initial Margin',
+                    line: { color: '#10b981', width: 2, dash: 'dash' }
+                },
+                {
+                    x: priceChanges,
+                    y: maintenanceMarginLine,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Maintenance Margin',
+                    line: { color: '#ef4444', width: 2, dash: 'dash' }
+                }
+            ];
+            
+            const layout = {
+                title: 'Margin Account Balance vs Price Change',
+                xaxis: { title: 'Price Change (%)', zeroline: true },
+                yaxis: { title: 'Account Balance ($)' },
+                hovermode: 'x unified',
+                height: 400,
+                shapes: [
+                    {
+                        type: 'rect',
+                        xref: 'paper',
+                        yref: 'y',
+                        x0: 0,
+                        y0: 0,
+                        x1: 1,
+                        y1: maintenanceMargin,
+                        fillcolor: 'rgba(239, 68, 68, 0.1)',
+                        line: { width: 0 }
+                    }
+                ],
+                annotations: [
+                    {
+                        text: 'Margin Call Zone',
+                        xref: 'paper',
+                        yref: 'y',
+                        x: 0.95,
+                        y: maintenanceMargin / 2,
+                        showarrow: false,
+                        font: { color: '#ef4444' }
+                    }
+                ]
+            };
+            
+            Plotly.newPlot('marginChart', traces, layout);
+        }
+
+        // Calculate cost of carry
+        function updateCostOfCarry() {
+            const spot = parseFloat(document.getElementById('spotPrice').value);
+            const r = parseFloat(document.getElementById('riskFreeRate').value) / 100;
+            const q = parseFloat(document.getElementById('dividendYield').value) / 100;
+            const T = parseFloat(document.getElementById('timeToMaturity').value) / 12;
+            
+            const fairForward = spot * Math.exp((r - q) * T);
+            const costOfCarry = fairForward - spot;
+            const basis = fairForward - spot;
+            
+            // Update display
+            document.getElementById('fairPrice').textContent = `$${fairForward.toFixed(2)}`;
+            document.getElementById('costOfCarry').textContent = `$${costOfCarry.toFixed(2)}`;
+            document.getElementById('basis').textContent = `$${basis.toFixed(2)}`;
+            
+            // Update chart
+            updateCarryChart(spot, r, q);
+        }
+
+        function updateCarryChart(spot, r, q) {
+            const maturityRange = [];
+            const forwardPrices = [];
+            const spotLine = [];
+            
+            for (let months = 0; months <= 12; months += 0.5) {
+                maturityRange.push(months);
+                const T = months / 12;
+                forwardPrices.push(spot * Math.exp((r - q) * T));
+                spotLine.push(spot);
+            }
+            
+            const traces = [
+                {
+                    x: maturityRange,
+                    y: forwardPrices,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Forward Price',
+                    line: { color: '#2563eb', width: 3 }
+                },
+                {
+                    x: maturityRange,
+                    y: spotLine,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Spot Price',
+                    line: { color: '#10b981', width: 2, dash: 'dash' }
+                }
+            ];
+            
+            const layout = {
+                title: 'Forward Curve (Cost of Carry Model)',
+                xaxis: { title: 'Time to Maturity (months)' },
+                yaxis: { title: 'Price ($)' },
+                hovermode: 'x unified',
+                height: 400
+            };
+            
+            Plotly.newPlot('carryChart', traces, layout);
+        }
+
+        // Convergence visualization
+        function createConvergenceChart() {
+            const daysToExpiry = [];
+            const futuresPrices = [];
+            const spotPrices = [];
+            const basis = [];
+            
+            const initialSpot = 100;
+            const initialBasis = 2; // Initial futures premium
+            
+            for (let days = 90; days >= 0; days--) {
+                daysToExpiry.push(days);
+                const decay = (days / 90) * initialBasis;
+                const spotPrice = initialSpot + (Math.random() - 0.5) * 2; // Random walk
+                const futuresPrice = spotPrice + decay;
+                
+                spotPrices.push(spotPrice);
+                futuresPrices.push(futuresPrice);
+                basis.push(decay);
+            }
+            
+            const traces = [
+                {
+                    x: daysToExpiry,
+                    y: futuresPrices,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Futures Price',
+                    line: { color: '#2563eb', width: 2 }
+                },
+                {
+                    x: daysToExpiry,
+                    y: spotPrices,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Spot Price',
+                    line: { color: '#10b981', width: 2 }
+                },
+                {
+                    x: daysToExpiry,
+                    y: basis,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Basis',
+                    line: { color: '#f59e0b', width: 2 },
+                    yaxis: 'y2'
+                }
+            ];
+            
+            const layout = {
+                title: 'Futures-Spot Convergence at Expiration',
+                xaxis: { 
+                    title: 'Days to Expiration',
+                    autorange: 'reversed'
+                },
+                yaxis: { 
+                    title: 'Price ($)',
+                    side: 'left'
+                },
+                yaxis2: {
+                    title: 'Basis ($)',
+                    overlaying: 'y',
+                    side: 'right',
+                    showgrid: false
+                },
+                hovermode: 'x unified',
+                height: 400
+            };
+            
+            Plotly.newPlot('convergenceChart', traces, layout);
+        }
+
+        // Event listeners
+        document.getElementById('contractValue').addEventListener('input', updateMarginCalculator);
+        document.getElementById('initialMargin').addEventListener('input', updateMarginCalculator);
+        document.getElementById('maintenanceMargin').addEventListener('input', updateMarginCalculator);
+        document.getElementById('priceMove').addEventListener('input', updateMarginCalculator);
+
+        document.getElementById('spotPrice').addEventListener('input', updateCostOfCarry);
+        document.getElementById('riskFreeRate').addEventListener('input', updateCostOfCarry);
+        document.getElementById('dividendYield').addEventListener('input', updateCostOfCarry);
+        document.getElementById('timeToMaturity').addEventListener('input', updateCostOfCarry);
+
+        // Initial load
+        updateMarginCalculator();
+        updateCostOfCarry();
+        createConvergenceChart();
+    </script>
+
+    <style>
+        .comparison-table {
+            overflow-x: auto;
+            margin: 2rem 0;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .comparison-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .futures-col {
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .forwards-col {
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .margin-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .margin-card {
+            background: var(--gray-50);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .margin-card h3 {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-bottom: 0.5rem;
+        }
+
+        .margin-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .info-card {
+            background: var(--gray-50);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-card h3 {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-bottom: 0.5rem;
+        }
+
+        .highlight-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+            color: var(--primary);
+        }
+
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .strategy-box {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .strategy-box h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .strategy-box ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .strategy-box li {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+
+        .strategy-box p {
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .insight-box {
+            background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .insight-box h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .insight-box ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .insight-box li {
+            margin: 0.5rem 0;
+        }
+    </style>
+</body>
+</html>

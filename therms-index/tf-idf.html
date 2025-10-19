@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TF-IDF (Term Frequency-Inverse Document Frequency)</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>TF-IDF (Term Frequency-Inverse Document Frequency)</h2>
+
+  <div class="card description">
+    <h3>What is TF-IDF?</h3>
+    <p><strong>TF-IDF</strong> is a numerical statistic that reflects how important a word is to a document within a collection of documents. It combines two metrics: Term Frequency (how often a word appears in a document) and Inverse Document Frequency (how rare the word is across all documents).</p>
+    <p>This technique is fundamental in information retrieval and text mining, helping search engines rank documents, recommendation systems find similar content, and machine learning models extract features from text. TF-IDF effectively identifies words that are distinctive to specific documents while filtering out common words.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>TF-IDF = TF × IDF</strong></p>
+    <p style="margin-top: 1rem;"><strong>Term Frequency (TF):</strong></p>
+    <p><strong>TF(t,d) = (Number of times term t appears in document d) / (Total number of terms in document d)</strong></p>
+    <p style="margin-top: 1rem;"><strong>Inverse Document Frequency (IDF):</strong></p>
+    <p><strong>IDF(t) = log(Total number of documents / Number of documents containing term t)</strong></p>
+    <p style="margin-top: 1rem;"><strong>Combined Formula:</strong></p>
+    <p><strong>TF-IDF(t,d) = TF(t,d) × log(N / df(t))</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>t</strong> = term (word)</li>
+      <li><strong>d</strong> = document</li>
+      <li><strong>N</strong> = total number of documents in corpus</li>
+      <li><strong>df(t)</strong> = document frequency of term t</li>
+    </ul>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive TF-IDF Calculator</h3>
+    <p>Enter documents to calculate TF-IDF scores for each term:</p>
+
+    <div style="margin-top: 1rem;">
+      <div class="control">
+        <label for="doc1">Document 1:</label>
+        <textarea id="doc1" rows="2"
+                  style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: inherit;">The cat sat on the mat</textarea>
+      </div>
+
+      <div class="control" style="margin-top: 1rem;">
+        <label for="doc2">Document 2:</label>
+        <textarea id="doc2" rows="2"
+                  style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: inherit;">The dog sat on the log</textarea>
+      </div>
+
+      <div class="control" style="margin-top: 1rem;">
+        <label for="doc3">Document 3:</label>
+        <textarea id="doc3" rows="2"
+                  style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: inherit;">Cats and dogs are pets</textarea>
+      </div>
+
+      <div class="control" style="margin-top: 1rem;">
+        <label for="doc4">Document 4:</label>
+        <textarea id="doc4" rows="2"
+                  style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: inherit;">The mat was comfortable</textarea>
+      </div>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <h4>Try These Examples:</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+        <button onclick="loadExample('news')" style="padding: 0.5rem;">News Articles</button>
+        <button onclick="loadExample('technical')" style="padding: 0.5rem;">Technical Docs</button>
+        <button onclick="loadExample('reviews')" style="padding: 0.5rem;">Product Reviews</button>
+        <button onclick="loadExample('academic')" style="padding: 0.5rem;">Academic Papers</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📊 Corpus Statistics</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Documents</h4>
+        <p id="docCount" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">4</p>
+      </div>
+      <div class="card">
+        <h4>Unique Terms</h4>
+        <p id="uniqueTerms" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">11</p>
+      </div>
+      <div class="card">
+        <h4>Total Terms</h4>
+        <p id="totalTerms" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">20</p>
+      </div>
+      <div class="card">
+        <h4>Avg Doc Length</h4>
+        <p id="avgLength" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">5.0</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="tfidfMatrix" style="width:100%;height:500px;margin-top:2rem;"></div>
+
+  <div id="termImportance" style="width:100%;height:400px;margin-top:1rem;"></div>
+
+  <div id="documentSimilarity" style="width:100%;height:400px;margin-top:1rem;"></div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Understanding TF-IDF Components</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="scenario">
+        <h4>Term Frequency (TF)</h4>
+        <p><strong>High TF:</strong> Word appears frequently in the document</p>
+        <p><strong>Low TF:</strong> Word appears rarely in the document</p>
+        <p style="color: var(--text-tertiary); font-size: 0.875rem;">Example: "the" might have high TF but low importance</p>
+      </div>
+      <div class="scenario">
+        <h4>Inverse Document Frequency (IDF)</h4>
+        <p><strong>High IDF:</strong> Word is rare across all documents (distinctive)</p>
+        <p><strong>Low IDF:</strong> Word is common across documents (less informative)</p>
+        <p style="color: var(--text-tertiary); font-size: 0.875rem;">Example: Technical terms often have high IDF</p>
+      </div>
+      <div class="scenario">
+        <h4>TF-IDF Score</h4>
+        <p><strong>High Score:</strong> Term is frequent in document but rare overall</p>
+        <p><strong>Low Score:</strong> Term is either rare in document or common everywhere</p>
+        <p style="color: var(--text-tertiary); font-size: 0.875rem;">Best keywords have high TF-IDF scores</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise">
+    <h3>Exercise: Calculate TF-IDF</h3>
+    <div class="problem">
+      <p>Given three documents:</p>
+      <ul>
+        <li><strong>Doc 1:</strong> "machine learning is great"</li>
+        <li><strong>Doc 2:</strong> "learning python is fun"</li>
+        <li><strong>Doc 3:</strong> "machine learning with python"</li>
+      </ul>
+      <p><strong>Question:</strong> Calculate the TF-IDF score for the word "python" in Document 2.</p>
+    </div>
+
+    <button class="collapsible">Show Solution</button>
+    <div class="content">
+      <div class="solution">
+        <div class="solution-step">
+          <strong>Step 1:</strong> Calculate TF for "python" in Doc 2
+          <p>Terms in Doc 2: [learning, python, is, fun] = 4 terms</p>
+          <p>"python" appears 1 time</p>
+          <p>TF(python, Doc2) = 1/4 = 0.25</p>
+        </div>
+        <div class="solution-step">
+          <strong>Step 2:</strong> Calculate document frequency
+          <p>"python" appears in: Doc 2 and Doc 3</p>
+          <p>df(python) = 2 documents</p>
+        </div>
+        <div class="solution-step">
+          <strong>Step 3:</strong> Calculate IDF
+          <p>Total documents N = 3</p>
+          <p>IDF(python) = log(3/2) = log(1.5) ≈ 0.405</p>
+        </div>
+        <div class="solution-step">
+          <strong>Step 4:</strong> Calculate TF-IDF
+          <p>TF-IDF(python, Doc2) = TF × IDF</p>
+          <p>TF-IDF = 0.25 × 0.405 ≈ 0.101</p>
+        </div>
+        <div class="answer">
+          <strong>Answer:</strong> TF-IDF score for "python" in Document 2 is approximately 0.101
+          <p>This moderate score reflects that "python" is somewhat distinctive but not unique to Doc 2.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Applications of TF-IDF</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="scenario">
+        <h4>Search Engines</h4>
+        <p>Rank documents based on query term relevance and document distinctiveness</p>
+      </div>
+      <div class="scenario">
+        <h4>Document Clustering</h4>
+        <p>Group similar documents by converting text to TF-IDF vectors</p>
+      </div>
+      <div class="scenario">
+        <h4>Keyword Extraction</h4>
+        <p>Identify the most important terms that characterize a document</p>
+      </div>
+      <div class="scenario">
+        <h4>Content Recommendation</h4>
+        <p>Find similar articles based on TF-IDF vector similarity</p>
+      </div>
+      <div class="scenario">
+        <h4>Text Classification</h4>
+        <p>Use TF-IDF features for machine learning classifiers</p>
+      </div>
+      <div class="scenario">
+        <h4>Information Retrieval</h4>
+        <p>Match user queries with relevant documents in large corpora</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>TF-IDF Variations and Improvements</h3>
+    <div style="display: grid; gap: 1rem;">
+      <div class="highlight">
+        <h4>Common Variations:</h4>
+        <ul>
+          <li><strong>Sublinear TF scaling:</strong> TF = 1 + log(raw_count) to reduce impact of high frequencies</li>
+          <li><strong>L2 normalization:</strong> Normalize vectors to unit length for cosine similarity</li>
+          <li><strong>Smoothed IDF:</strong> IDF = log((N+1)/(df+1)) + 1 to avoid division by zero</li>
+          <li><strong>BM25:</strong> Probabilistic variant with saturation and document length normalization</li>
+        </ul>
+      </div>
+      <div class="highlight" style="border-left-color: var(--warning-color);">
+        <h4>Limitations:</h4>
+        <ul>
+          <li>Ignores word order and context (bag-of-words assumption)</li>
+          <li>No semantic understanding (synonyms treated as different terms)</li>
+          <li>Sensitive to document length without normalization</li>
+          <li>Requires entire corpus for IDF calculation</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Python Implementation Reference</h3>
+    <p>For practical implementation, you can use these Python libraries:</p>
+    <ul>
+      <li><strong>scikit-learn:</strong> Use <code>TfidfVectorizer</code> from <code>sklearn.feature_extraction.text</code></li>
+      <li><strong>NLTK:</strong> Combine with <code>TfidfVectorizer</code> for advanced preprocessing</li>
+      <li><strong>spaCy:</strong> Preprocessing with <code>spacy</code> then apply TF-IDF</li>
+      <li><strong>gensim:</strong> Use <code>TfidfModel</code> for large-scale document processing</li>
+    </ul>
+    <p style="margin-top: 1rem; color: var(--text-secondary);">Example: <code>TfidfVectorizer(max_features=100, stop_words='english')</code> for basic usage</p>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>Related Concepts</h3>
+    <ul>
+      <li><a href="cosine-distance.html">Cosine Distance</a> - Measure similarity between TF-IDF vectors</li>
+      <li><strong>Word2Vec:</strong> Dense word embeddings capturing semantic meaning</li>
+      <li><strong>BM25:</strong> Advanced ranking function based on TF-IDF principles</li>
+      <li><strong>Latent Semantic Analysis:</strong> Dimensionality reduction of TF-IDF matrices</li>
+      <li><strong>BERT/Transformers:</strong> Modern contextual embeddings beyond TF-IDF</li>
+    </ul>
+  </div>
+
+  <script>
+    // Tokenize and preprocess text
+    function tokenize(text) {
+      return text.toLowerCase()
+        .replace(/[^\w\s]/g, '')
+        .split(/\s+/)
+        .filter(word => word.length > 0);
+    }
+
+    // Calculate TF for a document
+    function calculateTF(doc) {
+      const words = tokenize(doc);
+      const tf = {};
+      const totalWords = words.length;
+
+      words.forEach(word => {
+        tf[word] = (tf[word] || 0) + 1;
+      });
+
+      // Normalize by total words
+      Object.keys(tf).forEach(word => {
+        tf[word] = tf[word] / totalWords;
+      });
+
+      return tf;
+    }
+
+    // Calculate IDF for all terms
+    function calculateIDF(documents) {
+      const N = documents.length;
+      const df = {};
+      const idf = {};
+
+      // Count document frequency
+      documents.forEach(doc => {
+        const words = new Set(tokenize(doc));
+        words.forEach(word => {
+          df[word] = (df[word] || 0) + 1;
+        });
+      });
+
+      // Calculate IDF
+      Object.keys(df).forEach(word => {
+        idf[word] = Math.log(N / df[word]);
+      });
+
+      return idf;
+    }
+
+    // Calculate TF-IDF matrix
+    function calculateTFIDF() {
+      const docs = [
+        document.getElementById('doc1').value,
+        document.getElementById('doc2').value,
+        document.getElementById('doc3').value,
+        document.getElementById('doc4').value
+      ].filter(doc => doc.trim() !== '');
+
+      if (docs.length === 0) return;
+
+      // Calculate IDF for all terms
+      const idf = calculateIDF(docs);
+      const allTerms = Object.keys(idf).sort();
+
+      // Calculate TF-IDF for each document
+      const tfidfMatrix = [];
+      const tfidfs = [];
+
+      docs.forEach((doc, docIdx) => {
+        const tf = calculateTF(doc);
+        const docTfidf = {};
+
+        allTerms.forEach(term => {
+          const tfValue = tf[term] || 0;
+          const idfValue = idf[term] || 0;
+          docTfidf[term] = tfValue * idfValue;
+        });
+
+        tfidfs.push(docTfidf);
+        tfidfMatrix.push(allTerms.map(term => docTfidf[term]));
+      });
+
+      // Update statistics
+      updateStatistics(docs, allTerms);
+
+      // Update visualizations
+      plotTFIDFMatrix(tfidfMatrix, allTerms, docs);
+      plotTermImportance(tfidfs, allTerms);
+      plotDocumentSimilarity(tfidfMatrix, docs);
+    }
+
+    // Update corpus statistics
+    function updateStatistics(docs, terms) {
+      const totalWords = docs.reduce((sum, doc) => sum + tokenize(doc).length, 0);
+      const avgLength = totalWords / docs.length;
+
+      document.getElementById('docCount').textContent = docs.length;
+      document.getElementById('uniqueTerms').textContent = terms.length;
+      document.getElementById('totalTerms').textContent = totalWords;
+      document.getElementById('avgLength').textContent = avgLength.toFixed(1);
+    }
+
+    // Plot TF-IDF matrix heatmap
+    function plotTFIDFMatrix(matrix, terms, docs) {
+      const trace = {
+        z: matrix,
+        x: terms,
+        y: docs.map((_, i) => `Doc ${i + 1}`),
+        type: 'heatmap',
+        colorscale: 'Viridis',
+        colorbar: {
+          title: 'TF-IDF<br>Score',
+          titleside: 'right'
+        },
+        hovertemplate: 'Document: %{y}<br>Term: %{x}<br>TF-IDF: %{z:.3f}<extra></extra>'
+      };
+
+      const layout = {
+        title: 'TF-IDF Matrix (Documents × Terms)',
+        xaxis: {
+          title: 'Terms',
+          tickangle: -45,
+          gridcolor: '#e2e8f0'
+        },
+        yaxis: {
+          title: 'Documents',
+          gridcolor: '#e2e8f0'
+        },
+        plot_bgcolor: '#f8fafc',
+        height: 500
+      };
+
+      Plotly.newPlot('tfidfMatrix', [trace], layout, {responsive: true});
+    }
+
+    // Plot term importance across documents
+    function plotTermImportance(tfidfs, terms) {
+      // Calculate average TF-IDF for each term
+      const avgScores = {};
+      terms.forEach(term => {
+        const scores = tfidfs.map(tfidf => tfidf[term] || 0);
+        avgScores[term] = scores.reduce((a, b) => a + b, 0) / scores.length;
+      });
+
+      // Sort by importance
+      const sortedTerms = terms.sort((a, b) => avgScores[b] - avgScores[a]).slice(0, 15);
+
+      const trace = {
+        x: sortedTerms,
+        y: sortedTerms.map(term => avgScores[term]),
+        type: 'bar',
+        marker: {
+          color: sortedTerms.map(term => avgScores[term]),
+          colorscale: 'Blues',
+          showscale: false
+        },
+        hovertemplate: 'Term: %{x}<br>Avg TF-IDF: %{y:.3f}<extra></extra>'
+      };
+
+      const layout = {
+        title: 'Top Terms by Average TF-IDF Score',
+        xaxis: {
+          title: 'Terms',
+          tickangle: -45,
+          gridcolor: '#e2e8f0'
+        },
+        yaxis: {
+          title: 'Average TF-IDF Score',
+          gridcolor: '#e2e8f0'
+        },
+        plot_bgcolor: '#f8fafc'
+      };
+
+      Plotly.newPlot('termImportance', [trace], layout, {responsive: true});
+    }
+
+    // Plot document similarity matrix
+    function plotDocumentSimilarity(matrix, docs) {
+      const n = matrix.length;
+      const similarity = [];
+
+      // Calculate cosine similarity between documents
+      for (let i = 0; i < n; i++) {
+        const row = [];
+        for (let j = 0; j < n; j++) {
+          const dotProduct = matrix[i].reduce((sum, val, k) => sum + val * matrix[j][k], 0);
+          const normI = Math.sqrt(matrix[i].reduce((sum, val) => sum + val * val, 0));
+          const normJ = Math.sqrt(matrix[j].reduce((sum, val) => sum + val * val, 0));
+
+          if (normI === 0 || normJ === 0) {
+            row.push(0);
+          } else {
+            row.push(dotProduct / (normI * normJ));
+          }
+        }
+        similarity.push(row);
+      }
+
+      const trace = {
+        z: similarity,
+        x: docs.map((_, i) => `Doc ${i + 1}`),
+        y: docs.map((_, i) => `Doc ${i + 1}`),
+        type: 'heatmap',
+        colorscale: [
+          [0, '#ef4444'],
+          [0.5, '#f59e0b'],
+          [1, '#10b981']
+        ],
+        colorbar: {
+          title: 'Similarity',
+          titleside: 'right'
+        },
+        hovertemplate: '%{y} vs %{x}<br>Similarity: %{z:.3f}<extra></extra>'
+      };
+
+      // Add text annotations
+      const annotations = [];
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          annotations.push({
+            x: `Doc ${j + 1}`,
+            y: `Doc ${i + 1}`,
+            text: similarity[i][j].toFixed(2),
+            showarrow: false,
+            font: {
+              color: similarity[i][j] > 0.5 ? 'white' : 'black'
+            }
+          });
+        }
+      }
+
+      const layout = {
+        title: 'Document Similarity Matrix (Cosine Similarity of TF-IDF Vectors)',
+        xaxis: {
+          side: 'bottom',
+          gridcolor: '#e2e8f0'
+        },
+        yaxis: {
+          autorange: 'reversed',
+          gridcolor: '#e2e8f0'
+        },
+        plot_bgcolor: '#f8fafc',
+        annotations: annotations
+      };
+
+      Plotly.newPlot('documentSimilarity', [trace], layout, {responsive: true});
+    }
+
+    // Load example documents
+    function loadExample(type) {
+      const examples = {
+        news: {
+          doc1: 'The government announced new economic policies today',
+          doc2: 'Stock markets responded positively to government announcement',
+          doc3: 'Citizens protest against new economic measures',
+          doc4: 'Economic growth forecast remains uncertain'
+        },
+        technical: {
+          doc1: 'Machine learning algorithms require training data',
+          doc2: 'Deep learning uses neural networks for pattern recognition',
+          doc3: 'Data preprocessing improves model performance',
+          doc4: 'Neural networks can learn complex patterns'
+        },
+        reviews: {
+          doc1: 'This product exceeded my expectations great quality',
+          doc2: 'Poor customer service but product works fine',
+          doc3: 'Amazing quality and fast shipping highly recommend',
+          doc4: 'Product broke after one week terrible quality'
+        },
+        academic: {
+          doc1: 'This study examines the correlation between variables',
+          doc2: 'Our research methodology involves quantitative analysis',
+          doc3: 'Results indicate significant correlation in the data',
+          doc4: 'Further research is needed to validate these findings'
+        }
+      };
+
+      if (examples[type]) {
+        document.getElementById('doc1').value = examples[type].doc1;
+        document.getElementById('doc2').value = examples[type].doc2;
+        document.getElementById('doc3').value = examples[type].doc3;
+        document.getElementById('doc4').value = examples[type].doc4;
+        calculateTFIDF();
+      }
+    }
+
+    // Event listeners
+    document.getElementById('doc1').addEventListener('input', calculateTFIDF);
+    document.getElementById('doc2').addEventListener('input', calculateTFIDF);
+    document.getElementById('doc3').addEventListener('input', calculateTFIDF);
+    document.getElementById('doc4').addEventListener('input', calculateTFIDF);
+
+    // Collapsible functionality
+    const collapsibles = document.getElementsByClassName('collapsible');
+    for (let i = 0; i < collapsibles.length; i++) {
+      collapsibles[i].addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+          content.classList.remove('active');
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+          content.classList.add('active');
+        }
+      });
+    }
+
+    // Initial calculation
+    calculateTFIDF();
+  </script>
+</body>
+</html>

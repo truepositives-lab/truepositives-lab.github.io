@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intrinsic vs Time Value - Interactive Finance</title>
+    <link rel="stylesheet" href="unified-styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <nav>
+        <a href="index.html">← Back to Directory</a>
+    </nav>
+
+    <header>
+        <h1>Intrinsic vs Time Value</h1>
+        <p class="subtitle">Understanding the components of option premium</p>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2>Option Value Components</h2>
+            <p>An option's premium consists of two components: intrinsic value and time value. Understanding these components is crucial for option trading and valuation.</p>
+            
+            <div class="formula-box">
+                <h3>Option Premium Decomposition</h3>
+                <div class="formula">
+                    <strong>Option Premium = Intrinsic Value + Time Value</strong><br><br>
+                    <strong>Call Intrinsic Value:</strong> max(S - K, 0)<br>
+                    <strong>Put Intrinsic Value:</strong> max(K - S, 0)<br>
+                    <strong>Time Value:</strong> Option Premium - Intrinsic Value
+                </div>
+                <p class="formula-note">S = Current stock price, K = Strike price</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Interactive Value Calculator</h2>
+            
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="optionType">Option Type:</label>
+                    <select id="optionType">
+                        <option value="call">Call Option</option>
+                        <option value="put">Put Option</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="spotPrice">Current Stock Price ($):</label>
+                    <input type="number" id="spotPrice" value="100" min="50" max="150" step="1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="strikePrice">Strike Price ($):</label>
+                    <input type="number" id="strikePrice" value="100" min="50" max="150" step="1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="optionPremium">Option Premium ($):</label>
+                    <input type="number" id="optionPremium" value="5" min="0" max="50" step="0.5">
+                </div>
+                
+                <div class="control-group">
+                    <label for="daysToExpiry">Days to Expiry:</label>
+                    <input type="number" id="daysToExpiry" value="30" min="0" max="365" step="1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="impliedVol">Implied Volatility (%):</label>
+                    <input type="number" id="impliedVol" value="20" min="5" max="100" step="1">
+                </div>
+            </div>
+
+            <div class="value-breakdown">
+                <div class="value-component intrinsic">
+                    <h3>Intrinsic Value</h3>
+                    <div class="value-amount" id="intrinsicValue">$0.00</div>
+                    <div class="value-percentage" id="intrinsicPercent">0%</div>
+                    <p class="value-description">Value if exercised immediately</p>
+                </div>
+                
+                <div class="value-component time">
+                    <h3>Time Value</h3>
+                    <div class="value-amount" id="timeValue">$0.00</div>
+                    <div class="value-percentage" id="timePercent">0%</div>
+                    <p class="value-description">Premium for potential future gains</p>
+                </div>
+                
+                <div class="value-component total">
+                    <h3>Total Premium</h3>
+                    <div class="value-amount" id="totalPremium">$0.00</div>
+                    <div class="moneyness" id="moneyness">At-the-Money</div>
+                </div>
+            </div>
+
+            <div id="valueChart" class="chart-container"></div>
+        </div>
+
+        <div class="card">
+            <h2>Time Decay Analysis</h2>
+            <p>Explore how time value erodes as expiration approaches:</p>
+            
+            <div class="decay-controls">
+                <label>Moneyness Scenario:</label>
+                <div class="button-group">
+                    <button onclick="analyzeTimeDecay('itm')" class="btn-primary">In-the-Money</button>
+                    <button onclick="analyzeTimeDecay('atm')" class="btn-primary">At-the-Money</button>
+                    <button onclick="analyzeTimeDecay('otm')" class="btn-primary">Out-of-the-Money</button>
+                </div>
+            </div>
+
+            <div id="timeDecayChart" class="chart-container"></div>
+            
+            <div class="insight-box">
+                <h3>Time Decay Characteristics</h3>
+                <div id="decayInsights">
+                    <ul>
+                        <li><strong>ATM Options:</strong> Have the highest time value</li>
+                        <li><strong>Deep ITM/OTM:</strong> Have minimal time value</li>
+                        <li><strong>Acceleration:</strong> Time decay accelerates near expiration</li>
+                        <li><strong>Weekend Effect:</strong> 3 days of decay from Friday to Monday</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Volatility Impact on Value</h2>
+            
+            <div class="vol-controls">
+                <label for="volRange">Volatility Range: <span id="volRangeValue">20%</span></label>
+                <input type="range" id="volRange" min="5" max="50" value="20" step="1">
+            </div>
+
+            <div id="volatilityChart" class="chart-container"></div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h4>Low Volatility (10%)</h4>
+                    <div id="lowVolMetrics"></div>
+                </div>
+                <div class="metric-card">
+                    <h4>Current Volatility</h4>
+                    <div id="currentVolMetrics"></div>
+                </div>
+                <div class="metric-card">
+                    <h4>High Volatility (40%)</h4>
+                    <div id="highVolMetrics"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Strike Selection Strategy</h2>
+            
+            <div class="strategy-grid">
+                <div class="strategy-card">
+                    <h3>Buy ITM Options</h3>
+                    <div class="pros-cons">
+                        <div class="pros">
+                            <h4>✓ Pros</h4>
+                            <ul>
+                                <li>High intrinsic value</li>
+                                <li>Less time decay risk</li>
+                                <li>Higher delta (more stock-like)</li>
+                            </ul>
+                        </div>
+                        <div class="cons">
+                            <h4>✗ Cons</h4>
+                            <ul>
+                                <li>Higher premium cost</li>
+                                <li>Lower leverage</li>
+                                <li>Less upside potential</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="strategy-card">
+                    <h3>Buy ATM Options</h3>
+                    <div class="pros-cons">
+                        <div class="pros">
+                            <h4>✓ Pros</h4>
+                            <ul>
+                                <li>Balanced risk/reward</li>
+                                <li>High gamma</li>
+                                <li>Most liquid strikes</li>
+                            </ul>
+                        </div>
+                        <div class="cons">
+                            <h4>✗ Cons</h4>
+                            <ul>
+                                <li>Highest time value</li>
+                                <li>Maximum theta decay</li>
+                                <li>50/50 chance of expiring ITM</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="strategy-card">
+                    <h3>Buy OTM Options</h3>
+                    <div class="pros-cons">
+                        <div class="pros">
+                            <h4>✓ Pros</h4>
+                            <ul>
+                                <li>Lowest premium cost</li>
+                                <li>Highest leverage</li>
+                                <li>Maximum % return potential</li>
+                            </ul>
+                        </div>
+                        <div class="cons">
+                            <h4>✗ Cons</h4>
+                            <ul>
+                                <li>100% time value</li>
+                                <li>High probability of total loss</li>
+                                <li>Low delta (less responsive)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Real-Time Market Scanner</h2>
+            <p>Analyze value composition across different strikes:</p>
+            
+            <div class="scanner-container">
+                <table class="scanner-table">
+                    <thead>
+                        <tr>
+                            <th>Strike</th>
+                            <th>Moneyness</th>
+                            <th>Premium</th>
+                            <th>Intrinsic</th>
+                            <th>Time Value</th>
+                            <th>Time %</th>
+                            <th>Days to Expiry</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scannerBody">
+                        <!-- Dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <button onclick="generateScannerData()" class="btn-primary">Refresh Scanner</button>
+        </div>
+
+        <div class="card">
+            <h2>Key Concepts</h2>
+            
+            <div class="concept-grid">
+                <div class="concept">
+                    <h3>Moneyness</h3>
+                    <p><strong>ITM (In-the-Money):</strong> Has intrinsic value > 0</p>
+                    <p><strong>ATM (At-the-Money):</strong> Strike ≈ Current price (100% time value)</p>
+                    <p><strong>OTM (Out-of-the-Money):</strong> No intrinsic value (100% time value)</p>
+                </div>
+                
+                <div class="concept">
+                    <h3>Time Value Factors</h3>
+                    <p><strong>Time to expiration:</strong> More time = higher time value</p>
+                    <p><strong>Volatility:</strong> Higher volatility = higher time value</p>
+                    <p><strong>Interest rates:</strong> Higher rates increase call time value</p>
+                    <p><strong>Dividends:</strong> Expected dividends reduce call time value</p>
+                </div>
+                
+                <div class="concept">
+                    <h3>Early Exercise</h3>
+                    <p><strong>American Calls:</strong> Rarely optimal to exercise early (lose time value)</p>
+                    <p><strong>Exception:</strong> Deep ITM calls before ex-dividend date</p>
+                    <p><strong>American Puts:</strong> May be optimal when deep ITM</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Calculate intrinsic value
+        function calculateIntrinsicValue(type, spot, strike) {
+            if (type === 'call') {
+                return Math.max(spot - strike, 0);
+            } else {
+                return Math.max(strike - spot, 0);
+            }
+        }
+
+        // Determine moneyness
+        function getMoneyness(type, spot, strike) {
+            const intrinsic = calculateIntrinsicValue(type, spot, strike);
+            const ratio = spot / strike;
+            
+            if (type === 'call') {
+                if (ratio > 1.05) return 'In-the-Money';
+                if (ratio < 0.95) return 'Out-of-the-Money';
+            } else {
+                if (ratio < 0.95) return 'In-the-Money';
+                if (ratio > 1.05) return 'Out-of-the-Money';
+            }
+            return 'At-the-Money';
+        }
+
+        // Black-Scholes functions for theoretical value
+        function normalCDF(x) {
+            const a1 =  0.254829592;
+            const a2 = -0.284496736;
+            const a3 =  1.421413741;
+            const a4 = -1.453152027;
+            const a5 =  1.061405429;
+            const p  =  0.3275911;
+            
+            const sign = x < 0 ? -1 : 1;
+            x = Math.abs(x) / Math.sqrt(2.0);
+            
+            const t = 1.0 / (1.0 + p * x);
+            const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+            
+            return 0.5 * (1.0 + sign * y);
+        }
+
+        function blackScholes(type, S, K, T, r, sigma) {
+            if (T === 0) return calculateIntrinsicValue(type, S, K);
+            
+            const d1 = (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
+            const d2 = d1 - sigma * Math.sqrt(T);
+            
+            if (type === 'call') {
+                return S * normalCDF(d1) - K * Math.exp(-r * T) * normalCDF(d2);
+            } else {
+                return K * Math.exp(-r * T) * normalCDF(-d2) - S * normalCDF(-d1);
+            }
+        }
+
+        // Update value breakdown
+        function updateValueBreakdown() {
+            const type = document.getElementById('optionType').value;
+            const spot = parseFloat(document.getElementById('spotPrice').value);
+            const strike = parseFloat(document.getElementById('strikePrice').value);
+            const premium = parseFloat(document.getElementById('optionPremium').value);
+            const days = parseFloat(document.getElementById('daysToExpiry').value);
+            const vol = parseFloat(document.getElementById('impliedVol').value) / 100;
+            
+            const intrinsicValue = calculateIntrinsicValue(type, spot, strike);
+            const timeValue = Math.max(premium - intrinsicValue, 0);
+            const moneyness = getMoneyness(type, spot, strike);
+            
+            // Update display
+            document.getElementById('intrinsicValue').textContent = `$${intrinsicValue.toFixed(2)}`;
+            document.getElementById('timeValue').textContent = `$${timeValue.toFixed(2)}`;
+            document.getElementById('totalPremium').textContent = `$${premium.toFixed(2)}`;
+            
+            const intrinsicPercent = premium > 0 ? (intrinsicValue / premium * 100) : 0;
+            const timePercent = premium > 0 ? (timeValue / premium * 100) : 0;
+            
+            document.getElementById('intrinsicPercent').textContent = `${intrinsicPercent.toFixed(1)}%`;
+            document.getElementById('timePercent').textContent = `${timePercent.toFixed(1)}%`;
+            document.getElementById('moneyness').textContent = moneyness;
+            
+            // Color coding
+            document.getElementById('moneyness').className = 'moneyness';
+            if (moneyness === 'In-the-Money') {
+                document.getElementById('moneyness').style.color = '#10b981';
+            } else if (moneyness === 'Out-of-the-Money') {
+                document.getElementById('moneyness').style.color = '#ef4444';
+            } else {
+                document.getElementById('moneyness').style.color = '#f59e0b';
+            }
+            
+            // Update chart
+            updateValueChart(type, spot, strike, days, vol);
+        }
+
+        // Update value decomposition chart
+        function updateValueChart(type, spot, strike, days, vol) {
+            const spotRange = [];
+            const intrinsicValues = [];
+            const timeValues = [];
+            const totalValues = [];
+            
+            const T = days / 365;
+            const r = 0.05; // 5% risk-free rate
+            
+            for (let s = strike * 0.7; s <= strike * 1.3; s += strike * 0.01) {
+                spotRange.push(s);
+                const intrinsic = calculateIntrinsicValue(type, s, strike);
+                const theoretical = blackScholes(type, s, strike, T, r, vol);
+                const time = Math.max(theoretical - intrinsic, 0);
+                
+                intrinsicValues.push(intrinsic);
+                timeValues.push(time);
+                totalValues.push(theoretical);
+            }
+            
+            const traces = [
+                {
+                    x: spotRange,
+                    y: intrinsicValues,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Intrinsic Value',
+                    line: { color: '#2563eb', width: 2 },
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(37, 99, 235, 0.2)'
+                },
+                {
+                    x: spotRange,
+                    y: timeValues,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Time Value',
+                    line: { color: '#10b981', width: 2 },
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(16, 185, 129, 0.2)'
+                },
+                {
+                    x: spotRange,
+                    y: totalValues,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Total Premium',
+                    line: { color: '#8b5cf6', width: 3, dash: 'dash' }
+                },
+                {
+                    x: [spot, spot],
+                    y: [0, Math.max(...totalValues)],
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Current Spot',
+                    line: { color: '#ef4444', width: 1, dash: 'dot' }
+                }
+            ];
+            
+            const layout = {
+                title: 'Option Value Decomposition',
+                xaxis: { title: 'Stock Price ($)' },
+                yaxis: { title: 'Value ($)' },
+                hovermode: 'x unified',
+                height: 400,
+                showlegend: true
+            };
+            
+            Plotly.newPlot('valueChart', traces, layout);
+        }
+
+        // Analyze time decay
+        function analyzeTimeDecay(moneyness) {
+            const type = document.getElementById('optionType').value;
+            const spot = parseFloat(document.getElementById('spotPrice').value);
+            const vol = parseFloat(document.getElementById('impliedVol').value) / 100;
+            const r = 0.05;
+            
+            let strike;
+            if (moneyness === 'itm') {
+                strike = type === 'call' ? spot * 0.9 : spot * 1.1;
+            } else if (moneyness === 'atm') {
+                strike = spot;
+            } else {
+                strike = type === 'call' ? spot * 1.1 : spot * 0.9;
+            }
+            
+            const days = [];
+            const intrinsicValues = [];
+            const timeValues = [];
+            const totalValues = [];
+            
+            for (let d = 90; d >= 0; d -= 1) {
+                days.push(d);
+                const T = d / 365;
+                const intrinsic = calculateIntrinsicValue(type, spot, strike);
+                const theoretical = blackScholes(type, spot, strike, T, r, vol);
+                const time = Math.max(theoretical - intrinsic, 0);
+                
+                intrinsicValues.push(intrinsic);
+                timeValues.push(time);
+                totalValues.push(theoretical);
+            }
+            
+            const traces = [
+                {
+                    x: days,
+                    y: intrinsicValues,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Intrinsic Value',
+                    line: { color: '#2563eb', width: 2 },
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(37, 99, 235, 0.2)'
+                },
+                {
+                    x: days,
+                    y: timeValues,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Time Value',
+                    line: { color: '#10b981', width: 2 },
+                    stackgroup: 'one'
+                },
+                {
+                    x: days,
+                    y: totalValues,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Total Premium',
+                    line: { color: '#8b5cf6', width: 3, dash: 'dash' }
+                }
+            ];
+            
+            const layout = {
+                title: `Time Decay: ${moneyness.toUpperCase()} ${type.charAt(0).toUpperCase() + type.slice(1)} Option`,
+                xaxis: { 
+                    title: 'Days to Expiration',
+                    autorange: 'reversed'
+                },
+                yaxis: { title: 'Value ($)' },
+                hovermode: 'x unified',
+                height: 400
+            };
+            
+            Plotly.newPlot('timeDecayChart', traces, layout);
+            
+            // Update insights
+            let insights = '';
+            if (moneyness === 'itm') {
+                insights = `
+                    <h4>ITM Option Time Decay</h4>
+                    <ul>
+                        <li>Intrinsic value dominates the premium</li>
+                        <li>Time value is relatively small</li>
+                        <li>Less sensitive to time decay</li>
+                        <li>Acts more like the underlying stock</li>
+                    </ul>
+                `;
+            } else if (moneyness === 'atm') {
+                insights = `
+                    <h4>ATM Option Time Decay</h4>
+                    <ul>
+                        <li>Maximum time value of all strikes</li>
+                        <li>Highest theta (time decay rate)</li>
+                        <li>Time decay accelerates dramatically near expiration</li>
+                        <li>Most sensitive to volatility changes</li>
+                    </ul>
+                `;
+            } else {
+                insights = `
+                    <h4>OTM Option Time Decay</h4>
+                    <ul>
+                        <li>100% time value (no intrinsic value)</li>
+                        <li>Entire premium decays to zero at expiration</li>
+                        <li>Percentage decay is highest</li>
+                        <li>High risk of total loss</li>
+                    </ul>
+                `;
+            }
+            
+            document.getElementById('decayInsights').innerHTML = insights;
+        }
+
+        // Update volatility impact
+        function updateVolatilityImpact() {
+            const type = document.getElementById('optionType').value;
+            const spot = parseFloat(document.getElementById('spotPrice').value);
+            const strike = parseFloat(document.getElementById('strikePrice').value);
+            const days = parseFloat(document.getElementById('daysToExpiry').value);
+            const currentVol = parseFloat(document.getElementById('volRange').value) / 100;
+            const T = days / 365;
+            const r = 0.05;
+            
+            document.getElementById('volRangeValue').textContent = `${(currentVol * 100).toFixed(0)}%`;
+            
+            // Calculate values for different volatilities
+            const volRange = [];
+            const premiums = [];
+            const intrinsicLine = [];
+            
+            for (let v = 0.05; v <= 0.5; v += 0.01) {
+                volRange.push(v * 100);
+                const premium = blackScholes(type, spot, strike, T, r, v);
+                premiums.push(premium);
+                intrinsicLine.push(calculateIntrinsicValue(type, spot, strike));
+            }
+            
+            const traces = [
+                {
+                    x: volRange,
+                    y: premiums,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Option Premium',
+                    line: { color: '#2563eb', width: 3 }
+                },
+                {
+                    x: volRange,
+                    y: intrinsicLine,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Intrinsic Value',
+                    line: { color: '#10b981', width: 2, dash: 'dash' }
+                },
+                {
+                    x: [currentVol * 100, currentVol * 100],
+                    y: [0, Math.max(...premiums)],
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Current Vol',
+                    line: { color: '#ef4444', width: 2, dash: 'dot' }
+                }
+            ];
+            
+            const layout = {
+                title: 'Volatility Impact on Option Premium',
+                xaxis: { title: 'Implied Volatility (%)' },
+                yaxis: { title: 'Option Premium ($)' },
+                hovermode: 'x unified',
+                height: 400
+            };
+            
+            Plotly.newPlot('volatilityChart', traces, layout);
+            
+            // Update metrics
+            const lowVol = blackScholes(type, spot, strike, T, r, 0.1);
+            const currentVolPremium = blackScholes(type, spot, strike, T, r, currentVol);
+            const highVol = blackScholes(type, spot, strike, T, r, 0.4);
+            const intrinsic = calculateIntrinsicValue(type, spot, strike);
+            
+            document.getElementById('lowVolMetrics').innerHTML = `
+                <p>Premium: $${lowVol.toFixed(2)}</p>
+                <p>Time Value: $${Math.max(lowVol - intrinsic, 0).toFixed(2)}</p>
+            `;
+            
+            document.getElementById('currentVolMetrics').innerHTML = `
+                <p>Premium: $${currentVolPremium.toFixed(2)}</p>
+                <p>Time Value: $${Math.max(currentVolPremium - intrinsic, 0).toFixed(2)}</p>
+            `;
+            
+            document.getElementById('highVolMetrics').innerHTML = `
+                <p>Premium: $${highVol.toFixed(2)}</p>
+                <p>Time Value: $${Math.max(highVol - intrinsic, 0).toFixed(2)}</p>
+            `;
+        }
+
+        // Generate scanner data
+        function generateScannerData() {
+            const type = document.getElementById('optionType').value;
+            const spot = parseFloat(document.getElementById('spotPrice').value);
+            const days = parseFloat(document.getElementById('daysToExpiry').value);
+            const vol = parseFloat(document.getElementById('impliedVol').value) / 100;
+            const T = days / 365;
+            const r = 0.05;
+            
+            const strikes = [
+                spot * 0.85, spot * 0.90, spot * 0.95,
+                spot, 
+                spot * 1.05, spot * 1.10, spot * 1.15
+            ];
+            
+            const tbody = document.getElementById('scannerBody');
+            tbody.innerHTML = '';
+            
+            strikes.forEach(strike => {
+                const premium = blackScholes(type, spot, strike, T, r, vol);
+                const intrinsic = calculateIntrinsicValue(type, spot, strike);
+                const timeValue = Math.max(premium - intrinsic, 0);
+                const timePercent = premium > 0 ? (timeValue / premium * 100) : 0;
+                const moneyness = getMoneyness(type, spot, strike);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>$${strike.toFixed(2)}</td>
+                    <td class="moneyness-${moneyness.toLowerCase().replace(/[- ]/g, '')}">${moneyness}</td>
+                    <td>$${premium.toFixed(2)}</td>
+                    <td>$${intrinsic.toFixed(2)}</td>
+                    <td>$${timeValue.toFixed(2)}</td>
+                    <td>${timePercent.toFixed(1)}%</td>
+                    <td>${days}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Event listeners
+        document.getElementById('optionType').addEventListener('change', updateValueBreakdown);
+        document.getElementById('spotPrice').addEventListener('input', updateValueBreakdown);
+        document.getElementById('strikePrice').addEventListener('input', updateValueBreakdown);
+        document.getElementById('optionPremium').addEventListener('input', updateValueBreakdown);
+        document.getElementById('daysToExpiry').addEventListener('input', updateValueBreakdown);
+        document.getElementById('impliedVol').addEventListener('input', updateValueBreakdown);
+        document.getElementById('volRange').addEventListener('input', updateVolatilityImpact);
+
+        // Initial load
+        updateValueBreakdown();
+        analyzeTimeDecay('atm');
+        updateVolatilityImpact();
+        generateScannerData();
+    </script>
+
+    <style>
+        .value-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .value-component {
+            background: linear-gradient(135deg, var(--gray-50), white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--gray-200);
+            transition: transform 0.2s;
+        }
+
+        .value-component:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .value-component.intrinsic {
+            border-left: 4px solid #2563eb;
+        }
+
+        .value-component.time {
+            border-left: 4px solid #10b981;
+        }
+
+        .value-component.total {
+            border-left: 4px solid #8b5cf6;
+        }
+
+        .value-component h3 {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-bottom: 0.5rem;
+        }
+
+        .value-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--gray-900);
+            margin: 0.5rem 0;
+        }
+
+        .value-percentage {
+            font-size: 1.1rem;
+            color: var(--gray-600);
+            margin-bottom: 0.5rem;
+        }
+
+        .value-description {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+
+        .moneyness {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .decay-controls {
+            margin-bottom: 1.5rem;
+        }
+
+        .decay-controls label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .vol-controls {
+            margin-bottom: 1.5rem;
+        }
+
+        .vol-controls label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        #volRange {
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .metric-card {
+            background: var(--gray-50);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-card h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-card p {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .strategy-card {
+            background: var(--gray-50);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .strategy-card h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .pros-cons {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .pros, .cons {
+            padding: 0.75rem;
+            border-radius: 6px;
+        }
+
+        .pros {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .cons {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .pros h4 {
+            color: #10b981;
+            margin-bottom: 0.5rem;
+        }
+
+        .cons h4 {
+            color: #ef4444;
+            margin-bottom: 0.5rem;
+        }
+
+        .pros ul, .cons ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .pros li, .cons li {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+
+        .scanner-container {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+
+        .scanner-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .scanner-table th {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .scanner-table td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .scanner-table tbody tr:hover {
+            background: var(--gray-50);
+        }
+
+        .moneyness-inthemoney {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .moneyness-atthemoney {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        .moneyness-outofthemoney {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .concept {
+            background: var(--gray-50);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .concept h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .concept p {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</body>
+</html>

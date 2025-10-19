@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mean-Variance Criterion</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Mean-Variance Criterion</h2>
+
+  <div class="card description">
+    <h3>Understanding Mean-Variance Optimization</h3>
+    <p><strong>Mean-variance criterion</strong> is the foundation of modern portfolio theory, introduced by Harry Markowitz in 1952. It provides a mathematical framework for constructing optimal portfolios by balancing expected return (mean) against risk (variance).</p>
+    <p>The criterion assumes investors are <em>risk-averse</em> and seek to maximize expected return for a given level of risk, or minimize risk for a given level of expected return.</p>
+  </div>
+
+  <div class="formula">
+    <h4>Mean-Variance Optimization Problem:</h4>
+    <p><strong>Maximize: E[Rp] - (λ/2) × Var[Rp]</strong></p>
+    <p><strong>Subject to: Σwi = 1</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>E[Rp]</strong> = Expected portfolio return = Σwi × E[Ri]</li>
+      <li><strong>Var[Rp]</strong> = Portfolio variance = ΣΣwi × wj × σij</li>
+      <li><strong>wi</strong> = Weight of asset i in the portfolio</li>
+      <li><strong>λ</strong> = Risk aversion parameter</li>
+      <li><strong>σij</strong> = Covariance between assets i and j</li>
+    </ul>
+    <div class="highlight">
+      <p><strong>Key Insight:</strong> The efficient frontier represents all optimal portfolios - those offering the highest expected return for each level of risk.</p>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>📊 Interactive Portfolio Optimizer</h3>
+    <p>Explore the efficient frontier and see how correlation and risk aversion affect optimal portfolio construction. Adjust parameters to understand the risk-return tradeoff.</p>
+  </div>
+
+  <div class="control">
+    <label for="riskAversion">Risk Aversion (λ): <span id="riskAversionValue">2.0</span></label>
+    <input type="range" id="riskAversion" min="0.1" max="10.0" step="0.1" value="2.0" />
+    <small>Higher values indicate greater risk aversion</small>
+  </div>
+
+  <div class="card">
+    <h3>🏢 Asset Universe</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div class="control">
+        <label for="stockReturn">Stock Expected Return: <span id="stockReturnValue">12.0</span>%</label>
+        <input type="range" id="stockReturn" min="5.0" max="20.0" step="0.5" value="12.0" />
+        <small>Volatility: <span id="stockVol">18%</span></small>
+      </div>
+      <div class="control">
+        <label for="bondReturn">Bond Expected Return: <span id="bondReturnValue">4.0</span>%</label>
+        <input type="range" id="bondReturn" min="1.0" max="8.0" step="0.5" value="4.0" />
+        <small>Volatility: <span id="bondVol">6%</span></small>
+      </div>
+      <div class="control">
+        <label for="correlation">Stock-Bond Correlation: <span id="correlationValue">0.2</span></label>
+        <input type="range" id="correlation" min="-0.5" max="0.8" step="0.1" value="0.2" />
+        <small>-1 (perfect negative) to +1 (perfect positive)</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="control">
+    <label for="targetReturn">Target Return for Efficient Portfolio: <span id="targetReturnValue">8.0</span>%</label>
+    <input type="range" id="targetReturn" min="3.0" max="15.0" step="0.5" value="8.0" />
+  </div>
+
+  <div class="highlight">
+    <h3>📈 Portfolio Analysis</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Optimal Allocation</h4>
+        <p><span id="stockWeight" style="font-size: 1.4rem; font-weight: 600; color: var(--primary-color);">60%</span> Stocks</p>
+        <p><span id="bondWeight" style="font-size: 1.4rem; font-weight: 600; color: var(--success-color);">40%</span> Bonds</p>
+      </div>
+      <div class="card">
+        <h4>Expected Return</h4>
+        <p id="portfolioReturn" style="font-size: 1.8rem; font-weight: 600; color: var(--primary-color);">8.8%</p>
+        <small>Weighted average return</small>
+      </div>
+      <div class="card">
+        <h4>Portfolio Risk</h4>
+        <p id="portfolioRisk" style="font-size: 1.8rem; font-weight: 600; color: var(--warning-color);">12.4%</p>
+        <small>Standard deviation</small>
+      </div>
+      <div class="card">
+        <h4>Sharpe Ratio</h4>
+        <p id="sharpeRatio" style="font-size: 1.8rem; font-weight: 600; color: var(--info-color);">0.53</p>
+        <small>Risk-adjusted return</small>
+      </div>
+      <div class="card">
+        <h4>Utility Score</h4>
+        <p id="utilityScore" style="font-size: 1.8rem; font-weight: 600; color: var(--success-color);">7.2</p>
+        <small>Mean-variance utility</small>
+      </div>
+    </div>
+  </div>
+
+  <div id="efficientFrontierPlot" style="width:100%;height:450px;"></div>
+  <div id="allocationPlot" style="width:100%;height:300px;"></div>
+
+  <div class="card">
+    <h3>🔢 Mathematical Derivation</h3>
+    <div id="calculationSteps">
+      <div class="solution-step">
+        <strong>Step 1: Portfolio Expected Return</strong>
+        <p id="step1">E[Rp] = w₁ × E[R₁] + w₂ × E[R₂] = 0.6 × 12% + 0.4 × 4% = 8.8%</p>
+      </div>
+      <div class="solution-step">
+        <strong>Step 2: Portfolio Variance Calculation</strong>
+        <p id="step2">Var[Rp] = w₁²σ₁² + w₂²σ₂² + 2w₁w₂σ₁₂</p>
+        <p id="step2detail">= 0.6² × 18² + 0.4² × 6² + 2 × 0.6 × 0.4 × (0.2 × 18 × 6)</p>
+      </div>
+      <div class="solution-step">
+        <strong>Step 3: Portfolio Standard Deviation</strong>
+        <p id="step3">σp = √Var[Rp] = √154.08 = 12.4%</p>
+      </div>
+      <div class="solution-step">
+        <strong>Step 4: Mean-Variance Utility</strong>
+        <p id="step4">U = E[Rp] - (λ/2) × Var[Rp] = 8.8% - (2.0/2) × 1.54% = 7.26%</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background-color: var(--bg-secondary); border: 2px solid var(--info-color);">
+    <h3>🎯 Key Portfolio Insights</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+      <div>
+        <h4 style="color: var(--success-color);">Diversification Benefits</h4>
+        <ul>
+          <li>Portfolio risk < weighted average risk</li>
+          <li id="diversificationBenefit">Risk reduction: 2.4 percentage points</li>
+          <li>Correlation impact on efficiency</li>
+          <li>Non-perfect correlation creates value</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color: var(--primary-color);">Optimization Results</h4>
+        <ul>
+          <li id="riskAdjustment">Risk aversion drives allocation</li>
+          <li id="correlationImpact">Lower correlation → more diversification</li>
+          <li id="efficiencyGain">Utility maximized at current allocation</li>
+          <li>Rebalancing maintains optimality</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📊 Efficient Frontier Analysis</h3>
+    <div class="control">
+      <label for="frontierPoints">Number of Frontier Points: <span id="frontierPointsValue">20</span></label>
+      <input type="range" id="frontierPoints" min="10" max="50" step="5" value="20" />
+    </div>
+    <div class="scenario">
+      <h4>Frontier Characteristics</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+        <div class="card" style="background: var(--bg-tertiary);">
+          <h5>Minimum Variance Portfolio</h5>
+          <p>Return: <span id="mvpReturn">5.8%</span></p>
+          <p>Risk: <span id="mvpRisk">5.2%</span></p>
+        </div>
+        <div class="card" style="background: var(--bg-tertiary);">
+          <h5>Maximum Sharpe Portfolio</h5>
+          <p>Return: <span id="msrReturn">9.2%</span></p>
+          <p>Risk: <span id="msrRisk">11.8%</span></p>
+        </div>
+        <div class="card" style="background: var(--bg-tertiary);">
+          <h5>Current Optimal</h5>
+          <p>Return: <span id="currentReturn">8.8%</span></p>
+          <p>Risk: <span id="currentRisk">12.4%</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>⚖️ Risk Aversion Impact Analysis</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+      <div class="scenario" style="border-left: 4px solid var(--error-color);">
+        <h4>High Risk Aversion (λ > 5)</h4>
+        <p><strong>Behavior:</strong> Conservative allocation</p>
+        <p><strong>Allocation:</strong> Heavy bond weighting (70-90%)</p>
+        <p><strong>Trade-off:</strong> Lower returns for stability</p>
+      </div>
+      <div class="scenario" style="border-left: 4px solid var(--warning-color);">
+        <h4>Moderate Risk Aversion (λ = 2-5)</h4>
+        <p><strong>Behavior:</strong> Balanced approach</p>
+        <p><strong>Allocation:</strong> Mixed portfolio (40-70% stocks)</p>
+        <p><strong>Trade-off:</strong> Reasonable risk for growth</p>
+      </div>
+      <div class="scenario" style="border-left: 4px solid var(--primary-color);">
+        <h4>Low Risk Aversion (λ < 2)</h4>
+        <p><strong>Behavior:</strong> Aggressive growth focus</p>
+        <p><strong>Allocation:</strong> Heavy stock weighting (80-100%)</p>
+        <p><strong>Trade-off:</strong> High volatility for returns</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🏗️ Real-World Applications</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+      <div class="scenario">
+        <h4>🏦 Institutional Asset Management</h4>
+        <p>Pension funds and endowments use mean-variance optimization for strategic asset allocation across asset classes.</p>
+      </div>
+      <div class="scenario">
+        <h4>🤖 Robo-Advisors</h4>
+        <p>Automated investment platforms apply modern portfolio theory to create personalized portfolios based on client risk tolerance.</p>
+      </div>
+      <div class="scenario">
+        <h4>🏢 Corporate Treasury</h4>
+        <p>Companies optimize cash management and investment of excess liquidity using mean-variance principles.</p>
+      </div>
+      <div class="scenario">
+        <h4>⚖️ Risk Budgeting</h4>
+        <p>Investment managers allocate risk budgets across strategies to maximize expected returns per unit of risk.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>⚠️ Limitations and Extensions</h3>
+    <div style="background: #fef3cd; padding: 1rem; border-radius: 0.5rem; border: 1px solid #fcd34d;">
+      <h4>Classical Mean-Variance Limitations:</h4>
+      <ul>
+        <li><strong>Static Framework:</strong> Assumes constant means, variances, and correlations</li>
+        <li><strong>Normal Distribution:</strong> Ignores skewness and kurtosis (tail risks)</li>
+        <li><strong>Single Period:</strong> Doesn't account for multi-period dynamics</li>
+        <li><strong>Parameter Sensitivity:</strong> Small input changes can dramatically alter optimal portfolios</li>
+        <li><strong>Transaction Costs:</strong> Ignores trading costs and liquidity constraints</li>
+      </ul>
+      
+      <h4 style="margin-top: 1rem;">Modern Extensions:</h4>
+      <ul>
+        <li><strong>Black-Litterman Model:</strong> Incorporates market equilibrium and investor views</li>
+        <li><strong>Multi-Factor Models:</strong> Uses factor exposures instead of simple correlations</li>
+        <li><strong>Behavioral Portfolio Theory:</strong> Accounts for cognitive biases and mental accounting</li>
+        <li><strong>Dynamic Optimization:</strong> Multi-period models with rebalancing</li>
+        <li><strong>Alternative Risk Measures:</strong> VaR, CVaR, and downside deviation</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // DOM elements
+    const riskAversion = document.getElementById('riskAversion');
+    const stockReturn = document.getElementById('stockReturn');
+    const bondReturn = document.getElementById('bondReturn');
+    const correlation = document.getElementById('correlation');
+    const targetReturn = document.getElementById('targetReturn');
+    const frontierPoints = document.getElementById('frontierPoints');
+
+    // Display elements
+    const riskAversionValue = document.getElementById('riskAversionValue');
+    const stockReturnValue = document.getElementById('stockReturnValue');
+    const bondReturnValue = document.getElementById('bondReturnValue');
+    const correlationValue = document.getElementById('correlationValue');
+    const targetReturnValue = document.getElementById('targetReturnValue');
+    const frontierPointsValue = document.getElementById('frontierPointsValue');
+
+    // Results
+    const stockWeight = document.getElementById('stockWeight');
+    const bondWeight = document.getElementById('bondWeight');
+    const portfolioReturn = document.getElementById('portfolioReturn');
+    const portfolioRisk = document.getElementById('portfolioRisk');
+    const sharpeRatio = document.getElementById('sharpeRatio');
+    const utilityScore = document.getElementById('utilityScore');
+
+    // Calculation steps
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step2detail = document.getElementById('step2detail');
+    const step3 = document.getElementById('step3');
+    const step4 = document.getElementById('step4');
+
+    // Analysis elements
+    const diversificationBenefit = document.getElementById('diversificationBenefit');
+    const riskAdjustment = document.getElementById('riskAdjustment');
+    const correlationImpact = document.getElementById('correlationImpact');
+    const efficiencyGain = document.getElementById('efficiencyGain');
+
+    // Frontier characteristics
+    const mvpReturn = document.getElementById('mvpReturn');
+    const mvpRisk = document.getElementById('mvpRisk');
+    const msrReturn = document.getElementById('msrReturn');
+    const msrRisk = document.getElementById('msrRisk');
+    const currentReturn = document.getElementById('currentReturn');
+    const currentRisk = document.getElementById('currentRisk');
+
+    // Fixed parameters
+    const stockVol = 18; // 18%
+    const bondVol = 6;   // 6%
+    const riskFreeRate = 2; // 2%
+
+    function calculateOptimalPortfolio() {
+      const lambda = parseFloat(riskAversion.value);
+      const r1 = parseFloat(stockReturn.value) / 100;
+      const r2 = parseFloat(bondReturn.value) / 100;
+      const rho = parseFloat(correlation.value);
+      const s1 = stockVol / 100;
+      const s2 = bondVol / 100;
+      
+      // Covariance matrix elements
+      const var1 = s1 * s1;
+      const var2 = s2 * s2;
+      const cov12 = rho * s1 * s2;
+      
+      // For two-asset case, optimal weights using mean-variance optimization
+      // Solving: Maximize w₁r₁ + w₂r₂ - (λ/2)[w₁²σ₁² + w₂²σ₂² + 2w₁w₂σ₁₂]
+      // Subject to: w₁ + w₂ = 1
+      
+      const A = var1;
+      const B = var2;
+      const C = cov12;
+      const D = r1 - r2;
+      
+      // Optimal weight for risky asset 1 (stocks)
+      const w1 = (D + lambda * (B - C)) / (lambda * (A + B - 2 * C));
+      const w2 = 1 - w1;
+      
+      // Constrain weights between 0 and 1 (no short selling)
+      const w1_constrained = Math.max(0, Math.min(1, w1));
+      const w2_constrained = 1 - w1_constrained;
+      
+      // Portfolio metrics
+      const portfolioExpectedReturn = w1_constrained * r1 + w2_constrained * r2;
+      const portfolioVariance = w1_constrained * w1_constrained * var1 + 
+                               w2_constrained * w2_constrained * var2 + 
+                               2 * w1_constrained * w2_constrained * cov12;
+      const portfolioStdDev = Math.sqrt(portfolioVariance);
+      
+      // Risk-adjusted metrics
+      const sharpe = (portfolioExpectedReturn - riskFreeRate/100) / portfolioStdDev;
+      const utility = portfolioExpectedReturn - (lambda / 2) * portfolioVariance;
+      
+      // Diversification benefit
+      const weightedAvgVol = w1_constrained * s1 + w2_constrained * s2;
+      const diversBenefit = weightedAvgVol - portfolioStdDev;
+      
+      return {
+        w1: w1_constrained,
+        w2: w2_constrained,
+        expectedReturn: portfolioExpectedReturn,
+        variance: portfolioVariance,
+        stdDev: portfolioStdDev,
+        sharpe: sharpe,
+        utility: utility,
+        diversificationBenefit: diversBenefit
+      };
+    }
+
+    function calculateEfficientFrontier() {
+      const r1 = parseFloat(stockReturn.value) / 100;
+      const r2 = parseFloat(bondReturn.value) / 100;
+      const rho = parseFloat(correlation.value);
+      const s1 = stockVol / 100;
+      const s2 = bondVol / 100;
+      const numPoints = parseInt(frontierPoints.value);
+      
+      const frontier = [];
+      const minReturn = Math.min(r1, r2);
+      const maxReturn = Math.max(r1, r2);
+      
+      for (let i = 0; i <= numPoints; i++) {
+        const targetRet = minReturn + (maxReturn - minReturn) * i / numPoints;
+        
+        // For target return, find minimum variance portfolio
+        // This involves solving a constrained optimization problem
+        const w1 = (targetRet - r2) / (r1 - r2);
+        const w1_constrained = Math.max(0, Math.min(1, w1));
+        const w2_constrained = 1 - w1_constrained;
+        
+        const actualReturn = w1_constrained * r1 + w2_constrained * r2;
+        const variance = w1_constrained * w1_constrained * s1 * s1 + 
+                        w2_constrained * w2_constrained * s2 * s2 + 
+                        2 * w1_constrained * w2_constrained * rho * s1 * s2;
+        const stdDev = Math.sqrt(variance);
+        
+        frontier.push({
+          expectedReturn: actualReturn,
+          stdDev: stdDev,
+          w1: w1_constrained,
+          w2: w2_constrained
+        });
+      }
+      
+      return frontier;
+    }
+
+    function findMinimumVariancePortfolio(frontier) {
+      let minVar = Infinity;
+      let mvp = null;
+      
+      frontier.forEach(point => {
+        if (point.stdDev < minVar) {
+          minVar = point.stdDev;
+          mvp = point;
+        }
+      });
+      
+      return mvp;
+    }
+
+    function findMaximumSharpePortfolio(frontier) {
+      let maxSharpe = -Infinity;
+      let msr = null;
+      
+      frontier.forEach(point => {
+        const sharpe = (point.expectedReturn - riskFreeRate/100) / point.stdDev;
+        if (sharpe > maxSharpe) {
+          maxSharpe = sharpe;
+          msr = point;
+        }
+      });
+      
+      return msr;
+    }
+
+    function updateDisplay() {
+      const optimal = calculateOptimalPortfolio();
+      const frontier = calculateEfficientFrontier();
+      const mvp = findMinimumVariancePortfolio(frontier);
+      const msr = findMaximumSharpePortfolio(frontier);
+      
+      // Update input displays
+      riskAversionValue.textContent = riskAversion.value;
+      stockReturnValue.textContent = stockReturn.value;
+      bondReturnValue.textContent = bondReturn.value;
+      correlationValue.textContent = correlation.value;
+      targetReturnValue.textContent = targetReturn.value;
+      frontierPointsValue.textContent = frontierPoints.value;
+      
+      // Update portfolio results
+      stockWeight.textContent = Math.round(optimal.w1 * 100) + '%';
+      bondWeight.textContent = Math.round(optimal.w2 * 100) + '%';
+      portfolioReturn.textContent = (optimal.expectedReturn * 100).toFixed(1) + '%';
+      portfolioRisk.textContent = (optimal.stdDev * 100).toFixed(1) + '%';
+      sharpeRatio.textContent = optimal.sharpe.toFixed(2);
+      utilityScore.textContent = (optimal.utility * 100).toFixed(1);
+      
+      // Update calculation steps
+      updateCalculationSteps(optimal);
+      
+      // Update analysis
+      updateAnalysis(optimal);
+      
+      // Update frontier characteristics
+      mvpReturn.textContent = (mvp.expectedReturn * 100).toFixed(1) + '%';
+      mvpRisk.textContent = (mvp.stdDev * 100).toFixed(1) + '%';
+      msrReturn.textContent = (msr.expectedReturn * 100).toFixed(1) + '%';
+      msrRisk.textContent = (msr.stdDev * 100).toFixed(1) + '%';
+      currentReturn.textContent = (optimal.expectedReturn * 100).toFixed(1) + '%';
+      currentRisk.textContent = (optimal.stdDev * 100).toFixed(1) + '%';
+      
+      // Update visualizations
+      updateEfficientFrontierPlot(frontier, optimal, mvp, msr);
+      updateAllocationPlot(optimal);
+    }
+
+    function updateCalculationSteps(optimal) {
+      const r1 = parseFloat(stockReturn.value);
+      const r2 = parseFloat(bondReturn.value);
+      const rho = parseFloat(correlation.value);
+      const w1 = optimal.w1;
+      const w2 = optimal.w2;
+      const lambda = parseFloat(riskAversion.value);
+      
+      step1.textContent = `E[Rp] = ${w1.toFixed(2)} × ${r1}% + ${w2.toFixed(2)} × ${r2}% = ${(optimal.expectedReturn * 100).toFixed(1)}%`;
+      
+      step2.textContent = `Var[Rp] = w₁²σ₁² + w₂²σ₂² + 2w₁w₂σ₁₂`;
+      step2detail.textContent = `= ${w1.toFixed(2)}² × ${stockVol}² + ${w2.toFixed(2)}² × ${bondVol}² + 2 × ${w1.toFixed(2)} × ${w2.toFixed(2)} × (${rho} × ${stockVol} × ${bondVol})`;
+      
+      step3.textContent = `σp = √Var[Rp] = √${(optimal.variance * 10000).toFixed(2)} = ${(optimal.stdDev * 100).toFixed(1)}%`;
+      
+      step4.textContent = `U = E[Rp] - (λ/2) × Var[Rp] = ${(optimal.expectedReturn * 100).toFixed(1)}% - (${lambda}/2) × ${(optimal.variance * 100).toFixed(2)}% = ${(optimal.utility * 100).toFixed(2)}%`;
+    }
+
+    function updateAnalysis(optimal) {
+      diversificationBenefit.textContent = `Risk reduction: ${(optimal.diversificationBenefit * 100).toFixed(1)} percentage points`;
+      
+      const lambda = parseFloat(riskAversion.value);
+      if (lambda < 2) {
+        riskAdjustment.textContent = "Low risk aversion → High stock allocation";
+      } else if (lambda > 5) {
+        riskAdjustment.textContent = "High risk aversion → Conservative allocation";
+      } else {
+        riskAdjustment.textContent = "Moderate risk aversion → Balanced allocation";
+      }
+      
+      const rho = parseFloat(correlation.value);
+      if (rho < 0) {
+        correlationImpact.textContent = "Negative correlation → Maximum diversification";
+      } else if (rho > 0.5) {
+        correlationImpact.textContent = "High correlation → Limited diversification";
+      } else {
+        correlationImpact.textContent = "Moderate correlation → Good diversification";
+      }
+      
+      efficiencyGain.textContent = `Utility score: ${(optimal.utility * 100).toFixed(1)}% (maximized)`;
+    }
+
+    function updateEfficientFrontierPlot(frontier, optimal, mvp, msr) {
+      const frontierTrace = {
+        x: frontier.map(p => p.stdDev * 100),
+        y: frontier.map(p => p.expectedReturn * 100),
+        mode: 'lines',
+        name: 'Efficient Frontier',
+        line: { color: 'blue', width: 3 }
+      };
+      
+      const currentPortfolio = {
+        x: [optimal.stdDev * 100],
+        y: [optimal.expectedReturn * 100],
+        mode: 'markers',
+        name: 'Current Optimal',
+        marker: { size: 15, color: 'red', symbol: 'star' }
+      };
+      
+      const mvpPoint = {
+        x: [mvp.stdDev * 100],
+        y: [mvp.expectedReturn * 100],
+        mode: 'markers',
+        name: 'Min Variance',
+        marker: { size: 12, color: 'green', symbol: 'diamond' }
+      };
+      
+      const msrPoint = {
+        x: [msr.stdDev * 100],
+        y: [msr.expectedReturn * 100],
+        mode: 'markers',
+        name: 'Max Sharpe',
+        marker: { size: 12, color: 'orange', symbol: 'square' }
+      };
+      
+      // Capital Allocation Line (CAL) from risk-free rate through max Sharpe portfolio
+      const calTrace = {
+        x: [0, msr.stdDev * 100 * 1.5],
+        y: [riskFreeRate, riskFreeRate + (msr.expectedReturn * 100 - riskFreeRate) * 1.5],
+        mode: 'lines',
+        name: 'Capital Allocation Line',
+        line: { color: 'purple', width: 2, dash: 'dash' }
+      };
+      
+      // Individual assets
+      const stockPoint = {
+        x: [stockVol],
+        y: [parseFloat(stockReturn.value)],
+        mode: 'markers',
+        name: 'Stock',
+        marker: { size: 10, color: 'darkblue', symbol: 'circle' }
+      };
+      
+      const bondPoint = {
+        x: [bondVol],
+        y: [parseFloat(bondReturn.value)],
+        mode: 'markers',
+        name: 'Bond',
+        marker: { size: 10, color: 'darkgreen', symbol: 'circle' }
+      };
+      
+      const layout = {
+        title: 'Efficient Frontier and Optimal Portfolios',
+        xaxis: { 
+          title: 'Risk (Standard Deviation %)',
+          range: [0, Math.max(stockVol, optimal.stdDev * 100) * 1.2]
+        },
+        yaxis: { 
+          title: 'Expected Return (%)',
+          range: [0, Math.max(parseFloat(stockReturn.value), optimal.expectedReturn * 100) * 1.1]
+        },
+        annotations: [
+          {
+            x: optimal.stdDev * 100,
+            y: optimal.expectedReturn * 100 + 0.5,
+            text: `λ=${riskAversion.value}<br>Utility=${(optimal.utility * 100).toFixed(1)}%`,
+            showarrow: true,
+            arrowhead: 2,
+            arrowcolor: 'red'
+          }
+        ]
+      };
+      
+      Plotly.newPlot('efficientFrontierPlot', [frontierTrace, currentPortfolio, mvpPoint, msrPoint, calTrace, stockPoint, bondPoint], layout, { responsive: true });
+    }
+
+    function updateAllocationPlot(optimal) {
+      const data = [{
+        values: [optimal.w1 * 100, optimal.w2 * 100],
+        labels: ['Stocks', 'Bonds'],
+        type: 'pie',
+        hole: 0.4,
+        marker: {
+          colors: ['#3b82f6', '#10b981']
+        },
+        textinfo: 'label+percent',
+        textposition: 'outside'
+      }];
+
+      const layout = {
+        title: 'Optimal Portfolio Allocation',
+        annotations: [{
+          font: { size: 14, color: 'black' },
+          showarrow: false,
+          text: `Risk: ${(optimal.stdDev * 100).toFixed(1)}%<br>Return: ${(optimal.expectedReturn * 100).toFixed(1)}%`,
+          x: 0.5,
+          y: 0.5
+        }],
+        showlegend: false
+      };
+
+      Plotly.newPlot('allocationPlot', data, layout, { responsive: true });
+    }
+
+    // Event listeners
+    riskAversion.addEventListener('input', updateDisplay);
+    stockReturn.addEventListener('input', updateDisplay);
+    bondReturn.addEventListener('input', updateDisplay);
+    correlation.addEventListener('input', updateDisplay);
+    targetReturn.addEventListener('input', updateDisplay);
+    frontierPoints.addEventListener('input', updateDisplay);
+
+    // Initialize
+    updateDisplay();
+  </script>
+</body>
+</html>

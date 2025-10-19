@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Box Plot</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Box Plot (Box-and-Whisker Plot)</h2>
+
+  <div class="card description">
+    <h3>What is a Box Plot?</h3>
+    <p>A <strong>box plot</strong> is a visual summary of a dataset based on the five-number summary. It shows the distribution of data through quartiles and highlights outliers.</p>
+    <p>Box plots are particularly useful for comparing distributions between different groups and identifying outliers at a glance.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Components of a Box Plot:</strong></p>
+    <ul>
+      <li><strong>Box:</strong> Extends from Q1 to Q3 (contains middle 50% of data)</li>
+      <li><strong>Median Line:</strong> Line inside the box showing the median (Q2)</li>
+      <li><strong>Whiskers:</strong> Lines extending from box to min/max values (excluding outliers)</li>
+      <li><strong>Outliers:</strong> Individual points beyond 1.5 × IQR from Q1 or Q3</li>
+    </ul>
+    <p><strong>Outlier Definition:</strong> Values < Q1 - 1.5×IQR or > Q3 + 1.5×IQR</p>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive Box Plot Explorer</h3>
+    <p>Enter your data and see how the box plot represents it:</p>
+
+    <div class="control">
+      <label for="dataInput">Enter comma-separated values:</label>
+      <input type="text" id="dataInput" value="30, 52, 58, 62, 65, 68, 70, 72, 74, 75, 76, 78, 80, 82, 85, 88, 92, 95, 110, 130"
+             style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+      <small>Try adding outliers to see how they appear</small>
+    </div>
+  </div>
+
+  <div id="boxPlotVisualization" style="width:100%;height:600px;"></div>
+
+  <div class="highlight">
+    <h3>📊 Box Plot Statistics</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Five-Number Summary</h4>
+        <p><strong>Min:</strong> <span id="minValue">0</span></p>
+        <p><strong>Q1:</strong> <span id="q1Value">0</span></p>
+        <p><strong>Median:</strong> <span id="medianValue">0</span></p>
+        <p><strong>Q3:</strong> <span id="q3Value">0</span></p>
+        <p><strong>Max:</strong> <span id="maxValue">0</span></p>
+      </div>
+      <div class="card">
+        <h4>IQR and Fences</h4>
+        <p><strong>IQR:</strong> <span id="iqrValue">0</span></p>
+        <p><strong>Lower Fence:</strong> <span id="lowerFence">0</span></p>
+        <p><strong>Upper Fence:</strong> <span id="upperFence">0</span></p>
+        <p><strong>Lower Whisker:</strong> <span id="lowerWhisker">0</span></p>
+        <p><strong>Upper Whisker:</strong> <span id="upperWhisker">0</span></p>
+      </div>
+      <div class="card">
+        <h4>Outliers</h4>
+        <p><strong>Number of Outliers:</strong> <span id="outlierCount">0</span></p>
+        <p><strong>Outlier Values:</strong></p>
+        <p id="outlierValues" style="font-size: 0.875rem;">None</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background: #f0f8ff; border: 2px solid #3b82f6;">
+    <h3>📐 Anatomy of a Box Plot</h3>
+    <div id="anatomyPlot" style="width:100%;height:350px;"></div>
+    <p style="margin-top: 1rem;">The diagram above shows each component of a box plot and what it represents.</p>
+  </div>
+
+  <div class="scenario">
+    <h3>🔄 Compare Different Distributions</h3>
+    <p>See how box plots reveal different distribution shapes:</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Normal</h4>
+        <button class="button" onclick="loadExample('normal')">Load Example</button>
+        <p><small>Symmetric distribution</small></p>
+      </div>
+      <div class="card">
+        <h4>Right-Skewed</h4>
+        <button class="button" onclick="loadExample('rightSkewed')">Load Example</button>
+        <p><small>Long tail to the right</small></p>
+      </div>
+      <div class="card">
+        <h4>Left-Skewed</h4>
+        <button class="button" onclick="loadExample('leftSkewed')">Load Example</button>
+        <p><small>Long tail to the left</small></p>
+      </div>
+      <div class="card">
+        <h4>Bimodal</h4>
+        <button class="button" onclick="loadExample('bimodal')">Load Example</button>
+        <p><small>Two peaks</small></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="comparisonPlot" style="width:100%;height:400px;"></div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🎨 Interpreting Box Plots</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+      <div>
+        <h4>What to Look For:</h4>
+        <ul>
+          <li><strong>Center:</strong> The median line shows the middle value</li>
+          <li><strong>Spread:</strong> Box width (IQR) shows variability</li>
+          <li><strong>Skewness:</strong> Asymmetric box or whiskers</li>
+          <li><strong>Outliers:</strong> Individual points beyond whiskers</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Distribution Shapes:</h4>
+        <ul>
+          <li><strong>Symmetric:</strong> Median centered, equal whiskers</li>
+          <li><strong>Right-skewed:</strong> Longer upper whisker</li>
+          <li><strong>Left-skewed:</strong> Longer lower whisker</li>
+          <li><strong>Heavy-tailed:</strong> Many outliers</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background: #fff0f0; border: 2px solid #ff6b6b;">
+    <h3>⚠️ Common Misconceptions</h3>
+    <ul>
+      <li>The box does NOT contain 50% of all possible values - it contains the middle 50% of the observed data</li>
+      <li>Whiskers do NOT always extend to min/max - they stop at the fence (1.5×IQR)</li>
+      <li>Outliers are NOT necessarily errors - they're just unusual values worth investigating</li>
+      <li>Box plots do NOT show the shape of the distribution - use histograms for that</li>
+    </ul>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50; margin-top: 2rem;">
+    <h3>💡 When to Use Box Plots</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+      <div>
+        <h4 style="color: var(--success-color);">✓ Good for:</h4>
+        <ul>
+          <li>Comparing multiple groups</li>
+          <li>Identifying outliers quickly</li>
+          <li>Seeing quartiles at a glance</li>
+          <li>Assessing symmetry/skewness</li>
+          <li>Compact data summary</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color: var(--error-color);">✗ Not ideal for:</h4>
+        <ul>
+          <li>Small datasets (< 20 points)</li>
+          <li>Showing exact distribution shape</li>
+          <li>Multimodal distributions</li>
+          <li>Time series data</li>
+          <li>Precise values</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const dataInput = document.getElementById('dataInput');
+    let currentData = [];
+
+    // Example datasets
+    const examples = {
+      normal: [48, 52, 55, 58, 60, 62, 64, 65, 66, 68, 70, 72, 74, 75, 77, 78, 80, 82, 85, 88],
+      rightSkewed: [10, 12, 15, 18, 20, 22, 25, 28, 30, 35, 40, 45, 55, 70, 95, 150, 220, 350],
+      leftSkewed: [5, 15, 35, 55, 70, 82, 85, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99],
+      bimodal: [20, 22, 24, 25, 26, 28, 30, 32, 55, 57, 59, 60, 62, 64, 66, 68, 70, 72, 74, 76]
+    };
+
+    function parseData(input) {
+      return input.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+    }
+
+    function calculateQuantile(data, p) {
+      if (data.length === 0) return 0;
+      const sorted = [...data].sort((a, b) => a - b);
+      const pos = (sorted.length + 1) * p;
+      const base = Math.floor(pos) - 1;
+      const rest = pos - Math.floor(pos);
+
+      if (base < 0) return sorted[0];
+      if (base >= sorted.length - 1) return sorted[sorted.length - 1];
+
+      return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+    }
+
+    function updateDisplay() {
+      const rawData = parseData(dataInput.value);
+      currentData = [...rawData];
+
+      if (rawData.length === 0) return;
+
+      const sorted = [...rawData].sort((a, b) => a - b);
+
+      // Calculate statistics
+      const stats = {
+        min: Math.min(...rawData),
+        q1: calculateQuantile(rawData, 0.25),
+        median: calculateQuantile(rawData, 0.5),
+        q3: calculateQuantile(rawData, 0.75),
+        max: Math.max(...rawData)
+      };
+
+      stats.iqr = stats.q3 - stats.q1;
+      stats.lowerFence = stats.q1 - 1.5 * stats.iqr;
+      stats.upperFence = stats.q3 + 1.5 * stats.iqr;
+
+      // Find actual whisker ends (furthest non-outlier points)
+      const nonOutliers = rawData.filter(x => x >= stats.lowerFence && x <= stats.upperFence);
+      stats.lowerWhisker = Math.min(...nonOutliers);
+      stats.upperWhisker = Math.max(...nonOutliers);
+
+      // Find outliers
+      stats.outliers = rawData.filter(x => x < stats.lowerFence || x > stats.upperFence);
+
+      // Update displays
+      updateStatistics(stats);
+
+      // Create visualizations
+      createBoxPlot(rawData, stats);
+      createAnatomyPlot(stats);
+      createComparisonPlot();
+    }
+
+    function updateStatistics(stats) {
+      document.getElementById('minValue').textContent = stats.min.toFixed(2);
+      document.getElementById('q1Value').textContent = stats.q1.toFixed(2);
+      document.getElementById('medianValue').textContent = stats.median.toFixed(2);
+      document.getElementById('q3Value').textContent = stats.q3.toFixed(2);
+      document.getElementById('maxValue').textContent = stats.max.toFixed(2);
+      document.getElementById('iqrValue').textContent = stats.iqr.toFixed(2);
+      document.getElementById('lowerFence').textContent = stats.lowerFence.toFixed(2);
+      document.getElementById('upperFence').textContent = stats.upperFence.toFixed(2);
+      document.getElementById('lowerWhisker').textContent = stats.lowerWhisker.toFixed(2);
+      document.getElementById('upperWhisker').textContent = stats.upperWhisker.toFixed(2);
+      document.getElementById('outlierCount').textContent = stats.outliers.length;
+      document.getElementById('outlierValues').innerHTML =
+        stats.outliers.length > 0
+          ? stats.outliers.map(x => `<span class="category" style="background: var(--error-color); margin: 2px;">${x.toFixed(2)}</span>`).join(' ')
+          : 'None';
+    }
+
+    function createBoxPlot(data, stats) {
+      const trace1 = {
+        y: data,
+        type: 'box',
+        name: 'Data',
+        boxpoints: 'all',
+        jitter: 0.3,
+        pointpos: -1.8,
+        marker: { color: '#3b82f6' },
+        line: { width: 2 },
+        fillcolor: 'rgba(59, 130, 246, 0.5)'
+      };
+
+      const layout = {
+        title: 'Interactive Box Plot of Your Data',
+        yaxis: {
+          title: 'Value',
+          zeroline: false
+        },
+        showlegend: false,
+        hovermode: 'closest'
+      };
+
+      Plotly.newPlot('boxPlotVisualization', [trace1], layout, { responsive: true });
+    }
+
+    function createAnatomyPlot(stats) {
+      // Create an annotated box plot showing all components
+      const yValues = [stats.lowerWhisker, stats.q1, stats.median, stats.q3, stats.upperWhisker];
+
+      const trace = {
+        x: ['Box Plot', 'Box Plot', 'Box Plot', 'Box Plot', 'Box Plot'],
+        y: yValues,
+        type: 'box',
+        boxpoints: false,
+        marker: { color: '#10b981' },
+        line: { width: 2 },
+        fillcolor: 'rgba(16, 185, 129, 0.5)'
+      };
+
+      const annotations = [
+        {
+          x: 0.7,
+          y: stats.upperWhisker,
+          text: `Upper Whisker<br>${stats.upperWhisker.toFixed(2)}`,
+          showarrow: true,
+          arrowhead: 2,
+          ax: 50,
+          ay: 0
+        },
+        {
+          x: -0.7,
+          y: stats.q3,
+          text: `Q3 (75th percentile)<br>${stats.q3.toFixed(2)}`,
+          showarrow: true,
+          arrowhead: 2,
+          ax: -50,
+          ay: 0
+        },
+        {
+          x: 0.7,
+          y: stats.median,
+          text: `Median<br>${stats.median.toFixed(2)}`,
+          showarrow: true,
+          arrowhead: 2,
+          ax: 50,
+          ay: 0
+        },
+        {
+          x: -0.7,
+          y: stats.q1,
+          text: `Q1 (25th percentile)<br>${stats.q1.toFixed(2)}`,
+          showarrow: true,
+          arrowhead: 2,
+          ax: -50,
+          ay: 0
+        },
+        {
+          x: 0.7,
+          y: stats.lowerWhisker,
+          text: `Lower Whisker<br>${stats.lowerWhisker.toFixed(2)}`,
+          showarrow: true,
+          arrowhead: 2,
+          ax: 50,
+          ay: 0
+        },
+        {
+          x: 0,
+          y: (stats.q1 + stats.q3) / 2,
+          text: `IQR<br>(Box Height)<br>${stats.iqr.toFixed(2)}`,
+          showarrow: false,
+          font: { size: 14, color: 'white' },
+          bgcolor: 'rgba(16, 185, 129, 0.8)',
+          borderpad: 4
+        }
+      ];
+
+      const layout = {
+        title: 'Anatomy of a Box Plot',
+        yaxis: {
+          title: 'Value',
+          zeroline: false
+        },
+        xaxis: {
+          showticklabels: false
+        },
+        annotations: annotations,
+        showlegend: false,
+        margin: { l: 100, r: 100 }
+      };
+
+      Plotly.newPlot('anatomyPlot', [trace], layout, { responsive: true });
+    }
+
+    function createComparisonPlot() {
+      // Show multiple box plots for comparison
+      const distributions = {
+        'Normal': generateNormal(100, 50, 10),
+        'Right-Skewed': generateRightSkewed(100),
+        'Left-Skewed': generateLeftSkewed(100),
+        'Uniform': generateUniform(100, 20, 80)
+      };
+
+      const traces = Object.entries(distributions).map(([name, data]) => ({
+        y: data,
+        type: 'box',
+        name: name,
+        boxpoints: false
+      }));
+
+      const layout = {
+        title: 'Comparing Different Distribution Shapes',
+        yaxis: { title: 'Value' },
+        showlegend: false
+      };
+
+      Plotly.newPlot('comparisonPlot', traces, layout, { responsive: true });
+    }
+
+    // Helper functions to generate different distributions
+    function generateNormal(n, mean, std) {
+      const data = [];
+      for (let i = 0; i < n; i++) {
+        // Box-Muller transform
+        const u1 = Math.random();
+        const u2 = Math.random();
+        const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        data.push(mean + z * std);
+      }
+      return data;
+    }
+
+    function generateRightSkewed(n) {
+      const data = [];
+      for (let i = 0; i < n; i++) {
+        // Exponential distribution
+        data.push(-Math.log(1 - Math.random()) * 20 + 10);
+      }
+      return data;
+    }
+
+    function generateLeftSkewed(n) {
+      const data = [];
+      for (let i = 0; i < n; i++) {
+        // Reflected exponential
+        data.push(100 - (-Math.log(1 - Math.random()) * 20));
+      }
+      return data;
+    }
+
+    function generateUniform(n, min, max) {
+      const data = [];
+      for (let i = 0; i < n; i++) {
+        data.push(min + Math.random() * (max - min));
+      }
+      return data;
+    }
+
+    function loadExample(type) {
+      const data = examples[type];
+      dataInput.value = data.join(', ');
+      updateDisplay();
+    }
+
+    // Event listeners
+    dataInput.addEventListener('input', updateDisplay);
+
+    // Initialize
+    updateDisplay();
+  </script>
+</body>
+</html>

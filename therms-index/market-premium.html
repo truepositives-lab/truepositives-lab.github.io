@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Premium</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Market Premium</h2>
+
+  <div class="card description">
+    <h3>Understanding Market Premium</h3>
+    <p><strong>Market premium</strong> (also called equity risk premium) is the extra return investors demand for taking on the risk of investing in the stock market instead of risk-free assets like government bonds.</p>
+    <p>It represents the compensation investors require for bearing systematic market risk that cannot be diversified away.</p>
+  </div>
+
+  <div class="formula">
+    <h4>Market Premium Formula:</h4>
+    <p><strong>Market Premium = E(Rm) - Rf</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>E(Rm)</strong> = Expected return of the market portfolio</li>
+      <li><strong>Rf</strong> = Risk-free rate (typically government bond yield)</li>
+    </ul>
+    <div class="highlight">
+      <p><strong>Alternative calculation using historical data:</strong></p>
+      <p><strong>Historical Market Premium = Average Market Return - Average Risk-free Rate</strong></p>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>📊 Interactive Market Premium Calculator</h3>
+    <p>Explore how different market conditions affect the market premium. Adjust the parameters to see real-time calculations and visualizations.</p>
+  </div>
+
+  <div class="control">
+    <label for="riskFreeRate">Risk-Free Rate (Rf): <span id="rfValue">3.0</span>%</label>
+    <input type="range" id="riskFreeRate" min="0.5" max="8.0" step="0.1" value="3.0" />
+    <small>Typically based on 10-year government bond yields</small>
+  </div>
+
+  <div class="control">
+    <label for="marketReturn">Expected Market Return (E(Rm)): <span id="rmValue">10.0</span>%</label>
+    <input type="range" id="marketReturn" min="5.0" max="20.0" step="0.1" value="10.0" />
+    <small>Historical average for broad market indices like S&P 500</small>
+  </div>
+
+  <div class="control">
+    <label for="marketVolatility">Market Volatility (σ): <span id="volValue">15.0</span>%</label>
+    <input type="range" id="marketVolatility" min="5.0" max="40.0" step="0.5" value="15.0" />
+    <small>Standard deviation of market returns (measure of risk)</small>
+  </div>
+
+  <div class="control">
+    <label for="timeHorizon">Investment Time Horizon: <span id="timeValue">10</span> years</label>
+    <input type="range" id="timeHorizon" min="1" max="30" step="1" value="10" />
+  </div>
+
+  <div class="highlight">
+    <h3>📋 Market Premium Analysis</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Market Premium</h4>
+        <p id="premiumValue" style="font-size: 1.8rem; font-weight: 600; color: var(--primary-color);">7.0%</p>
+      </div>
+      <div class="card">
+        <h4>Sharpe Ratio</h4>
+        <p id="sharpeValue" style="font-size: 1.8rem; font-weight: 600; color: var(--success-color);">0.47</p>
+      </div>
+      <div class="card">
+        <h4>Risk-Return Ratio</h4>
+        <p id="riskReturnValue" style="font-size: 1.8rem; font-weight: 600; color: var(--info-color);">0.67</p>
+      </div>
+      <div class="card">
+        <h4>Annualized Excess</h4>
+        <p id="excessValue" style="font-size: 1.8rem; font-weight: 600; color: var(--warning-color);">$700</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="riskReturnPlot" style="width:100%;height:400px;"></div>
+  <div id="timeSeriesPlot" style="width:100%;height:350px;"></div>
+
+  <div class="card">
+    <h3>🔢 Step-by-Step Calculation</h3>
+    <div id="calculationSteps">
+      <div class="solution-step">
+        <strong>Step 1: Identify the risk-free rate</strong>
+        <p id="step1">Risk-free rate (Rf) = 3.0% (typically 10-year government bond yield)</p>
+      </div>
+      <div class="solution-step">
+        <strong>Step 2: Determine expected market return</strong>
+        <p id="step2">Expected market return E(Rm) = 10.0% (historical average or forward-looking estimate)</p>
+      </div>
+      <div class="solution-step">
+        <strong>Step 3: Calculate market premium</strong>
+        <p id="step3">Market Premium = E(Rm) - Rf = 10.0% - 3.0% = 7.0%</p>
+      </div>
+      <div class="solution-step">
+        <strong>Step 4: Calculate Sharpe ratio (risk-adjusted return)</strong>
+        <p id="step4">Sharpe Ratio = Market Premium / Market Volatility = 7.0% / 15.0% = 0.47</p>
+      </div>
+      <div class="solution-step">
+        <strong>Step 5: Interpret the results</strong>
+        <p id="step5">Investors expect 7.0% extra return annually for taking market risk instead of risk-free investment.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background-color: var(--bg-secondary); border: 2px solid var(--info-color);">
+    <h3>🧠 Market Premium Insights</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+      <div>
+        <h4 style="color: var(--success-color);">High Market Premium</h4>
+        <ul>
+          <li>Greater compensation for risk</li>
+          <li>More attractive equity investments</li>
+          <li>May indicate market stress or uncertainty</li>
+          <li>Higher expected returns</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color: var(--warning-color);">Low Market Premium</h4>
+        <ul>
+          <li>Lower compensation for risk</li>
+          <li>Less attractive equity premiums</li>
+          <li>May indicate market confidence</li>
+          <li>Lower expected excess returns</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📈 Historical Context & Scenarios</h3>
+    <div class="control">
+      <label for="scenarioSelect">Choose a market scenario:</label>
+      <select id="scenarioSelect" style="padding: 0.5rem; border-radius: 0.375rem; border: 1px solid var(--border-color); margin-bottom: 1rem;">
+        <option value="normal">Normal Market (Historical Average)</option>
+        <option value="bull">Bull Market (Low Risk Premium)</option>
+        <option value="bear">Bear Market (High Risk Premium)</option>
+        <option value="crisis">Financial Crisis (Very High Premium)</option>
+        <option value="lowRate">Low Interest Rate Environment</option>
+      </select>
+    </div>
+    
+    <div id="scenarioDescription" class="scenario">
+      <h4>Normal Market Conditions</h4>
+      <p>Typical market conditions with moderate risk premium reflecting long-term historical averages.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🎯 Real-World Applications</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+      <div class="scenario">
+        <h4>💼 Portfolio Management</h4>
+        <p>Used in asset allocation decisions and setting return expectations for equity investments vs bonds.</p>
+      </div>
+      <div class="scenario">
+        <h4>🏢 Corporate Finance</h4>
+        <p>Essential for calculating cost of equity in WACC (Weighted Average Cost of Capital) calculations.</p>
+      </div>
+      <div class="scenario">
+        <h4>📊 Investment Analysis</h4>
+        <p>Helps evaluate whether current market valuations offer adequate compensation for risk.</p>
+      </div>
+      <div class="scenario">
+        <h4>🎯 Strategic Planning</h4>
+        <p>Guides long-term investment strategy and retirement planning assumptions.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>⚠️ Important Considerations</h3>
+    <div style="background: #fef3cd; padding: 1rem; border-radius: 0.5rem; border: 1px solid #fcd34d;">
+      <ul>
+        <li><strong>Historical vs Forward-Looking:</strong> Past performance doesn't guarantee future results</li>
+        <li><strong>Time Varying:</strong> Market premiums change over time with economic conditions</li>
+        <li><strong>Geographic Differences:</strong> Emerging markets typically have higher risk premiums</li>
+        <li><strong>Sector Variations:</strong> Different industries may have different risk characteristics</li>
+        <li><strong>Measurement Challenges:</strong> Difficulty in accurately estimating expected returns</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Market scenarios with predefined parameters
+    const scenarios = {
+      normal: { rf: 3.0, rm: 10.0, vol: 15.0, desc: "Normal Market Conditions", detail: "Typical market conditions with moderate risk premium reflecting long-term historical averages." },
+      bull: { rf: 2.5, rm: 8.5, vol: 12.0, desc: "Bull Market (Low Risk Premium)", detail: "Strong economic growth, low volatility, compressed risk premiums due to investor optimism." },
+      bear: { rf: 4.0, rm: 12.0, vol: 22.0, desc: "Bear Market (High Risk Premium)", detail: "Economic uncertainty, higher volatility, investors demand greater compensation for equity risk." },
+      crisis: { rf: 1.0, rm: 15.0, vol: 35.0, desc: "Financial Crisis (Very High Premium)", detail: "Flight to quality, extremely high volatility, significant risk premiums due to market stress." },
+      lowRate: { rf: 1.5, rm: 8.0, vol: 18.0, desc: "Low Interest Rate Environment", detail: "Central bank accommodation, low rates make equities relatively attractive despite modest premiums." }
+    };
+
+    // DOM elements
+    const riskFreeRate = document.getElementById('riskFreeRate');
+    const marketReturn = document.getElementById('marketReturn');
+    const marketVolatility = document.getElementById('marketVolatility');
+    const timeHorizon = document.getElementById('timeHorizon');
+    const scenarioSelect = document.getElementById('scenarioSelect');
+
+    // Display elements
+    const rfValue = document.getElementById('rfValue');
+    const rmValue = document.getElementById('rmValue');
+    const volValue = document.getElementById('volValue');
+    const timeValue = document.getElementById('timeValue');
+    const premiumValue = document.getElementById('premiumValue');
+    const sharpeValue = document.getElementById('sharpeValue');
+    const riskReturnValue = document.getElementById('riskReturnValue');
+    const excessValue = document.getElementById('excessValue');
+    const scenarioDescription = document.getElementById('scenarioDescription');
+
+    // Calculation steps
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const step4 = document.getElementById('step4');
+    const step5 = document.getElementById('step5');
+
+    function calculateMetrics() {
+      const rf = parseFloat(riskFreeRate.value);
+      const rm = parseFloat(marketReturn.value);
+      const vol = parseFloat(marketVolatility.value);
+      const time = parseInt(timeHorizon.value);
+
+      const premium = rm - rf;
+      const sharpe = premium / vol;
+      const riskReturn = rm / vol;
+      const annualExcess = premium * 100; // Assuming $10,000 investment
+
+      return { rf, rm, vol, time, premium, sharpe, riskReturn, annualExcess };
+    }
+
+    function updateDisplay() {
+      const metrics = calculateMetrics();
+      
+      // Update input displays
+      rfValue.textContent = metrics.rf.toFixed(1);
+      rmValue.textContent = metrics.rm.toFixed(1);
+      volValue.textContent = metrics.vol.toFixed(1);
+      timeValue.textContent = metrics.time;
+
+      // Update calculated metrics
+      premiumValue.textContent = metrics.premium.toFixed(1) + '%';
+      sharpeValue.textContent = metrics.sharpe.toFixed(2);
+      riskReturnValue.textContent = metrics.riskReturn.toFixed(2);
+      excessValue.textContent = '$' + Math.round(metrics.annualExcess);
+
+      // Update calculation steps
+      updateCalculationSteps(metrics);
+
+      // Update visualizations
+      updateRiskReturnPlot(metrics);
+      updateTimeSeriesPlot(metrics);
+    }
+
+    function updateCalculationSteps(metrics) {
+      step1.textContent = `Risk-free rate (Rf) = ${metrics.rf.toFixed(1)}% (typically 10-year government bond yield)`;
+      step2.textContent = `Expected market return E(Rm) = ${metrics.rm.toFixed(1)}% (historical average or forward-looking estimate)`;
+      step3.textContent = `Market Premium = E(Rm) - Rf = ${metrics.rm.toFixed(1)}% - ${metrics.rf.toFixed(1)}% = ${metrics.premium.toFixed(1)}%`;
+      step4.textContent = `Sharpe Ratio = Market Premium / Market Volatility = ${metrics.premium.toFixed(1)}% / ${metrics.vol.toFixed(1)}% = ${metrics.sharpe.toFixed(2)}`;
+      
+      let interpretation = '';
+      if (metrics.premium > 8) {
+        interpretation = 'High market premium suggests significant compensation for risk, possibly indicating market stress or uncertainty.';
+      } else if (metrics.premium > 5) {
+        interpretation = 'Moderate market premium indicates normal market conditions with reasonable risk compensation.';
+      } else {
+        interpretation = 'Low market premium suggests compressed risk premiums, possibly due to market optimism or low volatility environment.';
+      }
+      step5.textContent = `Investors expect ${metrics.premium.toFixed(1)}% extra return annually for taking market risk. ${interpretation}`;
+    }
+
+    function updateRiskReturnPlot(metrics) {
+      const riskFreePoint = {
+        x: [0],
+        y: [metrics.rf],
+        mode: 'markers',
+        name: 'Risk-Free Asset',
+        marker: {
+          size: 12,
+          color: 'green',
+          symbol: 'diamond'
+        }
+      };
+
+      const marketPoint = {
+        x: [metrics.vol],
+        y: [metrics.rm],
+        mode: 'markers',
+        name: 'Market Portfolio',
+        marker: {
+          size: 15,
+          color: 'blue',
+          symbol: 'circle'
+        }
+      };
+
+      const capitalMarketLine = {
+        x: [0, metrics.vol * 1.5],
+        y: [metrics.rf, metrics.rf + (metrics.premium * 1.5)],
+        mode: 'lines',
+        name: 'Capital Market Line',
+        line: {
+          color: 'red',
+          width: 2,
+          dash: 'dash'
+        }
+      };
+
+      const layout = {
+        title: 'Risk-Return Relationship',
+        xaxis: { 
+          title: 'Risk (Standard Deviation %)',
+          range: [0, Math.max(metrics.vol * 1.6, 25)]
+        },
+        yaxis: { 
+          title: 'Expected Return (%)',
+          range: [0, Math.max(metrics.rm * 1.2, 15)]
+        },
+        annotations: [
+          {
+            x: 0,
+            y: metrics.rf + 0.5,
+            text: `Risk-Free<br>${metrics.rf.toFixed(1)}%`,
+            showarrow: true,
+            arrowhead: 2
+          },
+          {
+            x: metrics.vol,
+            y: metrics.rm + 0.5,
+            text: `Market<br>${metrics.rm.toFixed(1)}%`,
+            showarrow: true,
+            arrowhead: 2
+          },
+          {
+            x: metrics.vol * 0.5,
+            y: metrics.rf + (metrics.premium * 0.5) + 1,
+            text: `Market Premium: ${metrics.premium.toFixed(1)}%`,
+            showarrow: false,
+            bgcolor: 'rgba(255,255,255,0.8)',
+            bordercolor: 'black',
+            borderwidth: 1
+          }
+        ]
+      };
+
+      Plotly.newPlot('riskReturnPlot', [riskFreePoint, marketPoint, capitalMarketLine], layout, { responsive: true });
+    }
+
+    function updateTimeSeriesPlot(metrics) {
+      const years = Array.from({ length: metrics.time }, (_, i) => i + 1);
+      
+      // Simulate market returns with volatility
+      const marketReturns = [];
+      const riskFreeReturns = [];
+      const premiums = [];
+      
+      let cumMarket = 10000;
+      let cumRiskFree = 10000;
+      
+      for (let i = 0; i < metrics.time; i++) {
+        // Simulate annual returns (simplified)
+        const marketReturn = metrics.rm + (Math.random() - 0.5) * metrics.vol * 2;
+        const riskFreeReturn = metrics.rf + (Math.random() - 0.5) * 1; // Low volatility for risk-free
+        
+        cumMarket *= (1 + marketReturn / 100);
+        cumRiskFree *= (1 + riskFreeReturn / 100);
+        
+        marketReturns.push(cumMarket);
+        riskFreeReturns.push(cumRiskFree);
+        premiums.push(marketReturn - riskFreeReturn);
+      }
+
+      const marketTrace = {
+        x: years,
+        y: marketReturns,
+        mode: 'lines+markers',
+        name: 'Market Investment',
+        line: { color: 'blue', width: 3 }
+      };
+
+      const riskFreeTrace = {
+        x: years,
+        y: riskFreeReturns,
+        mode: 'lines+markers',
+        name: 'Risk-Free Investment',
+        line: { color: 'green', width: 3 }
+      };
+
+      const layout = {
+        title: `Investment Growth over ${metrics.time} Years ($10,000 initial investment)`,
+        xaxis: { title: 'Years' },
+        yaxis: { title: 'Portfolio Value ($)' },
+        annotations: [
+          {
+            x: metrics.time * 0.7,
+            y: Math.max(marketReturns[marketReturns.length - 1], riskFreeReturns[riskFreeReturns.length - 1]) * 0.9,
+            text: `Average Annual<br>Market Premium: ${metrics.premium.toFixed(1)}%`,
+            showarrow: false,
+            bgcolor: 'rgba(255,255,255,0.8)',
+            bordercolor: 'black',
+            borderwidth: 1
+          }
+        ]
+      };
+
+      Plotly.newPlot('timeSeriesPlot', [marketTrace, riskFreeTrace], layout, { responsive: true });
+    }
+
+    // Event listeners
+    riskFreeRate.addEventListener('input', updateDisplay);
+    marketReturn.addEventListener('input', updateDisplay);
+    marketVolatility.addEventListener('input', updateDisplay);
+    timeHorizon.addEventListener('input', updateDisplay);
+
+    scenarioSelect.addEventListener('change', function() {
+      const scenario = scenarios[this.value];
+      
+      riskFreeRate.value = scenario.rf;
+      marketReturn.value = scenario.rm;
+      marketVolatility.value = scenario.vol;
+      
+      scenarioDescription.innerHTML = `
+        <h4>${scenario.desc}</h4>
+        <p>${scenario.detail}</p>
+      `;
+      
+      updateDisplay();
+    });
+
+    // Initialize
+    updateDisplay();
+  </script>
+</body>
+</html>

@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sharpe Ratio and Risk-Adjusted Returns</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Sharpe Ratio and Risk-Adjusted Returns</h2>
+
+  <div class="card description">
+    <h3>What is the Sharpe Ratio?</h3>
+    <p>The <strong>Sharpe ratio</strong> measures the excess return (or risk premium) per unit of deviation in an investment asset or a trading strategy. It helps investors understand the return of an investment compared to its risk, making it one of the most important metrics in finance for comparing investment performance.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Sharpe Ratio = (Rp - Rf) / σp</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>Rp</strong> = Expected portfolio return (or actual return)</li>
+      <li><strong>Rf</strong> = Risk-free rate (typically government bonds)</li>
+      <li><strong>σp</strong> = Standard deviation of portfolio returns (volatility)</li>
+      <li><strong>(Rp - Rf)</strong> = Excess return or risk premium</li>
+    </ul>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive Sharpe Ratio Calculator</h3>
+    <p>Adjust the parameters below to see how different investment characteristics affect the Sharpe ratio:</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+      <div class="control">
+        <label for="returnSlider">Portfolio Return (%): <span id="returnValue">12.0</span></label>
+        <input type="range" id="returnSlider" min="-10" max="30" step="0.5" value="12" />
+        <small>Annual expected or historical return</small>
+      </div>
+      
+      <div class="control">
+        <label for="riskFreeSlider">Risk-Free Rate (%): <span id="riskFreeValue">3.0</span></label>
+        <input type="range" id="riskFreeSlider" min="0" max="8" step="0.1" value="3" />
+        <small>Government bond yield (10-year Treasury)</small>
+      </div>
+      
+      <div class="control">
+        <label for="volatilitySlider">Volatility (σ) (%): <span id="volatilityValue">15.0</span></label>
+        <input type="range" id="volatilitySlider" min="1" max="50" step="0.5" value="15" />
+        <small>Standard deviation of returns</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📊 Risk-Return Analysis</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Sharpe Ratio</h4>
+        <p id="sharpeValue" style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">0.60</p>
+        <p id="sharpeInterpretation" style="font-size: 0.9rem; color: var(--text-secondary);">Good</p>
+      </div>
+      <div class="card">
+        <h4>Excess Return</h4>
+        <p id="excessReturnValue" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">9.0%</p>
+      </div>
+      <div class="card">
+        <h4>Risk Premium</h4>
+        <p id="riskPremiumValue" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">9.0%</p>
+      </div>
+      <div class="card">
+        <h4>Risk Level</h4>
+        <p id="riskLevelValue" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">Moderate</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="riskReturnChart" style="width:100%;height:400px;"></div>
+
+  <div class="card" style="background: #f0f8ff; border: 2px solid #3b82f6;">
+    <h3>📏 Understanding Sharpe Ratio Values</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="scenario">
+        <h4>🎯 Interpretation Guidelines</h4>
+        <ul>
+          <li><strong>< 0:</strong> Investment underperforms risk-free rate</li>
+          <li><strong>0 - 1:</strong> Acceptable but not optimal</li>
+          <li><strong>1 - 2:</strong> Good risk-adjusted performance</li>
+          <li><strong>2 - 3:</strong> Very good performance</li>
+          <li><strong>> 3:</strong> Excellent (rare in practice)</li>
+        </ul>
+      </div>
+      <div class="scenario">
+        <h4>⚖️ Key Insights</h4>
+        <ul>
+          <li><strong>Higher is better:</strong> More return per unit of risk</li>
+          <li><strong>Relative measure:</strong> Compare similar investments</li>
+          <li><strong>Time-dependent:</strong> Can vary significantly over time</li>
+          <li><strong>Assumes normality:</strong> Less reliable for skewed returns</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>📈 Investment Comparison Tool</h3>
+    <p>Compare different investment options side by side:</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Investment A</h4>
+        <div class="control">
+          <label>Return: <span id="returnA">10</span>%</label>
+          <input type="range" id="returnSliderA" min="0" max="25" step="0.5" value="10" />
+        </div>
+        <div class="control">
+          <label>Volatility: <span id="volA">12</span>%</label>
+          <input type="range" id="volSliderA" min="1" max="30" step="0.5" value="12" />
+        </div>
+        <p><strong>Sharpe: <span id="sharpeA">0.58</span></strong></p>
+      </div>
+      
+      <div class="card">
+        <h4>Investment B</h4>
+        <div class="control">
+          <label>Return: <span id="returnB">15</span>%</label>
+          <input type="range" id="returnSliderB" min="0" max="25" step="0.5" value="15" />
+        </div>
+        <div class="control">
+          <label>Volatility: <span id="volB">20</span>%</label>
+          <input type="range" id="volSliderB" min="1" max="30" step="0.5" value="20" />
+        </div>
+        <p><strong>Sharpe: <span id="sharpeB">0.60</span></strong></p>
+      </div>
+      
+      <div class="card">
+        <h4>Investment C</h4>
+        <div class="control">
+          <label>Return: <span id="returnC">8</span>%</label>
+          <input type="range" id="returnSliderC" min="0" max="25" step="0.5" value="8" />
+        </div>
+        <div class="control">
+          <label>Volatility: <span id="volC">6</span>%</label>
+          <input type="range" id="volSliderC" min="1" max="30" step="0.5" value="6" />
+        </div>
+        <p><strong>Sharpe: <span id="sharpeC">0.83</span></strong></p>
+      </div>
+    </div>
+    
+    <div id="comparisonChart" style="width:100%;height:350px; margin-top: 1rem;"></div>
+  </div>
+
+  <div class="scenario" style="background: #fff8dc; border: 2px solid #ffd700;">
+    <h3>🔗 Related Risk-Adjusted Metrics</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>📊 Sortino Ratio</h4>
+        <p><strong>Formula:</strong> (Rp - Rf) / Downside Deviation</p>
+        <p>Similar to Sharpe but only considers downside risk (negative volatility)</p>
+        <p id="sortinoValue"><strong>Current Sortino: <span>0.85</span></strong></p>
+      </div>
+      
+      <div class="card">
+        <h4>📈 Treynor Ratio</h4>
+        <p><strong>Formula:</strong> (Rp - Rf) / Beta</p>
+        <p>Uses beta (market risk) instead of total risk (standard deviation)</p>
+        <p id="treynorValue"><strong>Current Treynor: <span>8.5</span></strong> (assuming β=1.0)</p>
+      </div>
+      
+      <div class="card">
+        <h4>🎯 Information Ratio</h4>
+        <p><strong>Formula:</strong> (Rp - Rb) / Tracking Error</p>
+        <p>Measures active return per unit of active risk vs benchmark</p>
+        <p id="informationValue"><strong>Current IR: <span>0.45</span></strong> (vs S&P 500)</p>
+      </div>
+      
+      <div class="card">
+        <h4>📉 Calmar Ratio</h4>
+        <p><strong>Formula:</strong> Annual Return / Maximum Drawdown</p>
+        <p>Focuses on worst-case scenario risk measurement</p>
+        <p id="calmarValue"><strong>Current Calmar: <span>0.80</span></strong></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>🔄 Real-World Investment Examples</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>📈 S&P 500 Index</h4>
+        <button class="button" onclick="loadExample('sp500')">Load Example</button>
+        <p><small>Historical: ~10% return, ~15% volatility</small></p>
+      </div>
+      <div class="card">
+        <h4>🏦 High-Grade Bonds</h4>
+        <button class="button" onclick="loadExample('bonds')">Load Example</button>
+        <p><small>Lower return but much lower risk</small></p>
+      </div>
+      <div class="card">
+        <h4>🚀 Growth Stocks</h4>
+        <button class="button" onclick="loadExample('growth')">Load Example</button>
+        <p><small>High return potential, high volatility</small></p>
+      </div>
+      <div class="card">
+        <h4>💎 Cryptocurrency</h4>
+        <button class="button" onclick="loadExample('crypto')">Load Example</button>
+        <p><small>Very high return, extremely high risk</small></p>
+      </div>
+      <div class="card">
+        <h4>🏠 REITs</h4>
+        <button class="button" onclick="loadExample('reits')">Load Example</button>
+        <p><small>Real estate investment trusts</small></p>
+      </div>
+      <div class="card">
+        <h4>🌍 Emerging Markets</h4>
+        <button class="button" onclick="loadExample('emerging')">Load Example</button>
+        <p><small>Higher growth potential, higher risk</small></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🧮 Monte Carlo Simulation</h3>
+    <p>See how your investment might perform over time with the current risk-return profile:</p>
+    <button id="runSimulation" class="button">Run 1000 Simulations</button>
+    <div id="simulationResults" style="margin-top: 1rem; display: none;">
+      <div id="monteCarloChart" style="width:100%;height:400px;"></div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+        <div class="card">
+          <h4>Expected Value (5 years)</h4>
+          <p id="expectedValue" style="font-size: 1.5rem; font-weight: bold;">$127,628</p>
+        </div>
+        <div class="card">
+          <h4>90% Confidence Range</h4>
+          <p id="confidenceRange" style="font-size: 1.2rem;">$85k - $192k</p>
+        </div>
+        <div class="card">
+          <h4>Probability of Loss</h4>
+          <p id="lossProb" style="font-size: 1.5rem; font-weight: bold;">15%</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50; margin-top: 2rem;">
+    <h3>💡 Key Insights and Limitations</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+      <div>
+        <h4 style="color: var(--success-color);">✅ Strengths:</h4>
+        <ul style="line-height: 1.8;">
+          <li>Simple and intuitive metric</li>
+          <li>Standardized for easy comparison</li>
+          <li>Considers both return and risk</li>
+          <li>Widely used in finance industry</li>
+          <li>Good for portfolio optimization</li>
+          <li>Historical performance evaluation</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color: var(--error-color);">⚠️ Limitations:</h4>
+        <ul style="line-height: 1.8;">
+          <li>Assumes normal distribution</li>
+          <li>Historical data may not predict future</li>
+          <li>Ignores skewness and kurtosis</li>
+          <li>Sensitive to time period chosen</li>
+          <li>Doesn't capture tail risks</li>
+          <li>May not suit all investment strategies</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>📚 Advanced Concepts</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="scenario">
+        <h4>🎯 Ex-Ante vs Ex-Post</h4>
+        <ul>
+          <li><strong>Ex-Ante:</strong> Forward-looking, uses expected returns</li>
+          <li><strong>Ex-Post:</strong> Historical, uses actual returns</li>
+          <li>Both are useful for different purposes</li>
+        </ul>
+      </div>
+      <div class="scenario">
+        <h4>📊 Sharpe Ratio Gaming</h4>
+        <ul>
+          <li>Can be manipulated by changing measurement frequency</li>
+          <li>Smoothing returns artificially inflates the ratio</li>
+          <li>Be aware of these potential distortions</li>
+        </ul>
+      </div>
+      <div class="scenario">
+        <h4>🔄 Rolling Sharpe Ratios</h4>
+        <ul>
+          <li>Calculate over moving time windows</li>
+          <li>Shows how performance changes over time</li>
+          <li>More robust than single-period calculations</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Main controls
+    const returnSlider = document.getElementById('returnSlider');
+    const riskFreeSlider = document.getElementById('riskFreeSlider');
+    const volatilitySlider = document.getElementById('volatilitySlider');
+    
+    // Comparison controls
+    const controls = {
+      A: {
+        return: document.getElementById('returnSliderA'),
+        vol: document.getElementById('volSliderA')
+      },
+      B: {
+        return: document.getElementById('returnSliderB'),
+        vol: document.getElementById('volSliderB')
+      },
+      C: {
+        return: document.getElementById('returnSliderC'),
+        vol: document.getElementById('volSliderC')
+      }
+    };
+
+    // Example data
+    const examples = {
+      sp500: { return: 10, volatility: 15 },
+      bonds: { return: 4, volatility: 3 },
+      growth: { return: 18, volatility: 25 },
+      crypto: { return: 25, volatility: 60 },
+      reits: { return: 8, volatility: 18 },
+      emerging: { return: 12, volatility: 22 }
+    };
+
+    function calculateSharpe(portfolioReturn, riskFreeRate, volatility) {
+      return (portfolioReturn - riskFreeRate) / volatility;
+    }
+
+    function interpretSharpe(sharpe) {
+      if (sharpe < 0) return 'Poor';
+      if (sharpe < 1) return 'Acceptable';
+      if (sharpe < 2) return 'Good';
+      if (sharpe < 3) return 'Very Good';
+      return 'Excellent';
+    }
+
+    function getRiskLevel(volatility) {
+      if (volatility < 5) return 'Very Low';
+      if (volatility < 10) return 'Low';
+      if (volatility < 20) return 'Moderate';
+      if (volatility < 30) return 'High';
+      return 'Very High';
+    }
+
+    function updateMainCalculation() {
+      const portfolioReturn = parseFloat(returnSlider.value);
+      const riskFreeRate = parseFloat(riskFreeSlider.value);
+      const volatility = parseFloat(volatilitySlider.value);
+      
+      document.getElementById('returnValue').textContent = portfolioReturn.toFixed(1);
+      document.getElementById('riskFreeValue').textContent = riskFreeRate.toFixed(1);
+      document.getElementById('volatilityValue').textContent = volatility.toFixed(1);
+      
+      const sharpe = calculateSharpe(portfolioReturn, riskFreeRate, volatility);
+      const excessReturn = portfolioReturn - riskFreeRate;
+      
+      document.getElementById('sharpeValue').textContent = sharpe.toFixed(2);
+      document.getElementById('sharpeInterpretation').textContent = interpretSharpe(sharpe);
+      document.getElementById('excessReturnValue').textContent = excessReturn.toFixed(1) + '%';
+      document.getElementById('riskPremiumValue').textContent = excessReturn.toFixed(1) + '%';
+      document.getElementById('riskLevelValue').textContent = getRiskLevel(volatility);
+      
+      // Update related metrics
+      const sortino = sharpe * 1.4; // Simplified approximation
+      const treynor = excessReturn / 1.0; // Assuming beta = 1
+      const information = sharpe * 0.75; // Simplified approximation
+      const calmar = portfolioReturn / 15; // Assuming 15% max drawdown
+      
+      document.querySelector('#sortinoValue span').textContent = sortino.toFixed(2);
+      document.querySelector('#treynorValue span').textContent = treynor.toFixed(1);
+      document.querySelector('#informationValue span').textContent = information.toFixed(2);
+      document.querySelector('#calmarValue span').textContent = calmar.toFixed(2);
+      
+      updateRiskReturnChart();
+      updateComparison();
+    }
+
+    function updateRiskReturnChart() {
+      const portfolioReturn = parseFloat(returnSlider.value);
+      const riskFreeRate = parseFloat(riskFreeSlider.value);
+      const volatility = parseFloat(volatilitySlider.value);
+      
+      // Create efficient frontier
+      const risks = [];
+      const returns = [];
+      for (let vol = 1; vol <= 40; vol += 0.5) {
+        risks.push(vol);
+        // Simplified efficient frontier: higher risk allows higher return
+        returns.push(riskFreeRate + (vol / 20) * 15 + Math.random() * 2);
+      }
+      
+      const efficientFrontier = {
+        x: risks,
+        y: returns,
+        mode: 'lines',
+        name: 'Efficient Frontier',
+        line: { color: '#94a3b8', width: 2, dash: 'dash' }
+      };
+      
+      const currentPortfolio = {
+        x: [volatility],
+        y: [portfolioReturn],
+        mode: 'markers',
+        name: 'Your Portfolio',
+        marker: { size: 15, color: '#ef4444' }
+      };
+      
+      const riskFreeAsset = {
+        x: [0],
+        y: [riskFreeRate],
+        mode: 'markers',
+        name: 'Risk-Free Asset',
+        marker: { size: 12, color: '#10b981', symbol: 'diamond' }
+      };
+      
+      // Capital Allocation Line
+      const calX = [0, volatility * 1.5];
+      const calY = [riskFreeRate, riskFreeRate + (portfolioReturn - riskFreeRate) * 1.5];
+      
+      const capitalAllocationLine = {
+        x: calX,
+        y: calY,
+        mode: 'lines',
+        name: 'Capital Allocation Line',
+        line: { color: '#3b82f6', width: 3 }
+      };
+      
+      const layout = {
+        title: 'Risk-Return Space with Sharpe Ratio Visualization',
+        xaxis: { title: 'Risk (Standard Deviation %)' },
+        yaxis: { title: 'Expected Return (%)' },
+        showlegend: true
+      };
+      
+      Plotly.newPlot('riskReturnChart', [efficientFrontier, capitalAllocationLine, currentPortfolio, riskFreeAsset], layout, { responsive: true });
+    }
+
+    function updateComparison() {
+      const riskFreeRate = parseFloat(riskFreeSlider.value);
+      
+      Object.keys(controls).forEach(key => {
+        const returnVal = parseFloat(controls[key].return.value);
+        const volVal = parseFloat(controls[key].vol.value);
+        const sharpe = calculateSharpe(returnVal, riskFreeRate, volVal);
+        
+        document.getElementById(`return${key}`).textContent = returnVal;
+        document.getElementById(`vol${key}`).textContent = volVal;
+        document.getElementById(`sharpe${key}`).textContent = sharpe.toFixed(2);
+      });
+      
+      updateComparisonChart();
+    }
+
+    function updateComparisonChart() {
+      const riskFreeRate = parseFloat(riskFreeSlider.value);
+      const investments = ['A', 'B', 'C'];
+      const data = investments.map(key => {
+        const returnVal = parseFloat(controls[key].return.value);
+        const volVal = parseFloat(controls[key].vol.value);
+        return {
+          x: [volVal],
+          y: [returnVal],
+          mode: 'markers',
+          name: `Investment ${key}`,
+          marker: { size: 15 },
+          text: [`Sharpe: ${calculateSharpe(returnVal, riskFreeRate, volVal).toFixed(2)}`],
+          hovertemplate: '%{text}<extra></extra>'
+        };
+      });
+      
+      const layout = {
+        title: 'Investment Comparison: Risk vs Return',
+        xaxis: { title: 'Risk (Volatility %)' },
+        yaxis: { title: 'Expected Return (%)' },
+        showlegend: true
+      };
+      
+      Plotly.newPlot('comparisonChart', data, layout, { responsive: true });
+    }
+
+    function loadExample(type) {
+      const example = examples[type];
+      returnSlider.value = example.return;
+      volatilitySlider.value = example.volatility;
+      updateMainCalculation();
+    }
+
+    function runMonteCarloSimulation() {
+      const portfolioReturn = parseFloat(returnSlider.value) / 100;
+      const volatility = parseFloat(volatilitySlider.value) / 100;
+      const initialInvestment = 100000;
+      const years = 5;
+      const simulations = 1000;
+      
+      const finalValues = [];
+      const paths = [];
+      
+      for (let sim = 0; sim < simulations; sim++) {
+        let value = initialInvestment;
+        const path = [value];
+        
+        for (let year = 0; year < years; year++) {
+          const randomReturn = normalRandom() * volatility + portfolioReturn;
+          value *= (1 + randomReturn);
+          path.push(value);
+        }
+        
+        finalValues.push(value);
+        if (sim < 50) paths.push(path); // Only store first 50 for visualization
+      }
+      
+      // Calculate statistics
+      finalValues.sort((a, b) => a - b);
+      const expectedValue = finalValues.reduce((sum, val) => sum + val, 0) / finalValues.length;
+      const percentile5 = finalValues[Math.floor(finalValues.length * 0.05)];
+      const percentile95 = finalValues[Math.floor(finalValues.length * 0.95)];
+      const lossProb = finalValues.filter(val => val < initialInvestment).length / finalValues.length;
+      
+      // Update results
+      document.getElementById('expectedValue').textContent = `$${(expectedValue / 1000).toFixed(0)}k`;
+      document.getElementById('confidenceRange').textContent = `$${(percentile5 / 1000).toFixed(0)}k - $${(percentile95 / 1000).toFixed(0)}k`;
+      document.getElementById('lossProb').textContent = `${(lossProb * 100).toFixed(1)}%`;
+      
+      // Create chart
+      const traces = paths.map((path, i) => ({
+        x: Array.from({length: years + 1}, (_, i) => i),
+        y: path,
+        mode: 'lines',
+        line: { color: 'rgba(59, 130, 246, 0.1)' },
+        showlegend: false,
+        hoverinfo: 'skip'
+      }));
+      
+      const expectedPath = {
+        x: Array.from({length: years + 1}, (_, i) => i),
+        y: Array.from({length: years + 1}, (_, i) => initialInvestment * Math.pow(1 + portfolioReturn, i)),
+        mode: 'lines',
+        name: 'Expected Path',
+        line: { color: '#ef4444', width: 3 }
+      };
+      
+      traces.push(expectedPath);
+      
+      const layout = {
+        title: 'Monte Carlo Simulation: 1000 Possible Outcomes',
+        xaxis: { title: 'Years' },
+        yaxis: { title: 'Portfolio Value ($)' },
+        showlegend: true
+      };
+      
+      Plotly.newPlot('monteCarloChart', traces, layout, { responsive: true });
+      document.getElementById('simulationResults').style.display = 'block';
+    }
+
+    function normalRandom() {
+      // Box-Muller transformation for normal distribution
+      let u = 0, v = 0;
+      while(u === 0) u = Math.random(); // Converting [0,1) to (0,1)
+      while(v === 0) v = Math.random();
+      return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    // Event listeners
+    returnSlider.addEventListener('input', updateMainCalculation);
+    riskFreeSlider.addEventListener('input', updateMainCalculation);
+    volatilitySlider.addEventListener('input', updateMainCalculation);
+    
+    Object.keys(controls).forEach(key => {
+      controls[key].return.addEventListener('input', updateComparison);
+      controls[key].vol.addEventListener('input', updateComparison);
+    });
+    
+    document.getElementById('runSimulation').addEventListener('click', runMonteCarloSimulation);
+    
+    // Initialize
+    updateMainCalculation();
+  </script>
+</body>
+</html>

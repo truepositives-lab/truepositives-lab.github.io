@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mean (Arithmetic Average)</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Mean (Arithmetic Average)</h2>
+
+  <div class="card description">
+    <h3>What is the Mean?</h3>
+    <p>The <strong>mean</strong> (or arithmetic average) is the sum of all values divided by the number of values. It represents the central tendency of a dataset and is one of the most commonly used measures of central tendency.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Formula: μ = (x₁ + x₂ + x₃ + ... + xₙ) / n</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>μ</strong> (mu) = population mean</li>
+      <li><strong>x̄</strong> (x-bar) = sample mean</li>
+      <li><strong>xᵢ</strong> = individual values</li>
+      <li><strong>n</strong> = number of values</li>
+    </ul>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive Dataset Explorer</h3>
+    <p>Modify the dataset below and see how the mean changes in real-time. Notice how outliers affect the mean!</p>
+    
+    <div class="control">
+      <label for="dataInput">Enter comma-separated values:</label>
+      <input type="text" id="dataInput" value="10, 15, 20, 25, 30" 
+             style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+      <small>Example: 10, 15, 20, 25, 30 or try with an outlier: 10, 15, 20, 25, 100</small>
+    </div>
+  </div>
+
+  <div id="dataVisualization" style="width:100%;height:400px;"></div>
+  
+  <div class="highlight">
+    <h3>📊 Dataset Statistics</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Mean</h4>
+        <p id="meanValue" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">0</p>
+      </div>
+      <div class="card">
+        <h4>Sum</h4>
+        <p id="sumValue" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">0</p>
+      </div>
+      <div class="card">
+        <h4>Count</h4>
+        <p id="countValue" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">0</p>
+      </div>
+      <div class="card">
+        <h4>Range</h4>
+        <p id="rangeValue" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">0</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background: #fff0f0; border: 2px solid #ff6b6b;">
+    <h3>⚠️ Sensitivity to Outliers</h3>
+    <p>The mean is <strong>sensitive to outliers</strong> - extreme values can significantly affect the result.</p>
+    
+    <div class="control">
+      <label for="outlierSlider">Add an outlier value: <span id="outlierValue">50</span></label>
+      <input type="range" id="outlierSlider" min="0" max="200" step="5" value="50" />
+      <button id="addOutlier" class="button">Add Outlier</button>
+      <button id="removeOutlier" class="button" style="background-color: var(--error-color);">Remove Outlier</button>
+    </div>
+    
+    <div id="outlierComparison" style="margin-top: 1rem;">
+      <p><strong>Original mean:</strong> <span id="originalMean">0</span></p>
+      <p><strong>Mean with outlier:</strong> <span id="outlierMean">0</span></p>
+      <p><strong>Difference:</strong> <span id="meanDifference">0</span></p>
+    </div>
+  </div>
+
+  <div id="distributionPlot" style="width:100%;height:350px;"></div>
+
+  <div class="scenario">
+    <h3>🔄 Common Applications</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>📈 Test Scores</h4>
+        <button class="button" onclick="loadExample('scores')">Load Example</button>
+        <p><small>Calculate average test performance</small></p>
+      </div>
+      <div class="card">
+        <h4>💰 Salaries</h4>
+        <button class="button" onclick="loadExample('salaries')">Load Example</button>
+        <p><small>Average income (watch for outliers!)</small></p>
+      </div>
+      <div class="card">
+        <h4>🌡️ Temperature</h4>
+        <button class="button" onclick="loadExample('temperature')">Load Example</button>
+        <p><small>Daily temperature averages</small></p>
+      </div>
+      <div class="card">
+        <h4>⏱️ Response Times</h4>
+        <button class="button" onclick="loadExample('response')">Load Example</button>
+        <p><small>Website response times (ms)</small></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🧮 Step-by-Step Calculation</h3>
+    <div id="stepByStep">
+      <p>Enter data above to see the calculation steps...</p>
+    </div>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50; margin-top: 2rem;">
+    <h3>💡 Key Insights About the Mean</h3>
+    <ul style="line-height: 1.8;">
+      <li><strong>Balanced Point:</strong> The mean is the "balance point" of the data - the sum of deviations above equals the sum below</li>
+      <li><strong>Sensitive to Outliers:</strong> Extreme values can dramatically shift the mean</li>
+      <li><strong>Uses All Data:</strong> Every value in the dataset contributes to the mean</li>
+      <li><strong>Not Always Representative:</strong> In skewed distributions, the mean might not represent the "typical" value</li>
+      <li><strong>Mathematical Properties:</strong> The mean minimizes the sum of squared deviations</li>
+    </ul>
+  </div>
+
+  <script>
+    const dataInput = document.getElementById('dataInput');
+    const outlierSlider = document.getElementById('outlierSlider');
+    const outlierValue = document.getElementById('outlierValue');
+    const addOutlierBtn = document.getElementById('addOutlier');
+    const removeOutlierBtn = document.getElementById('removeOutlier');
+    
+    let originalData = [];
+    let hasOutlier = false;
+    let outlierValueNum = 50;
+
+    // Example datasets
+    const examples = {
+      scores: [85, 92, 78, 96, 88, 91, 83, 87, 94, 89],
+      salaries: [45000, 52000, 48000, 55000, 51000, 47000, 200000, 49000, 53000],
+      temperature: [72, 75, 68, 71, 73, 69, 76, 74, 70, 72],
+      response: [120, 145, 98, 156, 134, 112, 167, 128, 139, 142]
+    };
+
+    function parseData(input) {
+      return input.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+    }
+
+    function calculateMean(data) {
+      return data.length > 0 ? data.reduce((sum, x) => sum + x, 0) / data.length : 0;
+    }
+
+    function calculateStats(data) {
+      if (data.length === 0) return { mean: 0, sum: 0, count: 0, min: 0, max: 0, range: 0 };
+      
+      const sum = data.reduce((acc, x) => acc + x, 0);
+      const mean = sum / data.length;
+      const min = Math.min(...data);
+      const max = Math.max(...data);
+      const range = max - min;
+      
+      return { mean, sum, count: data.length, min, max, range };
+    }
+
+    function updateDisplay() {
+      const rawData = parseData(dataInput.value);
+      originalData = [...rawData];
+      
+      if (rawData.length === 0) return;
+
+      const stats = calculateStats(rawData);
+      
+      // Update statistics display
+      document.getElementById('meanValue').textContent = stats.mean.toFixed(2);
+      document.getElementById('sumValue').textContent = stats.sum.toFixed(1);
+      document.getElementById('countValue').textContent = stats.count;
+      document.getElementById('rangeValue').textContent = stats.range.toFixed(1);
+      
+      // Update outlier comparison
+      document.getElementById('originalMean').textContent = stats.mean.toFixed(2);
+      updateOutlierComparison();
+      
+      // Create main visualization
+      createVisualization(rawData, stats.mean);
+      
+      // Create distribution plot
+      createDistributionPlot(rawData);
+      
+      // Update step-by-step calculation
+      updateStepByStep(rawData, stats);
+    }
+
+    function createVisualization(data, mean) {
+      const sortedData = [...data].sort((a, b) => a - b);
+      const indices = Array.from({length: data.length}, (_, i) => i + 1);
+      
+      const trace1 = {
+        x: indices,
+        y: data,
+        type: 'scatter',
+        mode: 'markers',
+        name: 'Data Points',
+        marker: {
+          size: 12,
+          color: data.map(x => Math.abs(x - mean) > 2 * calculateStandardDeviation(data) ? '#ef4444' : '#3b82f6'),
+          line: { width: 2, color: 'white' }
+        },
+        text: data.map((x, i) => `Value ${i+1}: ${x}<br>Distance from mean: ${(x - mean).toFixed(2)}`),
+        hovertemplate: '%{text}<extra></extra>'
+      };
+
+      const trace2 = {
+        x: [0, data.length + 1],
+        y: [mean, mean],
+        type: 'scatter',
+        mode: 'lines',
+        name: `Mean (${mean.toFixed(2)})`,
+        line: { color: '#ef4444', width: 3, dash: 'dash' }
+      };
+
+      const layout = {
+        title: 'Dataset Visualization with Mean',
+        xaxis: { title: 'Data Point Index' },
+        yaxis: { title: 'Value' },
+        showlegend: true,
+        hovermode: 'closest'
+      };
+
+      Plotly.newPlot('dataVisualization', [trace1, trace2], layout, { responsive: true });
+    }
+
+    function createDistributionPlot(data) {
+      const trace = {
+        x: data,
+        type: 'histogram',
+        name: 'Distribution',
+        marker: { color: '#3b82f6', opacity: 0.7 },
+        nbinsx: Math.max(5, Math.min(20, Math.ceil(data.length / 3)))
+      };
+
+      const mean = calculateMean(data);
+      const meanLine = {
+        x: [mean, mean],
+        y: [0, Math.max(3, Math.ceil(data.length / 4))],
+        type: 'scatter',
+        mode: 'lines',
+        name: `Mean (${mean.toFixed(2)})`,
+        line: { color: '#ef4444', width: 3, dash: 'dash' }
+      };
+
+      const layout = {
+        title: 'Data Distribution with Mean',
+        xaxis: { title: 'Value' },
+        yaxis: { title: 'Frequency' },
+        showlegend: true
+      };
+
+      Plotly.newPlot('distributionPlot', [trace, meanLine], layout, { responsive: true });
+    }
+
+    function calculateStandardDeviation(data) {
+      const mean = calculateMean(data);
+      const squaredDiffs = data.map(x => Math.pow(x - mean, 2));
+      const avgSquaredDiff = calculateMean(squaredDiffs);
+      return Math.sqrt(avgSquaredDiff);
+    }
+
+    function updateStepByStep(data, stats) {
+      const stepByStepDiv = document.getElementById('stepByStep');
+      
+      let html = `
+        <div class="solution-step">
+          <h4>Step 1: List all values</h4>
+          <p>Data: [${data.join(', ')}]</p>
+        </div>
+        
+        <div class="solution-step">
+          <h4>Step 2: Add all values</h4>
+          <p>Sum = ${data.join(' + ')} = <strong>${stats.sum.toFixed(2)}</strong></p>
+        </div>
+        
+        <div class="solution-step">
+          <h4>Step 3: Count the values</h4>
+          <p>Number of values (n) = <strong>${stats.count}</strong></p>
+        </div>
+        
+        <div class="solution-step">
+          <h4>Step 4: Divide sum by count</h4>
+          <p>Mean = Sum ÷ n = ${stats.sum.toFixed(2)} ÷ ${stats.count} = <strong>${stats.mean.toFixed(4)}</strong></p>
+        </div>
+      `;
+      
+      stepByStepDiv.innerHTML = html;
+    }
+
+    function updateOutlierComparison() {
+      const originalMean = calculateMean(originalData);
+      const dataWithOutlier = hasOutlier ? [...originalData, outlierValueNum] : originalData;
+      const outlierMean = calculateMean(dataWithOutlier);
+      const difference = outlierMean - originalMean;
+      
+      document.getElementById('outlierMean').textContent = outlierMean.toFixed(2);
+      document.getElementById('meanDifference').textContent = 
+        `${difference >= 0 ? '+' : ''}${difference.toFixed(2)} (${((difference/originalMean) * 100).toFixed(1)}%)`;
+    }
+
+    function loadExample(type) {
+      const data = examples[type];
+      dataInput.value = data.join(', ');
+      updateDisplay();
+    }
+
+    // Event listeners
+    dataInput.addEventListener('input', updateDisplay);
+    
+    outlierSlider.addEventListener('input', function() {
+      outlierValueNum = parseFloat(this.value);
+      outlierValue.textContent = outlierValueNum;
+      if (hasOutlier) {
+        updateOutlierComparison();
+      }
+    });
+
+    addOutlierBtn.addEventListener('click', function() {
+      if (!hasOutlier) {
+        hasOutlier = true;
+        const newData = [...originalData, outlierValueNum];
+        dataInput.value = newData.join(', ');
+        updateDisplay();
+      }
+    });
+
+    removeOutlierBtn.addEventListener('click', function() {
+      if (hasOutlier) {
+        hasOutlier = false;
+        dataInput.value = originalData.join(', ');
+        updateDisplay();
+      }
+    });
+
+    // Initialize
+    updateDisplay();
+  </script>
+</body>
+</html>

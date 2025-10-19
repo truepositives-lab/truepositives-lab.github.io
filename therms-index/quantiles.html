@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quantiles and IQR</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Quantiles and IQR</h2>
+
+  <div class="card description">
+    <h3>What are Quantiles?</h3>
+    <p><strong>Quantiles</strong> are values that divide a dataset into equal-sized groups. They tell us what value a certain percentage of the data falls below.</p>
+    <p>For example, if the 25th percentile is 10, it means 25% of the data is less than or equal to 10.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Common Quantiles:</strong></p>
+    <ul>
+      <li><strong>Q1 (First Quartile):</strong> 25th percentile - 25% of data falls below</li>
+      <li><strong>Q2 (Second Quartile):</strong> 50th percentile - Also known as the median</li>
+      <li><strong>Q3 (Third Quartile):</strong> 75th percentile - 75% of data falls below</li>
+    </ul>
+    <p><strong>IQR (Interquartile Range) = Q3 - Q1</strong></p>
+    <p>The IQR contains the middle 50% of the data and is resistant to outliers.</p>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive Quantile Explorer</h3>
+    <p>Enter your data below and see how quantiles divide it into groups:</p>
+    
+    <div class="control">
+      <label for="dataInput">Enter comma-separated values:</label>
+      <input type="text" id="dataInput" value="2, 5, 8, 12, 16, 19, 23, 28, 34, 41, 48, 55, 63, 72, 85" 
+             style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+      <small>Try adding more values or changing the distribution</small>
+    </div>
+  </div>
+
+  <div id="mainVisualization" style="width:100%;height:400px;"></div>
+
+  <div class="highlight">
+    <h3>📊 Five-Number Summary</h3>
+    <p>The five-number summary provides a complete picture of your data's spread:</p>
+    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-top: 1rem; text-align: center;">
+      <div class="card">
+        <h4>Min</h4>
+        <p id="minValue" style="font-size: 1.5rem; font-weight: bold;">0</p>
+        <small>Smallest value</small>
+      </div>
+      <div class="card">
+        <h4>Q1</h4>
+        <p id="q1Value" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">0</p>
+        <small>25th percentile</small>
+      </div>
+      <div class="card">
+        <h4>Median</h4>
+        <p id="medianValue" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">0</p>
+        <small>50th percentile</small>
+      </div>
+      <div class="card">
+        <h4>Q3</h4>
+        <p id="q3Value" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">0</p>
+        <small>75th percentile</small>
+      </div>
+      <div class="card">
+        <h4>Max</h4>
+        <p id="maxValue" style="font-size: 1.5rem; font-weight: bold;">0</p>
+        <small>Largest value</small>
+      </div>
+    </div>
+    
+    <div class="card" style="margin-top: 1rem; background: var(--bg-tertiary);">
+      <h4 style="color: var(--warning-color);">IQR = <span id="iqrValue">0</span></h4>
+      <p>The Interquartile Range (Q3 - Q1) contains the middle 50% of your data</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🧮 How to Calculate Quartiles</h3>
+    <div id="stepByStep">
+      <p>Enter data above to see the calculation steps...</p>
+    </div>
+  </div>
+
+  <div id="distributionPlot" style="width:100%;height:350px;"></div>
+
+  <div class="scenario" style="background: #fff0f0; border: 2px solid #ff6b6b;">
+    <h3>🎯 Understanding Quartile Positions</h3>
+    <p>There are different methods to calculate quartiles. Here's the most common approach:</p>
+    
+    <div class="formula" style="margin-top: 1rem;">
+      <p><strong>For a dataset with n values:</strong></p>
+      <ul>
+        <li><strong>Q1 position:</strong> (n + 1) × 0.25</li>
+        <li><strong>Median position:</strong> (n + 1) × 0.50</li>
+        <li><strong>Q3 position:</strong> (n + 1) × 0.75</li>
+      </ul>
+      <p>If the position is not a whole number, we interpolate between the two nearest values.</p>
+    </div>
+    
+    <div class="highlight" style="margin-top: 1rem;">
+      <h4>Current Dataset Positions:</h4>
+      <p><strong>Number of values:</strong> <span id="dataCount">0</span></p>
+      <p><strong>Q1 position:</strong> <span id="q1Position">0</span></p>
+      <p><strong>Median position:</strong> <span id="medianPosition">0</span></p>
+      <p><strong>Q3 position:</strong> <span id="q3Position">0</span></p>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>🔄 Common Applications</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>📊 Income Distribution</h4>
+        <button class="button" onclick="loadExample('income')">Load Example</button>
+        <p><small>Analyze income inequality</small></p>
+      </div>
+      <div class="card">
+        <h4>📈 Test Scores</h4>
+        <button class="button" onclick="loadExample('scores')">Load Example</button>
+        <p><small>Student performance quartiles</small></p>
+      </div>
+      <div class="card">
+        <h4>⏱️ Response Times</h4>
+        <button class="button" onclick="loadExample('response')">Load Example</button>
+        <p><small>Website performance metrics</small></p>
+      </div>
+      <div class="card">
+        <h4>🌡️ Temperature Data</h4>
+        <button class="button" onclick="loadExample('temperature')">Load Example</button>
+        <p><small>Climate analysis</small></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50; margin-top: 2rem;">
+    <h3>💡 Why Use Quantiles and IQR?</h3>
+    <ul style="line-height: 1.8;">
+      <li><strong>Robust to Outliers:</strong> Unlike mean and standard deviation, quartiles aren't affected by extreme values</li>
+      <li><strong>Easy to Interpret:</strong> "25% of values fall below Q1" is intuitive</li>
+      <li><strong>Identify Spread:</strong> IQR shows the spread of the middle 50% of data</li>
+      <li><strong>Compare Distributions:</strong> Useful for comparing different groups</li>
+      <li><strong>Foundation for Box Plots:</strong> <a href="boxplot.html">Box plots</a> visualize the five-number summary</li>
+    </ul>
+  </div>
+
+  <script>
+    const dataInput = document.getElementById('dataInput');
+    let currentData = [];
+
+    // Example datasets
+    const examples = {
+      income: [28000, 32000, 35000, 38000, 42000, 45000, 48000, 52000, 58000, 65000, 72000, 85000, 95000, 120000, 180000],
+      scores: [62, 68, 72, 75, 78, 80, 82, 84, 85, 87, 89, 91, 93, 95, 98],
+      response: [95, 102, 108, 115, 122, 128, 135, 142, 150, 165, 178, 195, 220, 250, 380],
+      temperature: [15.2, 16.8, 18.1, 19.5, 20.2, 21.0, 21.8, 22.5, 23.2, 24.0, 24.8, 25.5, 26.3, 27.2, 28.5]
+    };
+
+    function parseData(input) {
+      return input.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+    }
+
+    function calculateQuantile(data, p) {
+      if (data.length === 0) return 0;
+      const sorted = [...data].sort((a, b) => a - b);
+      const pos = (sorted.length + 1) * p;
+      const base = Math.floor(pos) - 1;
+      const rest = pos - Math.floor(pos);
+      
+      if (base < 0) return sorted[0];
+      if (base >= sorted.length - 1) return sorted[sorted.length - 1];
+      
+      return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+    }
+
+    function updateDisplay() {
+      const rawData = parseData(dataInput.value);
+      currentData = [...rawData];
+      
+      if (rawData.length === 0) return;
+
+      const sorted = [...rawData].sort((a, b) => a - b);
+      
+      // Calculate statistics
+      const stats = {
+        min: Math.min(...rawData),
+        q1: calculateQuantile(rawData, 0.25),
+        median: calculateQuantile(rawData, 0.5),
+        q3: calculateQuantile(rawData, 0.75),
+        max: Math.max(...rawData),
+        n: rawData.length
+      };
+      stats.iqr = stats.q3 - stats.q1;
+      
+      // Update displays
+      document.getElementById('minValue').textContent = stats.min.toFixed(2);
+      document.getElementById('q1Value').textContent = stats.q1.toFixed(2);
+      document.getElementById('medianValue').textContent = stats.median.toFixed(2);
+      document.getElementById('q3Value').textContent = stats.q3.toFixed(2);
+      document.getElementById('maxValue').textContent = stats.max.toFixed(2);
+      document.getElementById('iqrValue').textContent = stats.iqr.toFixed(2);
+      
+      // Update positions
+      document.getElementById('dataCount').textContent = stats.n;
+      document.getElementById('q1Position').textContent = ((stats.n + 1) * 0.25).toFixed(2);
+      document.getElementById('medianPosition').textContent = ((stats.n + 1) * 0.50).toFixed(2);
+      document.getElementById('q3Position').textContent = ((stats.n + 1) * 0.75).toFixed(2);
+      
+      // Update step-by-step
+      updateStepByStep(sorted, stats);
+      
+      // Create visualizations
+      createMainVisualization(sorted, stats);
+      createDistributionPlot(rawData, stats);
+    }
+
+    function updateStepByStep(sorted, stats) {
+      const stepByStepDiv = document.getElementById('stepByStep');
+      
+      let html = `
+        <div class="solution-step">
+          <h4>Step 1: Sort the data in ascending order</h4>
+          <p>Original: [${currentData.map(x => x.toFixed(1)).join(', ')}]</p>
+          <p>Sorted: [${sorted.map(x => x.toFixed(1)).join(', ')}]</p>
+        </div>
+        
+        <div class="solution-step">
+          <h4>Step 2: Calculate positions</h4>
+          <p>Number of values (n) = ${stats.n}</p>
+          <p>Q1 position = (${stats.n} + 1) × 0.25 = ${((stats.n + 1) * 0.25).toFixed(2)}</p>
+          <p>Median position = (${stats.n} + 1) × 0.50 = ${((stats.n + 1) * 0.50).toFixed(2)}</p>
+          <p>Q3 position = (${stats.n} + 1) × 0.75 = ${((stats.n + 1) * 0.75).toFixed(2)}</p>
+        </div>
+      `;
+      
+      // Q1 calculation
+      const q1Pos = (stats.n + 1) * 0.25;
+      const q1Base = Math.floor(q1Pos) - 1;
+      const q1Rest = q1Pos - Math.floor(q1Pos);
+      
+      html += `
+        <div class="solution-step">
+          <h4>Step 3: Find Q1 (First Quartile)</h4>
+      `;
+      
+      if (q1Rest === 0) {
+        html += `<p>Position ${q1Pos} is a whole number, so Q1 = value at position ${Math.floor(q1Pos)}</p>`;
+        html += `<p>Q1 = ${sorted[q1Base].toFixed(2)}</p>`;
+      } else {
+        html += `<p>Position ${q1Pos.toFixed(2)} is between positions ${Math.floor(q1Pos)} and ${Math.ceil(q1Pos)}</p>`;
+        html += `<p>Values: ${sorted[q1Base].toFixed(2)} and ${sorted[q1Base + 1].toFixed(2)}</p>`;
+        html += `<p>Q1 = ${sorted[q1Base].toFixed(2)} + ${q1Rest.toFixed(2)} × (${sorted[q1Base + 1].toFixed(2)} - ${sorted[q1Base].toFixed(2)})</p>`;
+        html += `<p>Q1 = ${stats.q1.toFixed(2)}</p>`;
+      }
+      html += `</div>`;
+      
+      // Median calculation
+      const medPos = (stats.n + 1) * 0.50;
+      const medBase = Math.floor(medPos) - 1;
+      const medRest = medPos - Math.floor(medPos);
+      
+      html += `
+        <div class="solution-step">
+          <h4>Step 4: Find Median (Q2)</h4>
+      `;
+      
+      if (stats.n % 2 === 1) {
+        html += `<p>Odd number of values, so median is the middle value</p>`;
+        html += `<p>Median = value at position ${Math.ceil(medPos)} = ${stats.median.toFixed(2)}</p>`;
+      } else {
+        html += `<p>Even number of values, so median is average of two middle values</p>`;
+        html += `<p>Middle values: ${sorted[medBase].toFixed(2)} and ${sorted[medBase + 1].toFixed(2)}</p>`;
+        html += `<p>Median = (${sorted[medBase].toFixed(2)} + ${sorted[medBase + 1].toFixed(2)}) ÷ 2 = ${stats.median.toFixed(2)}</p>`;
+      }
+      html += `</div>`;
+      
+      // Q3 calculation (similar to Q1)
+      html += `
+        <div class="solution-step">
+          <h4>Step 5: Find Q3 (Third Quartile)</h4>
+          <p>Using same method as Q1 at position ${((stats.n + 1) * 0.75).toFixed(2)}</p>
+          <p>Q3 = ${stats.q3.toFixed(2)}</p>
+        </div>
+        
+        <div class="solution-step">
+          <h4>Step 6: Calculate IQR</h4>
+          <p>IQR = Q3 - Q1 = ${stats.q3.toFixed(2)} - ${stats.q1.toFixed(2)} = ${stats.iqr.toFixed(2)}</p>
+          <p>The middle 50% of the data spans ${stats.iqr.toFixed(2)} units</p>
+        </div>
+      `;
+      
+      stepByStepDiv.innerHTML = html;
+    }
+
+    function createMainVisualization(sorted, stats) {
+      // Create a visual representation of data divided by quartiles
+      const n = sorted.length;
+      const colors = [];
+      const quartileColors = {
+        q1: '#94a3b8',
+        q2: '#3b82f6',
+        q3: '#10b981',
+        q4: '#f59e0b'
+      };
+      
+      sorted.forEach((value, index) => {
+        if (value <= stats.q1) colors.push(quartileColors.q1);
+        else if (value <= stats.median) colors.push(quartileColors.q2);
+        else if (value <= stats.q3) colors.push(quartileColors.q3);
+        else colors.push(quartileColors.q4);
+      });
+      
+      const trace = {
+        x: Array.from({length: n}, (_, i) => i + 1),
+        y: sorted,
+        type: 'scatter',
+        mode: 'markers',
+        marker: {
+          size: 10,
+          color: colors,
+          line: { width: 2, color: 'white' }
+        },
+        text: sorted.map((v, i) => `Value: ${v.toFixed(2)}<br>Position: ${i + 1}`),
+        hovertemplate: '%{text}<extra></extra>'
+      };
+      
+      // Add quartile lines
+      const shapes = [
+        {
+          type: 'line',
+          x0: 0,
+          x1: n + 1,
+          y0: stats.q1,
+          y1: stats.q1,
+          line: { color: '#3b82f6', width: 2, dash: 'dash' }
+        },
+        {
+          type: 'line',
+          x0: 0,
+          x1: n + 1,
+          y0: stats.median,
+          y1: stats.median,
+          line: { color: '#ef4444', width: 3, dash: 'dash' }
+        },
+        {
+          type: 'line',
+          x0: 0,
+          x1: n + 1,
+          y0: stats.q3,
+          y1: stats.q3,
+          line: { color: '#10b981', width: 2, dash: 'dash' }
+        }
+      ];
+      
+      const annotations = [
+        {
+          x: n + 0.5,
+          y: stats.q1,
+          text: `Q1: ${stats.q1.toFixed(2)}`,
+          showarrow: false,
+          xanchor: 'left'
+        },
+        {
+          x: n + 0.5,
+          y: stats.median,
+          text: `Median: ${stats.median.toFixed(2)}`,
+          showarrow: false,
+          xanchor: 'left'
+        },
+        {
+          x: n + 0.5,
+          y: stats.q3,
+          text: `Q3: ${stats.q3.toFixed(2)}`,
+          showarrow: false,
+          xanchor: 'left'
+        }
+      ];
+      
+      const layout = {
+        title: 'Data Points Colored by Quartile',
+        xaxis: { title: 'Position (sorted order)' },
+        yaxis: { title: 'Value' },
+        shapes: shapes,
+        annotations: annotations,
+        showlegend: false
+      };
+      
+      Plotly.newPlot('mainVisualization', [trace], layout, { responsive: true });
+    }
+
+    function createDistributionPlot(data, stats) {
+      // Create histogram with quartile regions
+      const trace = {
+        x: data,
+        type: 'histogram',
+        marker: { 
+          color: '#3b82f6',
+          opacity: 0.7
+        },
+        nbinsx: Math.min(20, Math.max(5, Math.ceil(data.length / 3)))
+      };
+      
+      const shapes = [
+        {
+          type: 'rect',
+          x0: stats.q1,
+          x1: stats.q3,
+          y0: 0,
+          y1: 1,
+          yref: 'paper',
+          fillcolor: '#10b981',
+          opacity: 0.2,
+          line: { width: 0 }
+        }
+      ];
+      
+      const annotations = [
+        {
+          x: (stats.q1 + stats.q3) / 2,
+          y: 0.9,
+          yref: 'paper',
+          text: 'IQR<br>(Middle 50%)',
+          showarrow: false,
+          font: { size: 14, color: '#10b981' }
+        }
+      ];
+      
+      const layout = {
+        title: 'Distribution with IQR Highlighted',
+        xaxis: { title: 'Value' },
+        yaxis: { title: 'Frequency' },
+        shapes: shapes,
+        annotations: annotations
+      };
+      
+      Plotly.newPlot('distributionPlot', [trace], layout, { responsive: true });
+    }
+
+    function loadExample(type) {
+      const data = examples[type];
+      dataInput.value = data.join(', ');
+      updateDisplay();
+    }
+
+    // Event listeners
+    dataInput.addEventListener('input', updateDisplay);
+
+    // Initialize
+    updateDisplay();
+  </script>
+</body>
+</html>

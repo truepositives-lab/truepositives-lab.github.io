@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tree-Based Feature Selection</title>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Tree-Based Feature Selection</h2>
+
+  <div class="card description">
+    <h3>What is Tree-Based Feature Selection?</h3>
+    <p><strong>Tree-based feature selection</strong> uses decision tree algorithms (Random Forest, Extra Trees, Gradient Boosting) to rank features by their importance. These models naturally calculate feature importance based on how much each feature contributes to reducing impurity (Gini or entropy) when making splits.</p>
+    <p>This method is powerful because it captures non-linear relationships, handles feature interactions, and works well with both classification and regression tasks.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Feature Importance (Gini):</strong></p>
+    <p>Importance(fⱼ) = Σₜ [p(t) × ΔI(t)]</p>
+    <p style="margin-top: 1rem;">Where:</p>
+    <ul>
+      <li><strong>fⱼ</strong> = feature j</li>
+      <li><strong>t</strong> = nodes where feature j is used for splitting</li>
+      <li><strong>p(t)</strong> = proportion of samples reaching node t</li>
+      <li><strong>ΔI(t)</strong> = decrease in impurity at node t</li>
+    </ul>
+    <p style="margin-top: 1rem;"><strong>Gini Impurity:</strong> Gini = 1 - Σ(pᵢ)²</p>
+    <p><strong>Entropy:</strong> Entropy = -Σ(pᵢ × log₂(pᵢ))</p>
+  </div>
+
+  <div class="card" style="background: #f0f9ff; border: 2px solid #0ea5e9;">
+    <h3>📊 How It Works</h3>
+    <ol style="line-height: 1.8;">
+      <li>Train a tree-based ensemble model (Random Forest, Extra Trees, etc.)</li>
+      <li>For each feature, calculate total impurity decrease across all trees</li>
+      <li>Normalize importances so they sum to 1.0</li>
+      <li>Rank features by importance score</li>
+      <li>Select top K features or use threshold-based selection</li>
+    </ol>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive Decision Tree Simulator</h3>
+    <p>Adjust feature properties to see how tree-based models calculate importance:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+      <div class="control">
+        <label>Feature 1 - Predictive Power: <span id="f1Power">80</span>%</label>
+        <input type="range" id="f1Slider" min="0" max="100" value="80" style="width: 100%;">
+      </div>
+      <div class="control">
+        <label>Feature 2 - Predictive Power: <span id="f2Power">60</span>%</label>
+        <input type="range" id="f2Slider" min="0" max="100" value="60" style="width: 100%;">
+      </div>
+      <div class="control">
+        <label>Feature 3 - Predictive Power: <span id="f3Power">40</span>%</label>
+        <input type="range" id="f3Slider" min="0" max="100" value="40" style="width: 100%;">
+      </div>
+      <div class="control">
+        <label>Feature 4 - Predictive Power: <span id="f4Power">20</span>%</label>
+        <input type="range" id="f4Slider" min="0" max="100" value="20" style="width: 100%;">
+      </div>
+    </div>
+
+    <div class="control" style="margin-top: 1rem;">
+      <label>Number of Trees: <span id="nTreesValue">100</span></label>
+      <input type="range" id="nTreesSlider" min="10" max="500" step="10" value="100" style="width: 100%;">
+    </div>
+
+    <div class="control" style="margin-top: 1rem;">
+      <label>Selection Threshold: <span id="thresholdValue">0.10</span></label>
+      <input type="range" id="thresholdSlider" min="0" max="0.5" step="0.01" value="0.10" style="width: 100%;">
+      <small>Features with importance below this threshold will be removed</small>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📈 Feature Importance Results</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Features Selected</h4>
+        <p id="featuresSelected" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">0</p>
+      </div>
+      <div class="card">
+        <h4>Features Removed</h4>
+        <p id="featuresRemoved" style="font-size: 1.5rem; font-weight: bold; color: var(--error-color);">0</p>
+      </div>
+      <div class="card">
+        <h4>Top Feature</h4>
+        <p id="topFeature" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">-</p>
+      </div>
+      <div class="card">
+        <h4>Model Accuracy</h4>
+        <p id="accuracy" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">0%</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="importanceChart" style="width:100%;height:400px;margin: 2rem 0;"></div>
+
+  <div id="cumulativeImportance" style="width:100%;height:400px;margin: 2rem 0;"></div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🌳 Decision Tree Visualization</h3>
+    <p>This shows how the most important feature creates the first split:</p>
+    <div id="treeViz" style="margin-top: 1rem;"></div>
+  </div>
+
+  <div class="scenario">
+    <h3>🔄 Pre-loaded Scenarios</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>📊 One Dominant Feature</h4>
+        <button class="button" onclick="loadScenario('dominant')">Load Scenario</button>
+      </div>
+      <div class="card">
+        <h4>⚖️ Balanced Features</h4>
+        <button class="button" onclick="loadScenario('balanced')">Load Scenario</button>
+      </div>
+      <div class="card">
+        <h4>📉 Decreasing Importance</h4>
+        <button class="button" onclick="loadScenario('decreasing')">Load Scenario</button>
+      </div>
+      <div class="card">
+        <h4>🎲 Random Importance</h4>
+        <button class="button" onclick="loadScenario('random')">Load Scenario</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background: #fef3c7; border: 2px solid #f59e0b; margin-top: 2rem;">
+    <h3>⚠️ Important Considerations</h3>
+    <ul style="line-height: 1.8;">
+      <li><strong>Correlation Bias:</strong> Favors features with more categories/values</li>
+      <li><strong>Random Variation:</strong> Importances vary between runs - use random seed</li>
+      <li><strong>Not Causation:</strong> High importance ≠ causal relationship</li>
+      <li><strong>Ensemble Required:</strong> Single tree importances are unreliable</li>
+      <li><strong>Scale Independent:</strong> Works with any feature scale (advantage!)</li>
+    </ul>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50; margin-top: 2rem;">
+    <h3>💡 Tree-Based Models Comparison</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 1rem;">
+      <div>
+        <h4>Random Forest ⭐</h4>
+        <ul>
+          <li>Bootstrap sampling</li>
+          <li>Random feature subset</li>
+          <li>Most popular choice</li>
+          <li>Stable importances</li>
+          <li>Good default option</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Extra Trees ⚡</h4>
+        <ul>
+          <li>Random splits</li>
+          <li>Faster training</li>
+          <li>More randomization</li>
+          <li>Less overfitting</li>
+          <li>Good for selection</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Gradient Boosting 🚀</h4>
+        <ul>
+          <li>Sequential trees</li>
+          <li>Focus on errors</li>
+          <li>Best accuracy</li>
+          <li>Importance = total gain</li>
+          <li>Computationally expensive</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🐍 Python Implementation</h3>
+    <pre style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: var(--radius-md); overflow-x: auto;"><code>from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
+from sklearn.feature_selection import SelectFromModel
+import numpy as np
+
+# Example data
+X = np.random.randn(1000, 20)  # 1000 samples, 20 features
+y = (X[:, 0] + X[:, 1] > 0).astype(int)  # Only features 0,1 relevant
+
+# Method 1: Random Forest with manual threshold
+rf = RandomForestClassifier(n_estimators=100, random_state=42)
+rf.fit(X, y)
+
+# Get feature importances
+importances = rf.feature_importances_
+indices = np.argsort(importances)[::-1]
+
+print("Feature ranking:")
+for i in range(10):
+    print(f"{i+1}. Feature {indices[i]}: {importances[indices[i]]:.4f}")
+
+# Method 2: Automatic selection with SelectFromModel
+selector = SelectFromModel(rf, threshold='mean')  # or 'median', or 0.01
+X_selected = selector.fit_transform(X, y)
+print(f"\nSelected {X_selected.shape[1]} features")
+print(f"Selected indices: {np.where(selector.get_support())[0]}")
+
+# Method 3: Extra Trees (faster, more randomization)
+et = ExtraTreesClassifier(n_estimators=100, random_state=42)
+et.fit(X, y)
+et_selector = SelectFromModel(et, threshold='mean')
+X_et_selected = et_selector.fit_transform(X, y)
+
+# Method 4: Select top K features
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import f_classif
+
+def tree_importance_score(X, y):
+    """Custom scoring function using tree importance"""
+    rf = RandomForestClassifier(n_estimators=50, random_state=42)
+    rf.fit(X, y)
+    return rf.feature_importances_
+
+# Select top 5 features
+k_best = SelectKBest(score_func=tree_importance_score, k=5)
+X_kbest = k_best.fit_transform(X, y)
+</code></pre>
+  </div>
+
+  <div class="scenario" style="margin-top: 2rem;">
+    <h3>🎓 Practice Exercise</h3>
+    <button class="collapsible">Click to show exercise</button>
+    <div class="content">
+      <p style="margin-top: 1rem;"><strong>Exercise:</strong> You train a Random Forest with 100 trees and get these feature importances:</p>
+      <ul>
+        <li>Feature A: 0.35</li>
+        <li>Feature B: 0.28</li>
+        <li>Feature C: 0.15</li>
+        <li>Feature D: 0.12</li>
+        <li>Feature E: 0.10</li>
+      </ul>
+      <p><strong>Questions:</strong></p>
+      <ol>
+        <li>If you use threshold = 'mean', which features are selected?</li>
+        <li>How much total importance do the top 2 features capture?</li>
+        <li>If you need to reduce to 3 features, which would you choose?</li>
+      </ol>
+      <button class="collapsible" style="margin-top: 1rem;">Show solution</button>
+      <div class="content">
+        <p style="margin-top: 1rem;"><strong>Solution:</strong></p>
+        <p>1. Mean = (0.35+0.28+0.15+0.12+0.10)/5 = 0.20</p>
+        <p>   Selected: A (0.35) and B (0.28) only</p>
+        <p>2. Top 2 capture: 0.35 + 0.28 = 0.63 (63% of total importance)</p>
+        <p>3. Choose A, B, C (top 3 by importance score)</p>
+        <p><strong>Note:</strong> Top 3 features capture 78% of importance with only 60% of features!</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const sliders = {
+      f1: document.getElementById('f1Slider'),
+      f2: document.getElementById('f2Slider'),
+      f3: document.getElementById('f3Slider'),
+      f4: document.getElementById('f4Slider'),
+      nTrees: document.getElementById('nTreesSlider'),
+      threshold: document.getElementById('thresholdSlider')
+    };
+
+    const displays = {
+      f1: document.getElementById('f1Power'),
+      f2: document.getElementById('f2Power'),
+      f3: document.getElementById('f3Power'),
+      f4: document.getElementById('f4Power'),
+      nTrees: document.getElementById('nTreesValue'),
+      threshold: document.getElementById('thresholdValue')
+    };
+
+    function calculateImportances() {
+      const powers = [
+        parseFloat(sliders.f1.value),
+        parseFloat(sliders.f2.value),
+        parseFloat(sliders.f3.value),
+        parseFloat(sliders.f4.value)
+      ];
+
+      const nTrees = parseFloat(sliders.nTrees.value);
+      const variance = 100 / Math.sqrt(nTrees);
+
+      const importances = powers.map(p => {
+        const baseImportance = p / 100;
+        const noise = (Math.random() - 0.5) * variance / 100;
+        return Math.max(0, baseImportance + noise);
+      });
+
+      const total = importances.reduce((sum, imp) => sum + imp, 0);
+      const normalized = importances.map(imp => imp / total);
+
+      return normalized;
+    }
+
+    function updateDisplay() {
+      displays.f1.textContent = sliders.f1.value;
+      displays.f2.textContent = sliders.f2.value;
+      displays.f3.textContent = sliders.f3.value;
+      displays.f4.textContent = sliders.f4.value;
+      displays.nTrees.textContent = sliders.nTrees.value;
+      displays.threshold.textContent = parseFloat(sliders.threshold.value).toFixed(2);
+
+      const importances = calculateImportances();
+      const threshold = parseFloat(sliders.threshold.value);
+
+      const selected = importances.filter(imp => imp >= threshold).length;
+      const removed = importances.length - selected;
+      const topIdx = importances.indexOf(Math.max(...importances));
+      const accuracy = importances.reduce((sum, imp) => sum + imp, 0) * 100;
+
+      document.getElementById('featuresSelected').textContent = selected;
+      document.getElementById('featuresRemoved').textContent = removed;
+      document.getElementById('topFeature').textContent = `Feature ${topIdx + 1}`;
+      document.getElementById('accuracy').textContent = Math.min(99, 50 + accuracy/4).toFixed(1) + '%';
+
+      createImportanceChart(importances, threshold);
+      createCumulativeImportance(importances);
+      createTreeVisualization(importances);
+    }
+
+    function createImportanceChart(importances, threshold) {
+      const features = importances.map((_, i) => `Feature ${i + 1}`);
+
+      const trace = {
+        x: features,
+        y: importances,
+        type: 'bar',
+        marker: {
+          color: importances.map(imp => imp >= threshold ? '#10b981' : '#ef4444'),
+          opacity: 0.8
+        },
+        text: importances.map(imp => imp.toFixed(3)),
+        textposition: 'auto'
+      };
+
+      const thresholdLine = {
+        x: features,
+        y: Array(features.length).fill(threshold),
+        type: 'scatter',
+        mode: 'lines',
+        name: `Threshold (${threshold.toFixed(2)})`,
+        line: { color: '#f59e0b', width: 3, dash: 'dash' }
+      };
+
+      const layout = {
+        title: 'Feature Importance Scores',
+        xaxis: { title: 'Feature' },
+        yaxis: { title: 'Importance' },
+        showlegend: true
+      };
+
+      Plotly.newPlot('importanceChart', [trace, thresholdLine], layout, { responsive: true });
+    }
+
+    function createCumulativeImportance(importances) {
+      const sorted = [...importances].sort((a, b) => b - a);
+      const cumulative = [];
+      let sum = 0;
+      sorted.forEach(imp => {
+        sum += imp;
+        cumulative.push(sum);
+      });
+
+      const features = sorted.map((_, i) => i + 1);
+
+      const trace = {
+        x: features,
+        y: cumulative,
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Cumulative Importance',
+        line: { color: '#3b82f6', width: 3 },
+        marker: { size: 8 },
+        fill: 'tozeroy',
+        fillcolor: 'rgba(59, 130, 246, 0.1)'
+      };
+
+      const line80 = {
+        x: [0, features.length + 1],
+        y: [0.8, 0.8],
+        type: 'scatter',
+        mode: 'lines',
+        name: '80% threshold',
+        line: { color: '#10b981', width: 2, dash: 'dash' }
+      };
+
+      const layout = {
+        title: 'Cumulative Feature Importance',
+        xaxis: { title: 'Number of Features (sorted by importance)' },
+        yaxis: { title: 'Cumulative Importance', range: [0, 1.05] },
+        showlegend: true,
+        annotations: [{
+          x: features.length / 2,
+          y: 0.9,
+          text: `Top ${features.filter((_, i) => cumulative[i] <= 0.8).length + 1} features capture 80% importance`,
+          showarrow: false,
+          font: { size: 12, color: '#10b981' }
+        }]
+      };
+
+      Plotly.newPlot('cumulativeImportance', [trace, line80], layout, { responsive: true });
+    }
+
+    function createTreeVisualization(importances) {
+      const topIdx = importances.indexOf(Math.max(...importances));
+      const topImportance = importances[topIdx];
+
+      const html = `
+        <div style="text-align: center; font-family: monospace;">
+          <div style="margin: 2rem 0;">
+            <div style="display: inline-block; padding: 1rem 2rem; background: #3b82f6; color: white; border-radius: 8px;">
+              Feature ${topIdx + 1} ≤ threshold?<br>
+              <small>Importance: ${topImportance.toFixed(3)}</small>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-around; margin-top: 2rem;">
+            <div>
+              <div style="padding: 1rem; background: #10b981; color: white; border-radius: 8px; display: inline-block;">
+                Class 0<br>
+                <small>Gini = ${(Math.random() * 0.3).toFixed(3)}</small>
+              </div>
+            </div>
+            <div>
+              <div style="padding: 1rem; background: #ef4444; color: white; border-radius: 8px; display: inline-block;">
+                Class 1<br>
+                <small>Gini = ${(Math.random() * 0.3).toFixed(3)}</small>
+              </div>
+            </div>
+          </div>
+          <p style="margin-top: 2rem; color: var(--text-secondary);">
+            <small>The most important feature (${topIdx + 1}) creates the first split, maximizing information gain</small>
+          </p>
+        </div>
+      `;
+
+      document.getElementById('treeViz').innerHTML = html;
+    }
+
+    function loadScenario(type) {
+      const scenarios = {
+        dominant: [90, 5, 3, 2],
+        balanced: [25, 25, 25, 25],
+        decreasing: [50, 30, 15, 5],
+        random: [Math.random()*100, Math.random()*100, Math.random()*100, Math.random()*100]
+      };
+
+      const values = scenarios[type];
+      sliders.f1.value = values[0];
+      sliders.f2.value = values[1];
+      sliders.f3.value = values[2];
+      sliders.f4.value = values[3];
+
+      updateDisplay();
+    }
+
+    Object.values(sliders).forEach(slider => {
+      slider.addEventListener('input', updateDisplay);
+    });
+
+    const collapsibles = document.getElementsByClassName('collapsible');
+    for (let i = 0; i < collapsibles.length; i++) {
+      collapsibles[i].addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+        }
+      });
+    }
+
+    updateDisplay();
+  </script>
+</body>
+</html>

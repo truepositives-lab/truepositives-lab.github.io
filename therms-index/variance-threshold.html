@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Variance Threshold for Feature Selection</title>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Variance Threshold for Feature Selection</h2>
+
+  <div class="card description">
+    <h3>What is Variance Threshold?</h3>
+    <p>The <strong>Variance Threshold</strong> is a simple baseline feature selection method that removes features with low variance. Features with very low variance (close to zero) contain little information and are unlikely to be useful for machine learning models.</p>
+    <p>This method is particularly effective at removing quasi-constant or constant features that don't vary much across samples, making it a good first step in the feature selection pipeline.</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>Variance Formula: Var(X) = Σ(xᵢ - μ)² / n</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>Var(X)</strong> = variance of feature X</li>
+      <li><strong>xᵢ</strong> = individual values of the feature</li>
+      <li><strong>μ</strong> = mean of the feature</li>
+      <li><strong>n</strong> = number of samples</li>
+    </ul>
+    <p style="margin-top: 1rem;"><strong>Decision Rule:</strong> Remove feature if Var(X) < threshold</p>
+  </div>
+
+  <div class="card" style="background: #f0f9ff; border: 2px solid #0ea5e9;">
+    <h3>📊 How Variance Threshold Works</h3>
+    <ol style="line-height: 1.8;">
+      <li>Calculate the variance for each feature independently</li>
+      <li>Compare each variance to a predefined threshold</li>
+      <li>Remove features with variance below the threshold</li>
+      <li>Keep features with variance above the threshold</li>
+    </ol>
+    <p style="margin-top: 1rem;"><strong>Common thresholds:</strong> 0.0 (removes constants), 0.01, 0.1</p>
+  </div>
+
+  <div class="scenario">
+    <h3>🎯 Interactive Variance Calculator</h3>
+    <p>Enter feature values to calculate variance and determine if the feature should be selected.</p>
+
+    <div class="control">
+      <label for="featureInput">Enter comma-separated feature values:</label>
+      <input type="text" id="featureInput" value="2.5, 2.6, 2.4, 2.5, 2.7, 2.5, 2.6"
+             style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+      <small>Try: High variance: 10, 50, 30, 70, 20 | Low variance: 5.0, 5.1, 5.0, 5.2, 5.1</small>
+    </div>
+
+    <div class="control" style="margin-top: 1rem;">
+      <label for="thresholdSlider">Variance Threshold: <span id="thresholdValue">0.01</span></label>
+      <input type="range" id="thresholdSlider" min="0" max="1" step="0.01" value="0.01"
+             style="width: 100%;">
+      <small>Move slider to adjust the minimum acceptable variance</small>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📈 Feature Statistics</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Variance</h4>
+        <p id="varianceValue" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">0.00</p>
+      </div>
+      <div class="card">
+        <h4>Std Deviation</h4>
+        <p id="stdValue" style="font-size: 1.5rem; font-weight: bold; color: var(--info-color);">0.00</p>
+      </div>
+      <div class="card">
+        <h4>Mean</h4>
+        <p id="meanValue" style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">0.00</p>
+      </div>
+      <div class="card">
+        <h4>Range</h4>
+        <p id="rangeValue" style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);">0.00</p>
+      </div>
+      <div class="card" style="grid-column: 1 / -1;">
+        <h4>Selection Decision</h4>
+        <p id="decision" style="font-size: 1.3rem; font-weight: bold;">-</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="featureVisualization" style="width:100%;height:400px;margin: 2rem 0;"></div>
+
+  <div id="varianceComparison" style="width:100%;height:400px;margin: 2rem 0;"></div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🧮 Step-by-Step Calculation</h3>
+    <div id="stepByStep">
+      <p>Enter feature values above to see the calculation steps...</p>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>🔄 Feature Selection Examples</h3>
+    <p>Try these examples to understand how variance threshold works:</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>🔴 Constant Feature</h4>
+        <p><small>Var = 0.00 (Remove)</small></p>
+        <button class="button" onclick="loadExample('constant')">Load Example</button>
+      </div>
+      <div class="card">
+        <h4>🟡 Quasi-Constant</h4>
+        <p><small>Var ≈ 0.01 (Borderline)</small></p>
+        <button class="button" onclick="loadExample('quasiConstant')">Load Example</button>
+      </div>
+      <div class="card">
+        <h4>🟢 Low Variance</h4>
+        <p><small>Var ≈ 0.5 (Keep)</small></p>
+        <button class="button" onclick="loadExample('lowVariance')">Load Example</button>
+      </div>
+      <div class="card">
+        <h4>🟢 High Variance</h4>
+        <p><small>Var > 10 (Definitely Keep)</small></p>
+        <button class="button" onclick="loadExample('highVariance')">Load Example</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background: #fef3c7; border: 2px solid #f59e0b; margin-top: 2rem;">
+    <h3>⚠️ Important Considerations</h3>
+    <ul style="line-height: 1.8;">
+      <li><strong>Feature Scaling:</strong> Variance depends on feature scale - normalize first!</li>
+      <li><strong>Binary Features:</strong> Binary features naturally have low variance</li>
+      <li><strong>Threshold Selection:</strong> No universal threshold - depends on your data</li>
+      <li><strong>Unsupervised:</strong> Doesn't consider relationship with target variable</li>
+      <li><strong>First Step Only:</strong> Use as preprocessing, not the only selection method</li>
+    </ul>
+  </div>
+
+  <div class="scenario" style="background: #f0fff0; border: 2px solid #4caf50; margin-top: 2rem;">
+    <h3>💡 When to Use Variance Threshold</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+      <div>
+        <h4>✅ Good Use Cases</h4>
+        <ul>
+          <li>Removing constant features</li>
+          <li>Initial data cleaning step</li>
+          <li>High-dimensional datasets</li>
+          <li>Quasi-constant indicators</li>
+          <li>Normalized/scaled features</li>
+        </ul>
+      </div>
+      <div>
+        <h4>❌ Not Recommended</h4>
+        <ul>
+          <li>As the only selection method</li>
+          <li>Without feature scaling</li>
+          <li>For binary features only</li>
+          <li>When variance = importance</li>
+          <li>Small sample sizes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h3>🐍 Python Implementation</h3>
+    <pre style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: var(--radius-md); overflow-x: auto;"><code>from sklearn.feature_selection import VarianceThreshold
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
+
+# Example data
+X = np.array([[0, 2, 0, 3],
+              [0, 1, 4, 3],
+              [0, 1, 1, 3],
+              [0, 2, 2, 3]])
+
+# Important: Normalize features first!
+scaler = MinMaxScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Remove features with variance < 0.01
+selector = VarianceThreshold(threshold=0.01)
+X_selected = selector.fit_transform(X_scaled)
+
+print(f"Original shape: {X.shape}")
+print(f"Selected shape: {X_selected.shape}")
+print(f"Feature variances: {selector.variances_}")
+print(f"Selected features: {selector.get_support()}")
+
+# Feature 0 and 3 removed (constant or low variance)
+# Features 1 and 2 kept (sufficient variance)
+</code></pre>
+  </div>
+
+  <div class="scenario" style="margin-top: 2rem;">
+    <h3>🎓 Practice Exercise</h3>
+    <button class="collapsible">Click to show exercise</button>
+    <div class="content">
+      <p style="margin-top: 1rem;"><strong>Exercise:</strong> You have 3 features with these normalized values:</p>
+      <ul>
+        <li>Feature A: [0.5, 0.5, 0.5, 0.5, 0.5]</li>
+        <li>Feature B: [0.1, 0.2, 0.15, 0.18, 0.17]</li>
+        <li>Feature C: [0.0, 0.5, 1.0, 0.2, 0.8]</li>
+      </ul>
+      <p><strong>Tasks:</strong></p>
+      <ol>
+        <li>Calculate variance for each feature</li>
+        <li>Which features would be removed with threshold = 0.01?</li>
+        <li>Which features would be removed with threshold = 0.1?</li>
+      </ol>
+      <button class="collapsible" style="margin-top: 1rem;">Show solution</button>
+      <div class="content">
+        <p style="margin-top: 1rem;"><strong>Solution:</strong></p>
+        <p>1. Var(A) = 0.00, Var(B) ≈ 0.002, Var(C) ≈ 0.14</p>
+        <p>2. With threshold = 0.01: Remove A and B (keep only C)</p>
+        <p>3. With threshold = 0.1: Remove A, B, and C (no features left!)</p>
+        <p><strong>Lesson:</strong> Choosing the right threshold is crucial!</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const featureInput = document.getElementById('featureInput');
+    const thresholdSlider = document.getElementById('thresholdSlider');
+    const thresholdValue = document.getElementById('thresholdValue');
+
+    const examples = {
+      constant: [5, 5, 5, 5, 5, 5, 5],
+      quasiConstant: [5.0, 5.1, 5.0, 5.0, 5.1, 5.0, 5.1],
+      lowVariance: [4.5, 5.0, 5.5, 4.8, 5.2, 4.9, 5.1],
+      highVariance: [1, 10, 3, 15, 5, 20, 8, 12]
+    };
+
+    function parseData(input) {
+      return input.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+    }
+
+    function calculateVariance(data) {
+      if (data.length === 0) return 0;
+      const mean = data.reduce((sum, x) => sum + x, 0) / data.length;
+      const squaredDiffs = data.map(x => Math.pow(x - mean, 2));
+      return squaredDiffs.reduce((sum, x) => sum + x, 0) / data.length;
+    }
+
+    function calculateStats(data) {
+      if (data.length === 0) return { variance: 0, std: 0, mean: 0, min: 0, max: 0, range: 0 };
+
+      const mean = data.reduce((sum, x) => sum + x, 0) / data.length;
+      const variance = calculateVariance(data);
+      const std = Math.sqrt(variance);
+      const min = Math.min(...data);
+      const max = Math.max(...data);
+      const range = max - min;
+
+      return { variance, std, mean, min, max, range };
+    }
+
+    function updateDisplay() {
+      const data = parseData(featureInput.value);
+      if (data.length === 0) return;
+
+      const stats = calculateStats(data);
+      const threshold = parseFloat(thresholdSlider.value);
+
+      document.getElementById('varianceValue').textContent = stats.variance.toFixed(4);
+      document.getElementById('stdValue').textContent = stats.std.toFixed(4);
+      document.getElementById('meanValue').textContent = stats.mean.toFixed(4);
+      document.getElementById('rangeValue').textContent = stats.range.toFixed(4);
+
+      const decision = stats.variance >= threshold ?
+        `<span style="color: var(--success-color);">✓ KEEP FEATURE</span> (Var ${stats.variance.toFixed(4)} ≥ ${threshold})` :
+        `<span style="color: var(--error-color);">✗ REMOVE FEATURE</span> (Var ${stats.variance.toFixed(4)} < ${threshold})`;
+      document.getElementById('decision').innerHTML = decision;
+
+      createFeatureVisualization(data, stats);
+      createVarianceComparison(stats, threshold);
+      updateStepByStep(data, stats, threshold);
+    }
+
+    function createFeatureVisualization(data, stats) {
+      const indices = Array.from({length: data.length}, (_, i) => i + 1);
+
+      const trace1 = {
+        x: indices,
+        y: data,
+        type: 'scatter',
+        mode: 'markers+lines',
+        name: 'Feature Values',
+        marker: { size: 10, color: '#3b82f6' },
+        line: { color: '#3b82f6', width: 2 }
+      };
+
+      const trace2 = {
+        x: [0, data.length + 1],
+        y: [stats.mean, stats.mean],
+        type: 'scatter',
+        mode: 'lines',
+        name: `Mean (${stats.mean.toFixed(2)})`,
+        line: { color: '#ef4444', width: 2, dash: 'dash' }
+      };
+
+      const trace3 = {
+        x: [0, data.length + 1],
+        y: [stats.mean + stats.std, stats.mean + stats.std],
+        type: 'scatter',
+        mode: 'lines',
+        name: `Mean + σ`,
+        line: { color: '#10b981', width: 1, dash: 'dot' },
+        showlegend: false
+      };
+
+      const trace4 = {
+        x: [0, data.length + 1],
+        y: [stats.mean - stats.std, stats.mean - stats.std],
+        type: 'scatter',
+        mode: 'lines',
+        name: `Mean - σ`,
+        line: { color: '#10b981', width: 1, dash: 'dot' }
+      };
+
+      const layout = {
+        title: `Feature Values (Variance = ${stats.variance.toFixed(4)})`,
+        xaxis: { title: 'Sample Index' },
+        yaxis: { title: 'Feature Value' },
+        showlegend: true,
+        hovermode: 'closest'
+      };
+
+      Plotly.newPlot('featureVisualization', [trace1, trace2, trace3, trace4], layout, { responsive: true });
+    }
+
+    function createVarianceComparison(stats, threshold) {
+      const trace = {
+        x: ['Threshold', 'Feature Variance'],
+        y: [threshold, stats.variance],
+        type: 'bar',
+        marker: {
+          color: [threshold, stats.variance >= threshold ? '#10b981' : '#ef4444'],
+          opacity: 0.7
+        },
+        text: [threshold.toFixed(4), stats.variance.toFixed(4)],
+        textposition: 'auto'
+      };
+
+      const layout = {
+        title: 'Variance Threshold Comparison',
+        yaxis: { title: 'Variance', type: 'log' },
+        showlegend: false,
+        annotations: [{
+          x: 0.5,
+          y: Math.max(threshold, stats.variance) * 0.5,
+          text: stats.variance >= threshold ? '✓ Feature Selected' : '✗ Feature Removed',
+          showarrow: false,
+          font: { size: 16, color: stats.variance >= threshold ? '#10b981' : '#ef4444' }
+        }]
+      };
+
+      Plotly.newPlot('varianceComparison', [trace], layout, { responsive: true });
+    }
+
+    function updateStepByStep(data, stats, threshold) {
+      const deviations = data.map(x => x - stats.mean);
+      const squaredDeviations = deviations.map(d => d * d);
+
+      const html = `
+        <div class="solution-step">
+          <h4>Step 1: Calculate the mean (μ)</h4>
+          <p>μ = (${data.join(' + ')}) / ${data.length}</p>
+          <p>μ = ${(data.reduce((a,b) => a+b, 0)).toFixed(2)} / ${data.length}</p>
+          <p><strong>μ = ${stats.mean.toFixed(4)}</strong></p>
+        </div>
+
+        <div class="solution-step">
+          <h4>Step 2: Calculate deviations from mean (xᵢ - μ)</h4>
+          <p>Deviations: [${deviations.map(d => d.toFixed(2)).join(', ')}]</p>
+        </div>
+
+        <div class="solution-step">
+          <h4>Step 3: Square the deviations (xᵢ - μ)²</h4>
+          <p>Squared deviations: [${squaredDeviations.map(d => d.toFixed(4)).join(', ')}]</p>
+        </div>
+
+        <div class="solution-step">
+          <h4>Step 4: Calculate variance</h4>
+          <p>Var(X) = Σ(xᵢ - μ)² / n</p>
+          <p>Var(X) = ${squaredDeviations.reduce((a,b) => a+b, 0).toFixed(4)} / ${data.length}</p>
+          <p><strong>Var(X) = ${stats.variance.toFixed(4)}</strong></p>
+        </div>
+
+        <div class="solution-step">
+          <h4>Step 5: Compare with threshold</h4>
+          <p>Threshold = ${threshold}</p>
+          <p>Feature variance = ${stats.variance.toFixed(4)}</p>
+          <p>${stats.variance.toFixed(4)} ${stats.variance >= threshold ? '≥' : '<'} ${threshold}</p>
+          <p><strong>Decision: ${stats.variance >= threshold ?
+            '<span style="color: var(--success-color);">Keep this feature ✓</span>' :
+            '<span style="color: var(--error-color);">Remove this feature ✗</span>'
+          }</strong></p>
+        </div>
+      `;
+
+      document.getElementById('stepByStep').innerHTML = html;
+    }
+
+    function loadExample(type) {
+      const data = examples[type];
+      featureInput.value = data.join(', ');
+      updateDisplay();
+    }
+
+    featureInput.addEventListener('input', updateDisplay);
+    thresholdSlider.addEventListener('input', function() {
+      thresholdValue.textContent = this.value;
+      updateDisplay();
+    });
+
+    const collapsibles = document.getElementsByClassName('collapsible');
+    for (let i = 0; i < collapsibles.length; i++) {
+      collapsibles[i].addEventListener('click', function() {
+        this.classList.toggle('active');
+        const content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+        }
+      });
+    }
+
+    updateDisplay();
+  </script>
+</body>
+</html>

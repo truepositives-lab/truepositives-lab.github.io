@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expected Value</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Expected Value</h2>
+
+  <div class="card description">
+    <h3>Understanding Expected Value</h3>
+    <p><strong>Expected value</strong> is the average outcome you can expect from a random variable over many trials. It's the probability-weighted average of all possible outcomes.</p>
+    <p>In investment contexts, expected value helps evaluate the potential profitability of different strategies, assets, or decisions under uncertainty.</p>
+  </div>
+
+  <div class="formula">
+    <h4>Expected Value Formula:</h4>
+    <p><strong>E[X] = Σ (xi × P(xi))</strong></p>
+    <p>For continuous distributions: <strong>E[X] = ∫ x × f(x) dx</strong></p>
+    <p>Where:</p>
+    <ul>
+      <li><strong>xi</strong> = Each possible outcome</li>
+      <li><strong>P(xi)</strong> = Probability of outcome xi</li>
+      <li><strong>f(x)</strong> = Probability density function</li>
+    </ul>
+    <div class="highlight">
+      <p><strong>Key Properties:</strong></p>
+      <ul>
+        <li><strong>Linearity:</strong> E[aX + bY] = aE[X] + bE[Y]</li>
+        <li><strong>Non-negativity:</strong> If X ≥ 0, then E[X] ≥ 0</li>
+        <li><strong>Monotonicity:</strong> If X ≤ Y, then E[X] ≤ E[Y]</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <h3>📊 Interactive Portfolio Expected Return Calculator</h3>
+    <p>Build a portfolio and see how expected values combine. Explore different asset allocations and market scenarios to understand risk-return tradeoffs.</p>
+  </div>
+
+  <div class="control">
+    <label for="scenarioSelect">Market Scenario:</label>
+    <select id="scenarioSelect" style="padding: 0.5rem; border-radius: 0.375rem; border: 1px solid var(--border-color); margin-bottom: 1rem;">
+      <option value="bull">Bull Market</option>
+      <option value="normal">Normal Market</option>
+      <option value="bear">Bear Market</option>
+      <option value="recession">Recession</option>
+      <option value="custom">Custom Scenario</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <h3>🎯 Asset Allocation</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div class="control">
+        <label for="stockWeight">Stocks: <span id="stockWeightValue">60</span>%</label>
+        <input type="range" id="stockWeight" min="0" max="100" step="5" value="60" />
+        <small>Expected Return: <span id="stockReturn">10.0%</span></small>
+      </div>
+      <div class="control">
+        <label for="bondWeight">Bonds: <span id="bondWeightValue">30</span>%</label>
+        <input type="range" id="bondWeight" min="0" max="100" step="5" value="30" />
+        <small>Expected Return: <span id="bondReturn">4.0%</span></small>
+      </div>
+      <div class="control">
+        <label for="cashWeight">Cash: <span id="cashWeightValue">10</span>%</label>
+        <input type="range" id="cashWeight" min="0" max="100" step="5" value="10" />
+        <small>Expected Return: <span id="cashReturn">2.0%</span></small>
+      </div>
+    </div>
+    <div class="highlight" style="margin-top: 1rem;">
+      <p><strong>Total Allocation: <span id="totalAllocation">100</span>%</strong></p>
+      <p id="allocationWarning" style="color: var(--warning-color); display: none;">⚠️ Allocation must sum to 100%</p>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>📈 Portfolio Analysis</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+      <div class="card">
+        <h4>Expected Return</h4>
+        <p id="portfolioReturn" style="font-size: 1.8rem; font-weight: 600; color: var(--primary-color);">7.2%</p>
+        <small>Probability-weighted average</small>
+      </div>
+      <div class="card">
+        <h4>Expected Value ($10k)</h4>
+        <p id="expectedValue" style="font-size: 1.8rem; font-weight: 600; color: var(--success-color);">$720</p>
+        <small>Annual expected gain</small>
+      </div>
+      <div class="card">
+        <h4>Risk Level</h4>
+        <p id="riskLevel" style="font-size: 1.8rem; font-weight: 600; color: var(--info-color);">Moderate</p>
+        <small>Based on allocation</small>
+      </div>
+      <div class="card">
+        <h4>Sharpe Estimate</h4>
+        <p id="sharpeEstimate" style="font-size: 1.8rem; font-weight: 600; color: var(--warning-color);">0.42</p>
+        <small>Risk-adjusted return</small>
+      </div>
+    </div>
+  </div>
+
+  <div id="allocationPlot" style="width:100%;height:300px;"></div>
+  <div id="scenarioAnalysisPlot" style="width:100%;height:400px;"></div>
+
+  <div class="card">
+    <h3>🔢 Expected Value Calculation Breakdown</h3>
+    <div id="calculationSteps">
+      <div class="solution-step">
+        <strong>Step 1: Individual Asset Expected Returns</strong>
+        <p id="step1">Stocks: 10.0% | Bonds: 4.0% | Cash: 2.0%</p>
+      </div>
+      <div class="solution-step">
+        <strong>Step 2: Weight × Expected Return for each asset</strong>
+        <p id="step2">Stocks: 60% × 10.0% = 6.0% | Bonds: 30% × 4.0% = 1.2% | Cash: 10% × 2.0% = 0.2%</p>
+      </div>
+      <div class="solution-step">
+        <strong>Step 3: Sum weighted returns (Linearity of Expectation)</strong>
+        <p id="step3">E[Portfolio] = 6.0% + 1.2% + 0.2% = 7.4%</p>
+      </div>
+      <div class="solution-step">
+        <strong>Step 4: Apply to investment amount</strong>
+        <p id="step4">Expected Value = $10,000 × 7.4% = $740 annual expected return</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario" style="background-color: var(--bg-secondary); border: 2px solid var(--info-color);">
+    <h3>⚖️ Decision Analysis: Expected Value vs Risk</h3>
+    <div class="control">
+      <label for="investmentAmount">Investment Amount: $<span id="investmentValue">10000</span></label>
+      <input type="range" id="investmentAmount" min="1000" max="100000" step="1000" value="10000" />
+    </div>
+    <div class="control">
+      <label for="timeHorizon">Time Horizon: <span id="timeValue">10</span> years</label>
+      <input type="range" id="timeHorizon" min="1" max="30" step="1" value="10" />
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+      <div>
+        <h4 style="color: var(--success-color);">Expected Outcomes</h4>
+        <ul>
+          <li>Expected final value: <strong id="finalValue">$19,672</strong></li>
+          <li>Expected total return: <strong id="totalReturn">$9,672</strong></li>
+          <li>Annualized return: <strong id="annualizedReturn">7.2%</strong></li>
+          <li>Probability of profit: <strong id="profitProb">~75%</strong></li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color: var(--warning-color);">Risk Considerations</h4>
+        <ul>
+          <li>Volatility impact on outcomes</li>
+          <li>Market timing uncertainty</li>
+          <li>Inflation eroding real returns</li>
+          <li>Behavioral biases affecting decisions</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🎲 Monte Carlo Simulation Preview</h3>
+    <div class="scenario">
+      <h4>Simulated Outcomes (1000 scenarios)</h4>
+      <p>Based on current portfolio allocation and historical volatility patterns:</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
+        <div class="card" style="background: var(--bg-tertiary);">
+          <h5>Best Case (95th %)</h5>
+          <p id="bestCase">$28,400</p>
+        </div>
+        <div class="card" style="background: var(--bg-tertiary);">
+          <h5>Expected (50th %)</h5>
+          <p id="medianCase">$19,700</p>
+        </div>
+        <div class="card" style="background: var(--bg-tertiary);">
+          <h5>Worst Case (5th %)</h5>
+          <p id="worstCase">$12,100</p>
+        </div>
+        <div class="card" style="background: var(--bg-tertiary);">
+          <h5>Std Deviation</h5>
+          <p id="simulationStd">$4,200</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📈 Real-World Applications</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+      <div class="scenario">
+        <h4>🏢 Corporate Capital Budgeting</h4>
+        <p>Companies use expected value to evaluate investment projects, comparing NPV across different initiatives with uncertain cash flows.</p>
+      </div>
+      <div class="scenario">
+        <h4>⚖️ Insurance Pricing</h4>
+        <p>Insurers calculate expected claims to set premiums, using actuarial tables and probability distributions of losses.</p>
+      </div>
+      <div class="scenario">
+        <h4>🎯 Trading Strategies</h4>
+        <p>Quantitative funds evaluate trading algorithms by comparing expected returns against transaction costs and market impact.</p>
+      </div>
+      <div class="scenario">
+        <h4>🏦 Credit Risk Assessment</h4>
+        <p>Banks calculate expected loss on loans using probability of default, loss given default, and exposure at default.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>⚠️ Common Pitfalls & Considerations</h3>
+    <div style="background: #fef3cd; padding: 1rem; border-radius: 0.5rem; border: 1px solid #fcd34d;">
+      <ul>
+        <li><strong>Static Assumptions:</strong> Expected values don't account for changing market conditions</li>
+        <li><strong>Distribution Matters:</strong> Same expected value can have vastly different risk profiles</li>
+        <li><strong>Behavioral Factors:</strong> Investors often deviate from expected value maximization</li>
+        <li><strong>Transaction Costs:</strong> Real-world frictions reduce actual expected returns</li>
+        <li><strong>Correlation Effects:</strong> Asset correlations change during stress periods</li>
+        <li><strong>Tail Risks:</strong> Expected value may not capture extreme loss scenarios</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🧮 Advanced Expected Value Concepts</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+      <div class="scenario" style="border-left: 4px solid var(--primary-color);">
+        <h4>Conditional Expectation</h4>
+        <p><strong>E[X|Y]</strong> - Expected value given additional information</p>
+        <p>Example: Expected stock return given economic indicators</p>
+      </div>
+      <div class="scenario" style="border-left: 4px solid var(--success-color);">
+        <h4>Law of Total Expectation</h4>
+        <p><strong>E[X] = E[E[X|Y]]</strong> - Breaking down complex scenarios</p>
+        <p>Example: Portfolio returns across different market regimes</p>
+      </div>
+      <div class="scenario" style="border-left: 4px solid var(--warning-color);">
+        <h4>Jensen's Inequality</h4>
+        <p><strong>E[f(X)] ≠ f(E[X])</strong> for non-linear functions</p>
+        <p>Example: Why geometric mean < arithmetic mean for returns</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Market scenarios with different expected returns
+    const marketScenarios = {
+      bull: { 
+        stocks: 15.0, bonds: 6.0, cash: 3.0,
+        description: "Bull Market: Strong economic growth, rising asset prices"
+      },
+      normal: { 
+        stocks: 10.0, bonds: 4.0, cash: 2.0,
+        description: "Normal Market: Historical long-term averages"
+      },
+      bear: { 
+        stocks: -5.0, bonds: 2.0, cash: 1.5,
+        description: "Bear Market: Economic contraction, falling equity prices"
+      },
+      recession: { 
+        stocks: -15.0, bonds: 8.0, cash: 0.5,
+        description: "Recession: Severe downturn, flight to quality"
+      }
+    };
+
+    // DOM elements
+    const scenarioSelect = document.getElementById('scenarioSelect');
+    const stockWeight = document.getElementById('stockWeight');
+    const bondWeight = document.getElementById('bondWeight');
+    const cashWeight = document.getElementById('cashWeight');
+    const investmentAmount = document.getElementById('investmentAmount');
+    const timeHorizon = document.getElementById('timeHorizon');
+
+    // Display elements
+    const stockWeightValue = document.getElementById('stockWeightValue');
+    const bondWeightValue = document.getElementById('bondWeightValue');
+    const cashWeightValue = document.getElementById('cashWeightValue');
+    const stockReturn = document.getElementById('stockReturn');
+    const bondReturn = document.getElementById('bondReturn');
+    const cashReturn = document.getElementById('cashReturn');
+    const totalAllocation = document.getElementById('totalAllocation');
+    const allocationWarning = document.getElementById('allocationWarning');
+    const portfolioReturn = document.getElementById('portfolioReturn');
+    const expectedValue = document.getElementById('expectedValue');
+    const riskLevel = document.getElementById('riskLevel');
+    const sharpeEstimate = document.getElementById('sharpeEstimate');
+    const investmentValue = document.getElementById('investmentValue');
+    const timeValue = document.getElementById('timeValue');
+    const finalValue = document.getElementById('finalValue');
+    const totalReturn = document.getElementById('totalReturn');
+    const annualizedReturn = document.getElementById('annualizedReturn');
+    const profitProb = document.getElementById('profitProb');
+
+    // Calculation steps
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const step4 = document.getElementById('step4');
+
+    // Monte Carlo results
+    const bestCase = document.getElementById('bestCase');
+    const medianCase = document.getElementById('medianCase');
+    const worstCase = document.getElementById('worstCase');
+    const simulationStd = document.getElementById('simulationStd');
+
+    let currentScenario = marketScenarios.normal;
+
+    function normalizeWeights() {
+      const stock = parseFloat(stockWeight.value);
+      const bond = parseFloat(bondWeight.value);
+      const cash = parseFloat(cashWeight.value);
+      const total = stock + bond + cash;
+      
+      totalAllocation.textContent = total.toFixed(0);
+      
+      if (Math.abs(total - 100) > 0.1) {
+        allocationWarning.style.display = 'block';
+        return { stock: stock/100, bond: bond/100, cash: cash/100, valid: false };
+      } else {
+        allocationWarning.style.display = 'none';
+        return { stock: stock/100, bond: bond/100, cash: cash/100, valid: true };
+      }
+    }
+
+    function calculatePortfolioMetrics() {
+      const weights = normalizeWeights();
+      const investment = parseFloat(investmentAmount.value);
+      const years = parseFloat(timeHorizon.value);
+      
+      // Expected returns
+      const stockExp = currentScenario.stocks;
+      const bondExp = currentScenario.bonds;
+      const cashExp = currentScenario.cash;
+      
+      // Portfolio expected return (linearity of expectation)
+      const portfolioExp = weights.stock * stockExp + weights.bond * bondExp + weights.cash * cashExp;
+      
+      // Risk assessment based on allocation
+      const riskScore = weights.stock * 1.0 + weights.bond * 0.3 + weights.cash * 0.1;
+      let risk = 'Low';
+      if (riskScore > 0.7) risk = 'High';
+      else if (riskScore > 0.4) risk = 'Moderate';
+      
+      // Estimate Sharpe ratio (simplified)
+      const riskFreeRate = cashExp;
+      const estimatedVol = weights.stock * 15 + weights.bond * 5 + weights.cash * 1;
+      const sharpe = (portfolioExp - riskFreeRate) / estimatedVol;
+      
+      // Compound expected value
+      const finalVal = investment * Math.pow(1 + portfolioExp/100, years);
+      const totalRet = finalVal - investment;
+      
+      // Probability of profit (rough estimate)
+      const profitProbability = portfolioExp > 0 ? 
+        Math.min(95, 50 + portfolioExp * 2.5) : 
+        Math.max(5, 50 + portfolioExp * 2.5);
+      
+      return {
+        portfolioReturn: portfolioExp,
+        expectedAnnual: investment * portfolioExp / 100,
+        riskLevel: risk,
+        sharpe: sharpe,
+        finalValue: finalVal,
+        totalReturn: totalRet,
+        profitProb: profitProbability,
+        weights: weights,
+        stockExp: stockExp,
+        bondExp: bondExp,
+        cashExp: cashExp
+      };
+    }
+
+    function updateDisplay() {
+      const metrics = calculatePortfolioMetrics();
+      
+      // Update weight displays
+      stockWeightValue.textContent = stockWeight.value;
+      bondWeightValue.textContent = bondWeight.value;
+      cashWeightValue.textContent = cashWeight.value;
+      investmentValue.textContent = parseFloat(investmentAmount.value).toLocaleString();
+      timeValue.textContent = timeHorizon.value;
+      
+      // Update expected returns
+      stockReturn.textContent = metrics.stockExp.toFixed(1) + '%';
+      bondReturn.textContent = metrics.bondExp.toFixed(1) + '%';
+      cashReturn.textContent = metrics.cashExp.toFixed(1) + '%';
+      
+      // Update portfolio metrics
+      portfolioReturn.textContent = metrics.portfolioReturn.toFixed(1) + '%';
+      expectedValue.textContent = '$' + Math.round(metrics.expectedAnnual).toLocaleString();
+      riskLevel.textContent = metrics.riskLevel;
+      sharpeEstimate.textContent = metrics.sharpe.toFixed(2);
+      
+      // Update projection
+      finalValue.textContent = '$' + Math.round(metrics.finalValue).toLocaleString();
+      totalReturn.textContent = '$' + Math.round(metrics.totalReturn).toLocaleString();
+      annualizedReturn.textContent = metrics.portfolioReturn.toFixed(1) + '%';
+      profitProb.textContent = '~' + Math.round(metrics.profitProb) + '%';
+      
+      // Update calculation steps
+      updateCalculationSteps(metrics);
+      
+      // Update Monte Carlo simulation
+      updateMonteCarloResults(metrics);
+      
+      // Update visualizations
+      updateAllocationPlot(metrics);
+      updateScenarioAnalysisPlot(metrics);
+    }
+
+    function updateCalculationSteps(metrics) {
+      step1.textContent = `Stocks: ${metrics.stockExp.toFixed(1)}% | Bonds: ${metrics.bondExp.toFixed(1)}% | Cash: ${metrics.cashExp.toFixed(1)}%`;
+      
+      const stockContrib = (parseFloat(stockWeight.value) * metrics.stockExp / 100).toFixed(1);
+      const bondContrib = (parseFloat(bondWeight.value) * metrics.bondExp / 100).toFixed(1);
+      const cashContrib = (parseFloat(cashWeight.value) * metrics.cashExp / 100).toFixed(1);
+      
+      step2.textContent = `Stocks: ${stockWeight.value}% × ${metrics.stockExp.toFixed(1)}% = ${stockContrib}% | Bonds: ${bondWeight.value}% × ${metrics.bondExp.toFixed(1)}% = ${bondContrib}% | Cash: ${cashWeight.value}% × ${metrics.cashExp.toFixed(1)}% = ${cashContrib}%`;
+      
+      step3.textContent = `E[Portfolio] = ${stockContrib}% + ${bondContrib}% + ${cashContrib}% = ${metrics.portfolioReturn.toFixed(1)}%`;
+      
+      step4.textContent = `Expected Value = $${parseFloat(investmentAmount.value).toLocaleString()} × ${metrics.portfolioReturn.toFixed(1)}% = $${Math.round(metrics.expectedAnnual).toLocaleString()} annual expected return`;
+    }
+
+    function updateMonteCarloResults(metrics) {
+      const investment = parseFloat(investmentAmount.value);
+      const years = parseFloat(timeHorizon.value);
+      const expectedReturn = metrics.portfolioReturn / 100;
+      
+      // Simplified volatility estimate
+      const volatility = (parseFloat(stockWeight.value) * 0.15 + 
+                         parseFloat(bondWeight.value) * 0.05 + 
+                         parseFloat(cashWeight.value) * 0.01) / 100;
+      
+      // Simulate final values using log-normal distribution
+      const logMean = Math.log(investment) + years * (expectedReturn - 0.5 * volatility * volatility);
+      const logStd = volatility * Math.sqrt(years);
+      
+      // Calculate percentiles (approximation)
+      const best = Math.exp(logMean + 1.645 * logStd); // 95th percentile
+      const median = Math.exp(logMean); // 50th percentile
+      const worst = Math.exp(logMean - 1.645 * logStd); // 5th percentile
+      const std = Math.exp(logMean) * Math.sqrt(Math.exp(logStd * logStd) - 1);
+      
+      bestCase.textContent = '$' + Math.round(best).toLocaleString();
+      medianCase.textContent = '$' + Math.round(median).toLocaleString();
+      worstCase.textContent = '$' + Math.round(worst).toLocaleString();
+      simulationStd.textContent = '$' + Math.round(std).toLocaleString();
+    }
+
+    function updateAllocationPlot(metrics) {
+      const data = [{
+        values: [parseFloat(stockWeight.value), parseFloat(bondWeight.value), parseFloat(cashWeight.value)],
+        labels: ['Stocks', 'Bonds', 'Cash'],
+        type: 'pie',
+        hole: 0.4,
+        marker: {
+          colors: ['#3b82f6', '#10b981', '#f59e0b']
+        },
+        textinfo: 'label+percent',
+        textposition: 'outside'
+      }];
+
+      const layout = {
+        title: 'Portfolio Allocation',
+        annotations: [{
+          font: { size: 16, color: 'black' },
+          showarrow: false,
+          text: `Expected<br>Return<br><b>${metrics.portfolioReturn.toFixed(1)}%</b>`,
+          x: 0.5,
+          y: 0.5
+        }],
+        showlegend: false
+      };
+
+      Plotly.newPlot('allocationPlot', data, layout, { responsive: true });
+    }
+
+    function updateScenarioAnalysisPlot(metrics) {
+      const scenarios = ['Bull', 'Normal', 'Bear', 'Recession'];
+      const returns = [];
+      const currentWeights = metrics.weights;
+      
+      Object.values(marketScenarios).forEach(scenario => {
+        const scenarioReturn = currentWeights.stock * scenario.stocks + 
+                              currentWeights.bond * scenario.bonds + 
+                              currentWeights.cash * scenario.cash;
+        returns.push(scenarioReturn);
+      });
+      
+      const colors = returns.map(r => r > 0 ? '#10b981' : '#ef4444');
+      
+      const trace = {
+        x: scenarios,
+        y: returns,
+        type: 'bar',
+        marker: { color: colors },
+        text: returns.map(r => r.toFixed(1) + '%'),
+        textposition: 'outside'
+      };
+
+      const layout = {
+        title: 'Expected Returns Across Market Scenarios',
+        xaxis: { title: 'Market Scenario' },
+        yaxis: { title: 'Expected Portfolio Return (%)' },
+        annotations: [{
+          x: scenarios.indexOf(scenarioSelect.value.charAt(0).toUpperCase() + scenarioSelect.value.slice(1)),
+          y: returns[scenarios.indexOf(scenarioSelect.value.charAt(0).toUpperCase() + scenarioSelect.value.slice(1))] + 1,
+          text: 'Current Scenario',
+          showarrow: true,
+          arrowhead: 2,
+          arrowcolor: 'red'
+        }]
+      };
+
+      Plotly.newPlot('scenarioAnalysisPlot', [trace], layout, { responsive: true });
+    }
+
+    // Event listeners
+    scenarioSelect.addEventListener('change', function() {
+      if (this.value !== 'custom') {
+        currentScenario = marketScenarios[this.value];
+      }
+      updateDisplay();
+    });
+
+    stockWeight.addEventListener('input', updateDisplay);
+    bondWeight.addEventListener('input', updateDisplay);
+    cashWeight.addEventListener('input', updateDisplay);
+    investmentAmount.addEventListener('input', updateDisplay);
+    timeHorizon.addEventListener('input', updateDisplay);
+
+    // Initialize
+    updateDisplay();
+  </script>
+</body>
+</html>

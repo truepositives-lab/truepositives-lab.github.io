@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Law of Total Probability (LOTP)</title>
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <link rel="stylesheet" href="unified-styles.css">
+</head>
+<body>
+  <a href="index.html" class="button" style="margin-bottom: 2rem;">← Back to Directory</a>
+  <h2>Law of Total Probability</h2>
+
+  <div class="description">
+    <p>The <strong>Law of Total Probability</strong> states that if we have a complete set of mutually exclusive events B₁, B₂, ..., Bₙ that partition the sample space, then for any event A:</p>
+  </div>
+
+  <div class="formula">
+    <p><strong>P(A) = P(A|B₁)P(B₁) + P(A|B₂)P(B₂) + ... + P(A|Bₙ)P(Bₙ)</strong></p>
+    <p>Or more compactly: <strong>P(A) = Σ P(A|Bᵢ)P(Bᵢ)</strong></p>
+  </div>
+
+  <div class="scenario">
+    <h3>Manufacturing Quality Control Scenario</h3>
+    <p>A factory produces items using three different machines. We want to find the probability that a randomly selected item is defective (event A):</p>
+    <ul>
+      <li><strong>B₁</strong>: Items from Machine 1</li>
+      <li><strong>B₂</strong>: Items from Machine 2</li>
+      <li><strong>B₃</strong>: Items from Machine 3</li>
+    </ul>
+    <p>Each machine produces different proportions of total output and has different defect rates.</p>
+  </div>
+
+  <div class="control">
+    <label for="machine1Range">Machine 1 Production Share P(B₁): <span id="machine1Value">0.40</span></label>
+    <input type="range" id="machine1Range" min="0.1" max="0.7" step="0.01" value="0.4" />
+  </div>
+
+  <div class="control">
+    <label for="machine2Range">Machine 2 Production Share P(B₂): <span id="machine2Value">0.30</span></label>
+    <input type="range" id="machine2Range" min="0.1" max="0.7" step="0.01" value="0.3" />
+  </div>
+
+  <div class="control">
+    <label for="machine3Range">Machine 3 Production Share P(B₃): <span id="machine3Value">0.30</span></label>
+    <input type="range" id="machine3Range" min="0.1" max="0.7" step="0.01" value="0.3" />
+  </div>
+
+  <div class="control">
+    <label for="defect1Range">Machine 1 Defect Rate P(A|B₁): <span id="defect1Value">0.02</span></label>
+    <input type="range" id="defect1Range" min="0.001" max="0.1" step="0.001" value="0.02" />
+  </div>
+
+  <div class="control">
+    <label for="defect2Range">Machine 2 Defect Rate P(A|B₂): <span id="defect2Value">0.03</span></label>
+    <input type="range" id="defect2Range" min="0.001" max="0.1" step="0.001" value="0.03" />
+  </div>
+
+  <div class="control">
+    <label for="defect3Range">Machine 3 Defect Rate P(A|B₃): <span id="defect3Value">0.05</span></label>
+    <input type="range" id="defect3Range" min="0.001" max="0.1" step="0.001" value="0.05" />
+  </div>
+
+  <div id="sampleSpacePlot" style="width:100%;height:300px;"></div>
+  <div id="plot" style="width:100%;height:400px;"></div>
+
+  <div id="calculations">
+    <h3>Calculations</h3>
+    <p><strong>P(A) = P(A|B₁)P(B₁) + P(A|B₂)P(B₂) + P(A|B₃)P(B₃)</strong></p>
+    <p id="calculationDetails"></p>
+    <p><strong>Total Probability of Defective Item:</strong> <span id="totalProb"></span></p>
+    <!-- Machine 3 share is now directly controlled by the slider -->
+  </div>
+
+  <div id="breakdown">
+    <h3>Probability Breakdown</h3>
+    <table>
+      <tr>
+        <th>Machine</th>
+        <th>Production Share P(Bᵢ)</th>
+        <th>Defect Rate P(A|Bᵢ)</th>
+        <th>Joint P(A∩Bᵢ)</th>
+        <th>Contribution to P(A)</th>
+      </tr>
+      <tr>
+        <td>Machine 1 (B₁)</td>
+        <td id="prior1"></td>
+        <td id="likelihood1"></td>
+        <td id="joint1"></td>
+        <td id="contribution1"></td>
+      </tr>
+      <tr>
+        <td>Machine 2 (B₂)</td>
+        <td id="prior2"></td>
+        <td id="likelihood2"></td>
+        <td id="joint2"></td>
+        <td id="contribution2"></td>
+      </tr>
+      <tr>
+        <td>Machine 3 (B₃)</td>
+        <td id="prior3"></td>
+        <td id="likelihood3"></td>
+        <td id="joint3"></td>
+        <td id="contribution3"></td>
+      </tr>
+    </table>
+  </div>
+
+    <script>
+    const machine1Input = document.getElementById('machine1Range');
+    const machine2Input = document.getElementById('machine2Range');
+    const machine3Input = document.getElementById('machine3Range');
+    const defect1Input = document.getElementById('defect1Range');
+    const defect2Input = document.getElementById('defect2Range');
+    const defect3Input = document.getElementById('defect3Range');
+    const machine1Value = document.getElementById('machine1Value');
+    const machine2Value = document.getElementById('machine2Value');
+    const machine3Value = document.getElementById('machine3Value');
+    const defect1Value = document.getElementById('defect1Value');
+    const defect2Value = document.getElementById('defect2Value');
+    const defect3Value = document.getElementById('defect3Value');
+    const totalProb = document.getElementById('totalProb');
+    const calculationDetails = document.getElementById('calculationDetails');
+
+    function update() {
+      let pMachine1 = parseFloat(machine1Input.value);
+      let pMachine2 = parseFloat(machine2Input.value);
+      let pMachine3 = parseFloat(machine3Input.value);
+      const defectRate1 = parseFloat(defect1Input.value);
+      const defectRate2 = parseFloat(defect2Input.value);
+      const defectRate3 = parseFloat(defect3Input.value);
+
+      // Normalize the shares to ensure they sum to 1
+      const totalShare = pMachine1 + pMachine2 + pMachine3;
+      if (Math.abs(totalShare - 1) > 0.01) {
+        // Adjust the shares proportionally
+        pMachine1 = pMachine1 / totalShare;
+        pMachine2 = pMachine2 / totalShare;
+        pMachine3 = pMachine3 / totalShare;
+
+        // Update the sliders without triggering update
+        machine1Input.value = pMachine1;
+        machine2Input.value = pMachine2;
+        machine3Input.value = pMachine3;
+      }
+
+      machine1Value.textContent = pMachine1.toFixed(2);
+      machine2Value.textContent = pMachine2.toFixed(2);
+      machine3Value.textContent = pMachine3.toFixed(2);
+      defect1Value.textContent = defectRate1.toFixed(3);
+      defect2Value.textContent = defectRate2.toFixed(3);
+      defect3Value.textContent = defectRate3.toFixed(3);
+
+      // Calculate total probability using LOTP
+      const pDefective = defectRate1 * pMachine1 + defectRate2 * pMachine2 + defectRate3 * pMachine3;
+
+      // Joint probabilities
+      const pDefectiveAndMachine1 = defectRate1 * pMachine1;
+      const pDefectiveAndMachine2 = defectRate2 * pMachine2;
+      const pDefectiveAndMachine3 = defectRate3 * pMachine3;
+
+      totalProb.textContent = pDefective.toFixed(4);
+      calculationDetails.innerHTML = `P(A) = ${defectRate1.toFixed(3)} × ${pMachine1.toFixed(2)} + ${defectRate2.toFixed(3)} × ${pMachine2.toFixed(2)} + ${defectRate3.toFixed(3)} × ${pMachine3.toFixed(2)} = ${pDefective.toFixed(4)}`;
+
+      // Update breakdown table
+      document.getElementById('prior1').textContent = pMachine1.toFixed(2);
+      document.getElementById('prior2').textContent = pMachine2.toFixed(2);
+      document.getElementById('prior3').textContent = pMachine3.toFixed(2);
+      document.getElementById('likelihood1').textContent = defectRate1.toFixed(3);
+      document.getElementById('likelihood2').textContent = defectRate2.toFixed(3);
+      document.getElementById('likelihood3').textContent = defectRate3.toFixed(3);
+      document.getElementById('joint1').textContent = pDefectiveAndMachine1.toFixed(4);
+      document.getElementById('joint2').textContent = pDefectiveAndMachine2.toFixed(4);
+      document.getElementById('joint3').textContent = pDefectiveAndMachine3.toFixed(4);
+      document.getElementById('contribution1').textContent = `${((pDefectiveAndMachine1 / pDefective) * 100).toFixed(1)}%`;
+      document.getElementById('contribution2').textContent = `${((pDefectiveAndMachine2 / pDefective) * 100).toFixed(1)}%`;
+      document.getElementById('contribution3').textContent = `${((pDefectiveAndMachine3 / pDefective) * 100).toFixed(1)}%`;
+
+      // Create visualization
+      const data = [
+        {
+          x: ['Machine 1', 'Machine 2', 'Machine 3'],
+          y: [pDefectiveAndMachine1, pDefectiveAndMachine2, pDefectiveAndMachine3],
+          type: 'bar',
+          name: 'P(Defective ∩ Machine)',
+          marker: { color: ['#ff6b6b', '#4ecdc4', '#45b7d1'] }
+        }
+      ];
+
+      const layout = {
+        title: 'Contribution to Total Probability P(Defective)',
+        xaxis: { title: 'Machine' },
+        yaxis: { title: 'Probability' },
+        annotations: [
+          {
+            x: 'Machine 1',
+            y: pDefectiveAndMachine1 + 0.0005,
+            text: `${(pDefectiveAndMachine1 * 1000).toFixed(1)} per 1000`,
+            showarrow: false,
+            font: { size: 11 }
+          },
+          {
+            x: 'Machine 2',
+            y: pDefectiveAndMachine2 + 0.0005,
+            text: `${(pDefectiveAndMachine2 * 1000).toFixed(1)} per 1000`,
+            showarrow: false,
+            font: { size: 11 }
+          },
+          {
+            x: 'Machine 3',
+            y: pDefectiveAndMachine3 + 0.0005,
+            text: `${(pDefectiveAndMachine3 * 1000).toFixed(1)} per 1000`,
+            showarrow: false,
+            font: { size: 11 }
+          }
+        ]
+      };
+
+      Plotly.newPlot('plot', data, layout, { responsive: true });
+
+      // Create sample space visualization
+      createSampleSpaceVisualization(pMachine1, pMachine2, pMachine3, defectRate1, defectRate2, defectRate3);
+    }
+
+    function createSampleSpaceVisualization(p1, p2, p3, d1, d2, d3) {
+      // Create sample space as a rectangle divided into segments
+      const totalWidth = 10;
+      const totalHeight = 6;
+
+      // Calculate segment widths based on production shares
+      const width1 = totalWidth * p1;
+      const width2 = totalWidth * p2;
+      const width3 = totalWidth * p3;
+
+      // Create shapes for each machine segment
+      const shapes = [
+        // Machine 1 segment
+        {
+          type: 'rect',
+          x0: 0, y0: 0, x1: width1, y1: totalHeight,
+          fillcolor: 'rgba(255, 107, 107, 0.3)',
+          line: { color: '#ff6b6b', width: 2 },
+          layer: 'below'
+        },
+        // Machine 2 segment
+        {
+          type: 'rect',
+          x0: width1, y0: 0, x1: width1 + width2, y1: totalHeight,
+          fillcolor: 'rgba(78, 205, 196, 0.3)',
+          line: { color: '#4ecdc4', width: 2 },
+          layer: 'below'
+        },
+        // Machine 3 segment
+        {
+          type: 'rect',
+          x0: width1 + width2, y0: 0, x1: totalWidth, y1: totalHeight,
+          fillcolor: 'rgba(69, 183, 209, 0.3)',
+          line: { color: '#45b7d1', width: 2 },
+          layer: 'below'
+        }
+      ];
+
+      // Add defect areas within each segment
+      const defectHeight1 = totalHeight * d1;
+      const defectHeight2 = totalHeight * d2;
+      const defectHeight3 = totalHeight * d3;
+
+      // Defect areas (darker shading)
+      shapes.push(
+        // Machine 1 defects
+        {
+          type: 'rect',
+          x0: 0, y0: 0, x1: width1, y1: defectHeight1,
+          fillcolor: 'rgba(255, 107, 107, 0.8)',
+          line: { color: '#ff6b6b', width: 1 },
+          layer: 'above'
+        },
+        // Machine 2 defects
+        {
+          type: 'rect',
+          x0: width1, y0: 0, x1: width1 + width2, y1: defectHeight2,
+          fillcolor: 'rgba(78, 205, 196, 0.8)',
+          line: { color: '#4ecdc4', width: 1 },
+          layer: 'above'
+        },
+        // Machine 3 defects
+        {
+          type: 'rect',
+          x0: width1 + width2, y0: 0, x1: totalWidth, y1: defectHeight3,
+          fillcolor: 'rgba(69, 183, 209, 0.8)',
+          line: { color: '#45b7d1', width: 1 },
+          layer: 'above'
+        }
+      );
+
+      // Create annotations for each segment
+      const annotations = [
+        // Machine labels
+        {
+          x: width1 / 2,
+          y: totalHeight + 0.3,
+          text: `<b>Machine 1</b><br>Share: ${(p1 * 100).toFixed(1)}%`,
+          showarrow: false,
+          font: { size: 12, color: '#ff6b6b' },
+          align: 'center'
+        },
+        {
+          x: width1 + width2 / 2,
+          y: totalHeight + 0.3,
+          text: `<b>Machine 2</b><br>Share: ${(p2 * 100).toFixed(1)}%`,
+          showarrow: false,
+          font: { size: 12, color: '#4ecdc4' },
+          align: 'center'
+        },
+        {
+          x: width1 + width2 + width3 / 2,
+          y: totalHeight + 0.3,
+          text: `<b>Machine 3</b><br>Share: ${(p3 * 100).toFixed(1)}%`,
+          showarrow: false,
+          font: { size: 12, color: '#45b7d1' },
+          align: 'center'
+        },
+        // Defect rate labels
+        {
+          x: width1 / 2,
+          y: defectHeight1 / 2,
+          text: `Defects<br>${(d1 * 100).toFixed(1)}%`,
+          showarrow: false,
+          font: { size: 10, color: 'white' },
+          align: 'center'
+        },
+        {
+          x: width1 + width2 / 2,
+          y: defectHeight2 / 2,
+          text: `Defects<br>${(d2 * 100).toFixed(1)}%`,
+          showarrow: false,
+          font: { size: 10, color: 'white' },
+          align: 'center'
+        },
+        {
+          x: width1 + width2 + width3 / 2,
+          y: defectHeight3 / 2,
+          text: `Defects<br>${(d3 * 100).toFixed(1)}%`,
+          showarrow: false,
+          font: { size: 10, color: 'white' },
+          align: 'center'
+        },
+        // Total defect area annotation
+        {
+          x: totalWidth / 2,
+          y: -0.8,
+          text: `<b>Total Defect Probability: ${((d1 * p1 + d2 * p2 + d3 * p3) * 100).toFixed(2)}%</b>`,
+          showarrow: false,
+          font: { size: 14, color: 'black' },
+          align: 'center'
+        }
+      ];
+
+      const sampleSpaceLayout = {
+        title: 'Sample Space: Production Shares and Defect Rates',
+        xaxis: {
+          title: 'Production Volume (Relative Scale)',
+          range: [-0.5, totalWidth + 0.5],
+          showgrid: false,
+          zeroline: false
+        },
+        yaxis: {
+          title: 'Quality (Defect Rate Scale)',
+          range: [-1.2, totalHeight + 1],
+          showgrid: false,
+          zeroline: false
+        },
+        shapes: shapes,
+        annotations: annotations,
+        showlegend: false,
+        margin: { t: 60, b: 80, l: 80, r: 50 }
+      };
+
+      // Create empty trace for the sample space plot
+      const sampleSpaceData = [{
+        x: [],
+        y: [],
+        type: 'scatter',
+        mode: 'markers',
+        marker: { size: 0 }
+      }];
+
+      Plotly.newPlot('sampleSpacePlot', sampleSpaceData, sampleSpaceLayout, { responsive: true });
+    }
+
+    [machine1Input, machine2Input, machine3Input, defect1Input, defect2Input, defect3Input].forEach(el => el.addEventListener('input', update));
+    update();
+  </script>
+</body>
+</html>

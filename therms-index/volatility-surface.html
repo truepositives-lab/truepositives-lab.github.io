@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volatility Surface - Interactive Finance Learning</title>
+    <link rel="stylesheet" href="unified-styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">Finance Learning</a>
+            <div class="nav-links">
+                <a href="index.html">← Back to Articles</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="article-header">
+            <h1>Volatility Surface</h1>
+            <p class="article-description">
+                Explore how implied volatility varies across strikes and time to expiration in options markets.
+            </p>
+        </header>
+
+        <div class="content-grid">
+            <section class="card">
+                <h2>Interactive Volatility Surface</h2>
+                <div id="volatilitySurface" class="chart-container"></div>
+                
+                <div class="surface-controls">
+                    <div class="input-group">
+                        <label for="surfaceType">Surface Type:</label>
+                        <select id="surfaceType">
+                            <option value="normal">Normal Market</option>
+                            <option value="volatility-smile">Volatility Smile</option>
+                            <option value="volatility-skew">Volatility Skew</option>
+                            <option value="term-structure">Term Structure</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="spotPrice">Spot Price:</label>
+                        <input type="number" id="spotPrice" value="100" step="1" min="50" max="150">
+                    </div>
+                    <div class="input-group">
+                        <label for="riskFreeRate">Risk-Free Rate (%):</label>
+                        <input type="number" id="riskFreeRate" value="5" step="0.1" min="0" max="10">
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Volatility Smile Analysis</h2>
+                <div id="volatilitySmile" class="chart-container"></div>
+                
+                <div class="smile-controls">
+                    <div class="input-group">
+                        <label for="selectedExpiry">Time to Expiration:</label>
+                        <select id="selectedExpiry">
+                            <option value="0.08">1 Month (30 days)</option>
+                            <option value="0.25" selected>3 Months (90 days)</option>
+                            <option value="0.5">6 Months (180 days)</option>
+                            <option value="1.0">1 Year (365 days)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="atmVolatility">ATM Volatility (%):</label>
+                        <input type="number" id="atmVolatility" value="20" step="1" min="5" max="80">
+                    </div>
+                </div>
+
+                <div class="smile-metrics">
+                    <div class="metric-card">
+                        <h3>Volatility Skew</h3>
+                        <div class="metric-value" id="volatilitySkew">0.00%</div>
+                        <small>25 Delta Put - 25 Delta Call</small>
+                    </div>
+                    <div class="metric-card">
+                        <h3>ATM Volatility</h3>
+                        <div class="metric-value" id="atmVolValue">20.0%</div>
+                        <small>At-the-money implied volatility</small>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Wing Spread</h3>
+                        <div class="metric-value" id="wingSpread">0.00%</div>
+                        <small>Average OTM - ATM volatility</small>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Term Structure</h2>
+                <div id="termStructure" class="chart-container"></div>
+                
+                <div class="term-analysis">
+                    <div class="scenario-buttons">
+                        <button onclick="showTermStructure('normal')" class="btn btn-secondary">Normal</button>
+                        <button onclick="showTermStructure('backwardation')" class="btn btn-secondary">Backwardation</button>
+                        <button onclick="showTermStructure('contango')" class="btn btn-secondary">Contango</button>
+                        <button onclick="showTermStructure('hump')" class="btn btn-secondary">Hump Shape</button>
+                    </div>
+
+                    <div class="term-metrics">
+                        <div class="metric-item">
+                            <span class="metric-label">1M vs 3M Spread:</span>
+                            <span class="metric-value" id="term1v3">+2.5%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">3M vs 12M Spread:</span>
+                            <span class="metric-value" id="term3v12">+1.8%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Term Structure Shape:</span>
+                            <span class="metric-value" id="termShape">Normal</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Black-Scholes vs Market IV</h2>
+                <div class="bs-comparison">
+                    <div class="input-group">
+                        <label for="strike">Strike Price:</label>
+                        <input type="number" id="strike" value="100" step="1" min="50" max="150">
+                    </div>
+                    <div class="input-group">
+                        <label for="expiration">Days to Expiration:</label>
+                        <input type="number" id="expiration" value="30" step="1" min="1" max="365">
+                    </div>
+                    <div class="input-group">
+                        <label for="marketPrice">Market Option Price:</label>
+                        <input type="number" id="marketPrice" value="5.50" step="0.01" min="0">
+                    </div>
+                </div>
+
+                <div class="bs-results">
+                    <div class="result-card">
+                        <h3>Implied Volatility</h3>
+                        <div class="metric-value" id="impliedVol">22.5%</div>
+                        <small>IV from market price</small>
+                    </div>
+                    <div class="result-card">
+                        <h3>Black-Scholes Price</h3>
+                        <div class="metric-value" id="bsPrice">$5.24</div>
+                        <small>Using calculated IV</small>
+                    </div>
+                    <div class="result-card">
+                        <h3>Price Difference</h3>
+                        <div class="metric-value" id="priceDiff">+$0.26</div>
+                        <small>Market - BS theoretical</small>
+                    </div>
+                    <div class="result-card">
+                        <h3>Moneyness</h3>
+                        <div class="metric-value" id="moneyness">ATM</div>
+                        <small>Strike relative to spot</small>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Volatility Calendar</h2>
+                <div id="volatilityCalendar" class="calendar-container">
+                    <div class="calendar-grid">
+                        <!-- Calendar will be generated here -->
+                    </div>
+                </div>
+                
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <div class="legend-color low-vol"></div>
+                        <span>Low Volatility (&lt; 15%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color med-vol"></div>
+                        <span>Medium Volatility (15-30%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color high-vol"></div>
+                        <span>High Volatility (&gt; 30%)</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Key Concepts</h2>
+                <div class="concept-grid">
+                    <div class="concept-card">
+                        <h3>📈 Volatility Smile</h3>
+                        <p>The curve showing implied volatility across different strike prices for the same expiration.</p>
+                        <div class="formula">IV(K) = f(K/S₀)</div>
+                        <ul>
+                            <li><strong>ATM:</strong> At-the-money options typically have lowest IV</li>
+                            <li><strong>OTM:</strong> Out-of-the-money options have higher IV</li>
+                            <li><strong>ITM:</strong> In-the-money options also show elevated IV</li>
+                        </ul>
+                    </div>
+
+                    <div class="concept-card">
+                        <h3>📊 Volatility Skew</h3>
+                        <p>The asymmetry in implied volatility, typically with puts having higher IV than calls.</p>
+                        <div class="formula">Skew = IV(Put) - IV(Call)</div>
+                        <ul>
+                            <li><strong>Equity Skew:</strong> Put IV > Call IV (crash protection)</li>
+                            <li><strong>Commodity Skew:</strong> Often reversed due to supply shocks</li>
+                            <li><strong>FX Skew:</strong> Varies by currency pair and economic conditions</li>
+                        </ul>
+                    </div>
+
+                    <div class="concept-card">
+                        <h3>⏰ Term Structure</h3>
+                        <p>How implied volatility varies across different expiration dates.</p>
+                        <div class="formula">IV(T) = f(T)</div>
+                        <ul>
+                            <li><strong>Contango:</strong> Longer-term IV > Short-term IV</li>
+                            <li><strong>Backwardation:</strong> Short-term IV > Long-term IV</li>
+                            <li><strong>Mean Reversion:</strong> Long-term IV tends toward historical average</li>
+                        </ul>
+                    </div>
+
+                    <div class="concept-card">
+                        <h3>🎯 Trading Applications</h3>
+                        <p>How traders use volatility surface information:</p>
+                        <ul>
+                            <li><strong>Relative Value:</strong> Find cheap/expensive options</li>
+                            <li><strong>Volatility Arbitrage:</strong> Trade surface inconsistencies</li>
+                            <li><strong>Risk Management:</strong> Hedge volatility exposure</li>
+                            <li><strong>Strategy Selection:</strong> Choose optimal strikes/expirations</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Market Anomalies</h2>
+                <div class="anomaly-grid">
+                    <div class="anomaly-card">
+                        <h3>🔥 Earnings Volatility Crush</h3>
+                        <p>IV drops dramatically after earnings announcements as uncertainty resolves.</p>
+                        <div class="anomaly-example">
+                            <strong>Before Earnings:</strong> IV = 40%<br>
+                            <strong>After Earnings:</strong> IV = 25%<br>
+                            <strong>Impact:</strong> Long options lose value despite price movement
+                        </div>
+                    </div>
+
+                    <div class="anomaly-card">
+                        <h3>📅 Weekend Effect</h3>
+                        <p>Options lose time value over weekends but volatility doesn't scale proportionally.</p>
+                        <div class="anomaly-example">
+                            <strong>Friday Close:</strong> 10 days to expiry<br>
+                            <strong>Monday Open:</strong> 8 days to expiry<br>
+                            <strong>Effect:</strong> Accelerated time decay
+                        </div>
+                    </div>
+
+                    <div class="anomaly-card">
+                        <h3>🎪 Pin Risk</h3>
+                        <p>Volatility behavior near strike prices at expiration due to gamma effects.</p>
+                        <div class="anomaly-example">
+                            <strong>At Strike:</strong> Maximum gamma exposure<br>
+                            <strong>Effect:</strong> Unusual price behavior<br>
+                            <strong>Risk:</strong> Assignment uncertainty
+                        </div>
+                    </div>
+
+                    <div class="anomaly-card">
+                        <h3>⚡ VIX Spikes</h3>
+                        <p>During market stress, volatility surfaces flatten and shift upward dramatically.</p>
+                        <div class="anomaly-example">
+                            <strong>Normal VIX:</strong> 12-20<br>
+                            <strong>Crisis VIX:</strong> 30-80+<br>
+                            <strong>Effect:</strong> All options become expensive
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // Generate volatility surface data
+        function generateVolatilitySurface(surfaceType = 'normal') {
+            const strikes = Array.from({length: 21}, (_, i) => 70 + i * 3); // 70 to 130
+            const expiries = [0.08, 0.17, 0.25, 0.5, 0.75, 1.0]; // 1M to 1Y
+            const spot = parseFloat(document.getElementById('spotPrice').value);
+            const baseVol = parseFloat(document.getElementById('atmVolatility').value) / 100;
+            
+            const surface = [];
+            const x = []; // Strikes
+            const y = []; // Expiries
+            const z = []; // Volatilities
+
+            expiries.forEach((T, i) => {
+                const volRow = [];
+                strikes.forEach(K => {
+                    const moneyness = K / spot;
+                    let vol;
+
+                    switch(surfaceType) {
+                        case 'volatility-smile':
+                            vol = baseVol + 0.1 * Math.pow(moneyness - 1, 2) + 0.02 * Math.sqrt(T);
+                            break;
+                        case 'volatility-skew':
+                            vol = baseVol + 0.15 * (1 - moneyness) + 0.02 * Math.sqrt(T);
+                            break;
+                        case 'term-structure':
+                            vol = baseVol * (0.8 + 0.4 * Math.sqrt(T)) + 0.02 * Math.pow(moneyness - 1, 2);
+                            break;
+                        default:
+                            vol = baseVol + 0.05 * Math.pow(moneyness - 1, 2) + 0.01 * Math.sqrt(T);
+                    }
+                    volRow.push(vol * 100);
+                });
+                z.push(volRow);
+                y.push(T);
+            });
+            
+            strikes.forEach(strike => x.push(strike));
+
+            const trace = {
+                x: x,
+                y: y,
+                z: z,
+                type: 'surface',
+                colorscale: 'Viridis',
+                showscale: true
+            };
+
+            const layout = {
+                title: 'Implied Volatility Surface',
+                scene: {
+                    xaxis: { title: 'Strike Price' },
+                    yaxis: { title: 'Time to Expiration (Years)' },
+                    zaxis: { title: 'Implied Volatility (%)' }
+                }
+            };
+
+            Plotly.newPlot('volatilitySurface', [trace], layout);
+        }
+
+        // Generate volatility smile for selected expiry
+        function generateVolatilitySmile() {
+            const expiry = parseFloat(document.getElementById('selectedExpiry').value);
+            const strikes = Array.from({length: 41}, (_, i) => 60 + i * 2); // 60 to 140
+            const spot = parseFloat(document.getElementById('spotPrice').value);
+            const baseVol = parseFloat(document.getElementById('atmVolatility').value);
+            
+            const volatilities = strikes.map(K => {
+                const moneyness = Math.log(K / spot);
+                return baseVol + 3 * Math.pow(moneyness, 2) + 1.5 * moneyness + 2 * Math.sqrt(expiry);
+            });
+
+            const trace = {
+                x: strikes,
+                y: volatilities,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: `${expiry} Years to Expiration`,
+                line: { color: 'var(--color-primary)', width: 3 }
+            };
+
+            const layout = {
+                title: 'Volatility Smile',
+                xaxis: { title: 'Strike Price ($)' },
+                yaxis: { title: 'Implied Volatility (%)' },
+                hovermode: 'x unified'
+            };
+
+            Plotly.newPlot('volatilitySmile', [trace], layout);
+
+            // Update metrics
+            const atmIndex = strikes.findIndex(s => s >= spot);
+            const atmVol = volatilities[atmIndex];
+            const put25Vol = volatilities[Math.floor(strikes.length * 0.2)];
+            const call25Vol = volatilities[Math.floor(strikes.length * 0.8)];
+            
+            document.getElementById('volatilitySkew').textContent = `${(put25Vol - call25Vol).toFixed(1)}%`;
+            document.getElementById('atmVolValue').textContent = `${atmVol.toFixed(1)}%`;
+            document.getElementById('wingSpread').textContent = `${((put25Vol + call25Vol) / 2 - atmVol).toFixed(1)}%`;
+        }
+
+        // Show different term structure patterns
+        function showTermStructure(pattern) {
+            const expiries = [0.08, 0.17, 0.25, 0.42, 0.67, 1.0]; // 1M to 1Y
+            const labels = ['1M', '2M', '3M', '5M', '8M', '12M'];
+            let volatilities;
+
+            switch(pattern) {
+                case 'backwardation':
+                    volatilities = [35, 30, 25, 22, 20, 19];
+                    break;
+                case 'contango':
+                    volatilities = [15, 18, 20, 22, 24, 26];
+                    break;
+                case 'hump':
+                    volatilities = [20, 25, 30, 28, 24, 22];
+                    break;
+                default: // normal
+                    volatilities = [20, 21, 22, 23, 24, 25];
+            }
+
+            const trace = {
+                x: labels,
+                y: volatilities,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'ATM Implied Volatility',
+                line: { color: 'var(--color-secondary)', width: 3 }
+            };
+
+            const layout = {
+                title: `Volatility Term Structure - ${pattern.charAt(0).toUpperCase() + pattern.slice(1)}`,
+                xaxis: { title: 'Time to Expiration' },
+                yaxis: { title: 'Implied Volatility (%)' }
+            };
+
+            Plotly.newPlot('termStructure', [trace], layout);
+
+            // Update term metrics
+            document.getElementById('term1v3').textContent = `${(volatilities[2] - volatilities[0]).toFixed(1)}%`;
+            document.getElementById('term3v12').textContent = `${(volatilities[5] - volatilities[2]).toFixed(1)}%`;
+            document.getElementById('termShape').textContent = pattern.charAt(0).toUpperCase() + pattern.slice(1);
+        }
+
+        // Black-Scholes calculations
+        function calculateBlackScholes(S, K, T, r, sigma) {
+            const d1 = (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
+            const d2 = d1 - sigma * Math.sqrt(T);
+            
+            const N = (x) => 0.5 * (1 + erf(x / Math.sqrt(2)));
+            const callPrice = S * N(d1) - K * Math.exp(-r * T) * N(d2);
+            
+            return callPrice;
+        }
+
+        function erf(x) {
+            // Approximation of error function
+            const a1 = 0.254829592;
+            const a2 = -0.284496736;
+            const a3 = 1.421413741;
+            const a4 = -1.453152027;
+            const a5 = 1.061405429;
+            const p = 0.3275911;
+            
+            const sign = x >= 0 ? 1 : -1;
+            x = Math.abs(x);
+            
+            const t = 1.0 / (1.0 + p * x);
+            const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+            
+            return sign * y;
+        }
+
+        // Newton-Raphson method for implied volatility
+        function calculateImpliedVolatility(S, K, T, r, marketPrice) {
+            let sigma = 0.3; // Initial guess
+            for (let i = 0; i < 100; i++) {
+                const price = calculateBlackScholes(S, K, T, r, sigma);
+                const vega = S * Math.sqrt(T) * Math.exp(-0.5 * Math.pow((Math.log(S/K) + (r + 0.5*sigma*sigma)*T)/(sigma*Math.sqrt(T)), 2)) / Math.sqrt(2 * Math.PI);
+                
+                const diff = price - marketPrice;
+                if (Math.abs(diff) < 0.001) break;
+                
+                sigma = sigma - diff / vega;
+                if (sigma <= 0) sigma = 0.01;
+            }
+            return sigma;
+        }
+
+        function updateBlackScholesComparison() {
+            const S = parseFloat(document.getElementById('spotPrice').value);
+            const K = parseFloat(document.getElementById('strike').value);
+            const T = parseFloat(document.getElementById('expiration').value) / 365;
+            const r = parseFloat(document.getElementById('riskFreeRate').value) / 100;
+            const marketPrice = parseFloat(document.getElementById('marketPrice').value);
+            
+            const impliedVol = calculateImpliedVolatility(S, K, T, r, marketPrice);
+            const bsPrice = calculateBlackScholes(S, K, T, r, impliedVol);
+            const priceDiff = marketPrice - bsPrice;
+            
+            let moneyness;
+            const ratio = K / S;
+            if (ratio >= 0.95 && ratio <= 1.05) moneyness = 'ATM';
+            else if (ratio < 0.95) moneyness = 'ITM';
+            else moneyness = 'OTM';
+            
+            document.getElementById('impliedVol').textContent = `${(impliedVol * 100).toFixed(1)}%`;
+            document.getElementById('bsPrice').textContent = `$${bsPrice.toFixed(2)}`;
+            document.getElementById('priceDiff').textContent = `${priceDiff >= 0 ? '+' : ''}$${priceDiff.toFixed(2)}`;
+            document.getElementById('moneyness').textContent = moneyness;
+        }
+
+        // Generate volatility calendar
+        function generateVolatilityCalendar() {
+            const calendarGrid = document.querySelector('.calendar-grid');
+            calendarGrid.innerHTML = '';
+            
+            // Generate 30 days of sample volatility data
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            
+            for (let week = 0; week < 5; week++) {
+                for (let day = 0; day < 7; day++) {
+                    const dayNumber = week * 7 + day + 1;
+                    if (dayNumber > 30) break;
+                    
+                    // Simulate volatility with some patterns
+                    let vol = 20 + Math.random() * 15;
+                    if (days[day] === 'Fri') vol += 5; // Friday effect
+                    if (dayNumber % 7 === 0) vol += 10; // Weekly options expiry
+                    
+                    const dayDiv = document.createElement('div');
+                    dayDiv.className = 'calendar-day';
+                    
+                    let volClass = 'low-vol';
+                    if (vol > 30) volClass = 'high-vol';
+                    else if (vol > 15) volClass = 'med-vol';
+                    
+                    dayDiv.classList.add(volClass);
+                    dayDiv.innerHTML = `
+                        <div class="day-number">${dayNumber}</div>
+                        <div class="day-vol">${vol.toFixed(0)}%</div>
+                    `;
+                    
+                    calendarGrid.appendChild(dayDiv);
+                }
+            }
+        }
+
+        // Event listeners
+        document.getElementById('surfaceType').addEventListener('change', (e) => {
+            generateVolatilitySurface(e.target.value);
+        });
+
+        document.getElementById('selectedExpiry').addEventListener('change', generateVolatilitySmile);
+        document.getElementById('atmVolatility').addEventListener('input', () => {
+            generateVolatilitySurface(document.getElementById('surfaceType').value);
+            generateVolatilitySmile();
+        });
+
+        ['spotPrice', 'riskFreeRate'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                generateVolatilitySurface(document.getElementById('surfaceType').value);
+                generateVolatilitySmile();
+                updateBlackScholesComparison();
+            });
+        });
+
+        ['strike', 'expiration', 'marketPrice'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateBlackScholesComparison);
+        });
+
+        // Initialize
+        generateVolatilitySurface();
+        generateVolatilitySmile();
+        showTermStructure('normal');
+        updateBlackScholesComparison();
+        generateVolatilityCalendar();
+    </script>
+
+    <style>
+        .calendar-container {
+            padding: 1rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            max-width: 500px;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .low-vol {
+            background-color: #10b981;
+        }
+
+        .med-vol {
+            background-color: #f59e0b;
+        }
+
+        .high-vol {
+            background-color: #ef4444;
+        }
+
+        .day-number {
+            font-size: 0.9rem;
+        }
+
+        .day-vol {
+            font-size: 0.7rem;
+            opacity: 0.9;
+        }
+
+        .calendar-legend {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .anomaly-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .anomaly-card {
+            padding: 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background: var(--color-card-bg);
+        }
+
+        .anomaly-example {
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            background: var(--color-background);
+            border-radius: 4px;
+            font-family: 'Monaco', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+    </style>
+</body>
+</html>
